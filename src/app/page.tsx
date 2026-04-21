@@ -80,50 +80,10 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="layout" style={{ paddingTop: '24px' }}>
-      <header style={{ marginBottom: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', padding: '0 16px' }}>
-        <div>
-          <h1 className="title">Logistique</h1>
-        </div>
-        <Link href="/requests/new" style={{ 
-          color: 'var(--accent)', 
-          textDecoration: 'none',
-          fontWeight: 600,
-          fontSize: '17px',
-          paddingBottom: '4px'
-        }}>
-          Nouveau
-        </Link>
+    <div className="layout" style={{ paddingTop: '24px', paddingBottom: '140px' }}>
+      <header style={{ marginBottom: '16px', padding: '0 16px' }}>
+        <h1 className="title">Logistique</h1>
       </header>
-
-      {/* SEGMENTED CONTROL NATIVE */}
-      <div style={{ 
-        display: 'flex', 
-        gap: '4px', 
-        overflowX: 'auto', 
-        padding: '0 16px 20px 16px',
-        scrollbarWidth: 'none',
-      }}>
-        {filterOptions.map((opt) => (
-          <button
-            key={opt.value}
-            onClick={() => setFilter(opt.value)}
-            style={{
-              padding: '6px 14px',
-              borderRadius: '14px',
-              border: 'none',
-              fontSize: '14px',
-              fontWeight: 500,
-              whiteSpace: 'nowrap',
-              background: filter === opt.value ? 'var(--foreground)' : 'rgba(120, 120, 128, 0.12)',
-              color: filter === opt.value ? 'var(--background)' : 'var(--foreground)',
-              transition: 'all 0.2s ease-out'
-            }}
-          >
-            {opt.label === 'All' ? 'Tous' : opt.label}
-          </button>
-        ))}
-      </div>
 
       {loading ? (
         <div style={{ padding: '0 16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -193,6 +153,62 @@ export default function Dashboard() {
             ))}
         </div>
       )}
+
+      {/* SMART BOTTOM DASHBOARD (Global Navigation) */}
+      <div style={{ 
+        position: 'fixed', 
+        bottom: 0, 
+        left: '50%', 
+        transform: 'translateX(-50%)', 
+        width: '100%', 
+        maxWidth: '500px', 
+        background: 'rgba(242, 242, 247, 0.85)', 
+        backdropFilter: 'blur(20px)', 
+        WebkitBackdropFilter: 'blur(20px)', 
+        borderTop: '0.5px solid var(--separator)', 
+        padding: '12px 0 24px 0', 
+        zIndex: 100,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '12px'
+      }}>
+        {/* SEGMENTED CONTROL NATIVE */}
+        <div style={{ 
+          display: 'flex', 
+          gap: '4px', 
+          overflowX: 'auto', 
+          padding: '0 16px',
+          scrollbarWidth: 'none',
+        }}>
+          {filterOptions.map((opt) => (
+            <button
+              key={opt.value}
+              onClick={() => setFilter(opt.value)}
+              style={{
+                padding: '8px 16px',
+                borderRadius: '20px',
+                border: 'none',
+                fontSize: '14px',
+                fontWeight: 600,
+                whiteSpace: 'nowrap',
+                background: filter === opt.value ? 'var(--foreground)' : 'rgba(120, 120, 128, 0.12)',
+                color: filter === opt.value ? 'var(--background)' : 'var(--foreground)',
+                transition: 'all 0.2s ease-out'
+              }}
+            >
+              {opt.label === 'All' ? 'Tous' : opt.label}
+            </button>
+          ))}
+        </div>
+
+        <div style={{ padding: '0 16px' }}>
+          <Link href="/requests/new" style={{ textDecoration: 'none' }}>
+            <div className="btn" style={{ width: '100%' }}>
+              + Nouveau Projet
+            </div>
+          </Link>
+        </div>
+      </div>
     </div>
   );
 }
