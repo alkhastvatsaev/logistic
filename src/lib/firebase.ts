@@ -12,14 +12,16 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID
 };
 
-const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-const db = getFirestore(app);
-const storage = getStorage(app);
-const auth = getAuth(app);
+const isConfigValid = !!process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
+
+const app = !getApps().length && isConfigValid ? initializeApp(firebaseConfig) : (getApps().length ? getApp() : null);
+const db = app ? getFirestore(app) : (null as any);
+const storage = app ? getStorage(app) : (null as any);
+const auth = app ? getAuth(app) : (null as any);
 
 // Attempt anonymous sign-in to satisfy "auth != null" security rules
-if (typeof window !== "undefined") {
-  signInAnonymously(auth).catch(err => console.error("Anonymous sign-in failed:", err));
+if (typeof window !== "undefined" && auth) {
+  signInAnonymously(auth).catch(err => console.log("Auth wait:", err.message));
 }
 
 export { app, db, storage, auth };
