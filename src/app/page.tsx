@@ -5,6 +5,7 @@ import { Plus, Package, Clock, ShieldCheck, Truck } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { rtdb, rtdbRef, onValue } from "@/lib/firebase";
+export const dynamic = "force-dynamic";
 
 export type RequestStatus = "DRAFT" | "WAITING_FOR_QUOTE" | "QUOTED" | "MANAGER_REVIEW" | "WAITING_FOR_DEPOSIT" | "IN_PRODUCTION" | "FINAL_PAYMENT" | "SHIPPED" | "DELIVERED";
 

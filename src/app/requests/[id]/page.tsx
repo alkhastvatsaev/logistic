@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { rtdb, rtdbRef, onValue, set, push, get, update } from "@/lib/firebase";
 import { motion } from "framer-motion";
+export const dynamic = "force-dynamic";
 import { ArrowLeft, Share, Copy, CheckCircle, PackageSearch, Trash2, Edit3, Save } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
