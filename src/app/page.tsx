@@ -107,8 +107,18 @@ export default function Dashboard() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.05 }}
+              style={{ width: '100%' }}
             >
-              <Link href={`/requests/${req.id}`} className="card hover:border-[var(--foreground)] transition-colors block" style={{ padding: '16px', textDecoration: 'none' }}>
+              <Link 
+                href={`/requests/${req.id}`} 
+                className="card block" 
+                style={{ 
+                  padding: '16px', 
+                  textDecoration: 'none',
+                  display: 'block',
+                  width: '100%'
+                }}
+              >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <h3 style={{ fontWeight: 600, fontSize: '1.1rem', margin: 0 }}>{req.title}</h3>
                   {getStatusIcon(req.status)}
