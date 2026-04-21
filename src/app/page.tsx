@@ -70,36 +70,36 @@ export default function Dashboard() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: "easeOut" }}
     >
-      <header style={{ padding: '16px 0', marginBottom: '24px' }}>
+      <header style={{ paddingBottom: '20px', marginBottom: '24px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <h1 className="title" style={{ fontSize: '1.5rem' }}>Reach</h1>
-          <p className="subtitle" style={{ fontSize: '0.8rem' }}>Supplier & Logistics Core</p>
+          <h1 className="title" style={{ fontSize: '1.8rem', lineHeight: '1.1' }}>Reach</h1>
+          <p className="subtitle" style={{ fontSize: '0.85rem', marginTop: '4px' }}>Logistic Hub</p>
         </div>
-        <Link href="/requests/new" className="btn" style={{ padding: '8px 16px', fontSize: '0.9rem' }}>
+        <Link href="/requests/new" className="btn" style={{ padding: '10px 20px', fontSize: '0.9rem' }}>
           <Plus size={18} />
           <span>New</span>
         </Link>
       </header>
 
       {loading ? (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           {[1, 2, 3].map(i => (
-            <div key={i} className="card animate-pulse" style={{ height: '100px' }}></div>
+            <div key={i} className="card animate-pulse" style={{ height: '80px', opacity: 0.5 }}></div>
           ))}
         </div>
       ) : requests.length === 0 ? (
-        <div className="card text-center py-20" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
-          <Package size={48} color="var(--border)" />
+        <div className="card text-center py-20" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', borderStyle: 'dashed' }}>
+          <Package size={48} color="var(--faded)" style={{ opacity: 0.5 }} />
           <div>
             <h3 style={{ fontWeight: 500, fontSize: '1.1rem', marginBottom: '8px' }}>No active requests</h3>
-            <p className="subtitle">Start by creating a new supplier request.</p>
+            <p className="subtitle" style={{ fontSize: '0.9rem' }}>Start by creating a new jewelry specification.</p>
           </div>
           <Link href="/requests/new" className="btn btn-ghost mt-4">
-            Create First Request
+            Create First
           </Link>
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           {requests.map((req, i) => (
             <motion.div 
               key={req.id}
@@ -107,21 +107,21 @@ export default function Dashboard() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.05 }}
             >
-              <Link href={`/requests/${req.id}`} className="card hover:border-[var(--foreground)] transition-colors block" style={{ padding: '16px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                  <h3 style={{ fontWeight: 600, fontSize: '1rem' }}>{req.title}</h3>
+              <Link href={`/requests/${req.id}`} className="card hover:border-[var(--foreground)] transition-colors block" style={{ padding: '16px', textDecoration: 'none' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <h3 style={{ fontWeight: 600, fontSize: '1.1rem', margin: 0 }}>{req.title}</h3>
                   {getStatusIcon(req.status)}
                 </div>
-                <div style={{ marginTop: '12px', fontSize: '0.8rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ marginTop: '8px', fontSize: '0.85rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <span style={{ 
-                    padding: '2px 8px', 
-                    borderRadius: '4px', 
-                    background: req.status === 'IN_PRODUCTION' ? 'rgba(0,0,0,0.1)' : 'transparent',
-                    color: req.status === 'IN_PRODUCTION' ? 'var(--foreground)' : 'var(--faded)'
+                    color: 'var(--faded)',
+                    fontWeight: 500
                   }}>
-                    {req.status === 'WAITING_FOR_QUOTE' ? 'Waiting setup' : req.status.replace(/_/g, ' ')}
+                    {req.status === 'WAITING_FOR_QUOTE' ? 'Waiting' : req.status.replace(/_/g, ' ')}
                   </span>
-                  {renderTimer(req)}
+                  <div style={{ textAlign: 'right' }}>
+                    {renderTimer(req)}
+                  </div>
                 </div>
               </Link>
             </motion.div>
