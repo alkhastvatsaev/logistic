@@ -14,6 +14,7 @@ export interface SupplierRequest {
   status: RequestStatus;
   createdAt: number;
   productionDeadline?: number;
+  size?: string;
 }
 
 export default function Dashboard() {
