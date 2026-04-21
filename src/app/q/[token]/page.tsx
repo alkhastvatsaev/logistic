@@ -179,70 +179,68 @@ export default function SupplierPortal({ params }: { params: { token: string } }
   // SCENARIO 1: FIRST TIME QUOTE FORM
   return (
     <div className="layout">
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ padding: '0px 0 48px 0', maxWidth: '100%', margin: '0 auto' }}>
-        <header style={{ padding: '32px 0 16px 0', border: 'none', marginBottom: 0 }}>
-          <div>
-            <h1 className="title" style={{ fontSize: '1.5rem' }}>{request.title}</h1>
-            <p className="subtitle">Please provide your absolute best factory price.</p>
-          </div>
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ padding: '0 0 48px 0' }}>
+        <header style={{ paddingBottom: '32px', border: 'none', textAlign: 'center', marginBottom: 0 }}>
+          <h1 className="title" style={{ fontSize: '1.6rem', marginBottom: '8px' }}>{request.title}</h1>
+          <p className="subtitle" style={{ fontSize: '0.9rem' }}>Factory Quote Submission</p>
         </header>
 
         {request.imageUrl && (
-          <img src={request.imageUrl} alt="Reference" style={{ width: '100%', borderRadius: 'var(--radius)', marginBottom: '24px', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }} />
+          <div style={{ marginBottom: '24px' }}>
+            <img 
+              src={request.imageUrl} 
+              alt="Reference" 
+              style={{ width: '100%', borderRadius: 'var(--radius)', aspectRatio: '1/1', objectFit: 'cover' }} 
+            />
+          </div>
         )}
 
-        <form onSubmit={handleSubmitQuote} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          {/* ... existing form fields ... */}
-          <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <h3 style={{ fontWeight: 600, borderBottom: '1px solid var(--border)', paddingBottom: '8px' }}>Supplier Information</h3>
-            <div>
-              <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '4px' }}>Factory / Contact Name</label>
-              <input required type="text" value={supplierName} onChange={e => setSupplierName(e.target.value)} placeholder="e.g. Factory A - Mr. Chen" />
+        <form onSubmit={handleSubmitQuote}>
+          <div className="list-group">
+            <div className="row-item">
+              <label>Supplier Name</label>
+              <input required type="text" value={supplierName} onChange={e => setSupplierName(e.target.value)} placeholder="Factory A" />
             </div>
           </div>
 
-          <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <h3 style={{ fontWeight: 600, borderBottom: '1px solid var(--border)', paddingBottom: '8px' }}>Price & Shipping (RMB)</h3>
-            <div>
-              <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '4px' }}>Jewelry Price (¥)</label>
+          <div className="list-group">
+            <div className="row-item">
+              <label>Jewelry Price (¥)</label>
               <input required type="number" step="0.01" value={priceRMB} onChange={e => setPriceRMB(e.target.value)} placeholder="0.00" />
             </div>
-            <div>
-              <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '4px' }}>FedEx Shipping Cost (¥)</label>
+            <div className="row-item">
+              <label>FedEx Cost (¥)</label>
               <input required type="number" step="0.01" value={shippingCostRMB} onChange={e => setShippingCostRMB(e.target.value)} placeholder="0.00" />
             </div>
-            <div>
-              <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '4px' }}>Production Time (Days)</label>
-              <input required type="number" value={productionTimeDays} onChange={e => setProductionTimeDays(e.target.value)} placeholder="e.g. 7" />
+            <div className="row-item">
+              <label>Lead Time (Days)</label>
+              <input required type="number" value={productionTimeDays} onChange={e => setProductionTimeDays(e.target.value)} placeholder="7" />
             </div>
           </div>
 
-          <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <h3 style={{ fontWeight: 600, borderBottom: '1px solid var(--border)', paddingBottom: '8px' }}>Specifications</h3>
-            <div style={{ display: 'flex', gap: '16px' }}>
-              <div style={{ flex: 1 }}>
-                <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '4px' }}>Total Weight (g)</label>
+          <div className="list-group">
+            <div style={{ display: 'flex', borderBottom: '0.5px solid var(--border)' }}>
+              <div className="row-item" style={{ flex: 1, borderBottom: 'none', borderRight: '0.5px solid var(--border)' }}>
+                <label>Total Weight (g)</label>
                 <input required type="number" step="0.01" value={totalWeight} onChange={e => setTotalWeight(e.target.value)} placeholder="0.00" />
               </div>
-              <div style={{ flex: 1 }}>
-                <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '4px' }}>Gold Weight (g)</label>
+              <div className="row-item" style={{ flex: 1, borderBottom: 'none' }}>
+                <label>Gold Weight (g)</label>
                 <input required type="number" step="0.01" value={goldWeight} onChange={e => setGoldWeight(e.target.value)} placeholder="0.00" />
               </div>
             </div>
-            
-            <div style={{ display: 'flex', gap: '16px' }}>
-              <div style={{ flex: 1 }}>
-                <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '4px' }}>Diamond Count</label>
+            <div style={{ display: 'flex', borderBottom: '0.5px solid var(--border)' }}>
+              <div className="row-item" style={{ flex: 1, borderBottom: 'none', borderRight: '0.5px solid var(--border)' }}>
+                <label>Diamond Count</label>
                 <input required type="number" value={diamondCount} onChange={e => setDiamondCount(e.target.value)} placeholder="0" />
               </div>
-              <div style={{ flex: 1 }}>
-                <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '4px' }}>Total Carat (ct)</label>
+              <div className="row-item" style={{ flex: 1, borderBottom: 'none' }}>
+                <label>Total Carat (ct)</label>
                 <input required type="number" step="0.01" value={totalCarat} onChange={e => setTotalCarat(e.target.value)} placeholder="0.00" />
               </div>
             </div>
-
-            <div>
-              <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '4px' }}>Diamond Type</label>
+            <div className="row-item">
+              <label>Diamond Type</label>
               <select value={diamondType} onChange={e => setDiamondType(e.target.value)}>
                 <option value="Lab Grown">Lab Grown (CVD/HPHT)</option>
                 <option value="Natural">Natural / Mined</option>
@@ -252,11 +250,12 @@ export default function SupplierPortal({ params }: { params: { token: string } }
             </div>
           </div>
 
-          <button type="submit" className="btn" style={{ width: '100%', marginTop: '16px', padding: '16px', fontSize: '1.1rem' }}>
-            Submit Official Quote
+          <button type="submit" className="btn" style={{ width: '100%', marginTop: '8px' }}>
+            Submit Quote
           </button>
         </form>
       </motion.div>
     </div>
   );
+;
 }

@@ -1,21 +1,23 @@
 :root {
-  --background: #ffffff;
+  --background: #FFFFFF;
+  --secondary-bg: #F2F2F7;
   --foreground: #000000;
-  --faded: #a1a1aa;
-  --border: #e4e4e7;
-  --accent: #000000;
-  --accent-foreground: #ffffff;
-  --radius: 8px;
+  --faded: #8E8E93;
+  --border: #C6C6C8;
+  --accent: #007AFF;
+  --accent-foreground: #FFFFFF;
+  --radius: 12px;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #000000;
-    --foreground: #ffffff;
-    --faded: #71717a;
-    --border: #27272a;
-    --accent: #ffffff;
-    --accent-foreground: #000000;
+    --secondary-bg: #1C1C1E;
+    --foreground: #FFFFFF;
+    --faded: #8E8E93;
+    --border: #38383A;
+    --accent: #0A84FF;
+    --accent-foreground: #FFFFFF;
   }
 }
 
@@ -81,38 +83,34 @@ input:focus, textarea:focus, select:focus {
 }
 
 .card {
-  border: 1px solid var(--border);
+  background: var(--secondary-bg);
   border-radius: var(--radius);
-  padding: 24px;
-  background: rgba(255, 255, 255, 0.02);
-  backdrop-filter: blur(10px);
+  padding: 16px;
+  border: none;
 }
 
 .btn {
   background-color: var(--accent);
   color: var(--accent-foreground);
-  padding: 12px 24px;
-  border-radius: 999px;
-  font-weight: 500;
+  padding: 14px 28px;
+  border-radius: 14px;
+  font-weight: 600;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  transition: opacity 0.2s ease, transform 0.1s ease;
-}
-
-.btn:hover {
-  opacity: 0.9;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .btn:active {
-  transform: scale(0.98);
+  transform: scale(0.96);
+  opacity: 0.8;
 }
 
 .btn-ghost {
-  background-color: transparent;
-  color: var(--foreground);
-  border: 1px solid var(--border);
+  background-color: var(--secondary-bg);
+  color: var(--accent);
+  border: none;
 }
 
 .btn-ghost:hover {
@@ -140,8 +138,36 @@ header {
   font-size: 1rem;
 }
 
-.grid {
-  display: grid;
-  gap: 24px;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+.list-group {
+  background: var(--secondary-bg);
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+
+.row-item {
+  display: flex;
+  flex-direction: column;
+  padding: 12px 16px;
+  border-bottom: 0.5px solid var(--border);
+}
+
+.row-item:last-child {
+  border-bottom: none;
+}
+
+.row-item label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+}
+
+.row-item input, .row-item select {
+  border: none;
+  padding: 4px 0;
+  font-size: 1.05rem;
+  width: 100%;
 }
