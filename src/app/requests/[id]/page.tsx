@@ -304,20 +304,20 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
          </button>
       </div>
 
-      {/* SMART BOTTOM DASHBOARD (Ergonomics) */}
-      <div style={{ position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)', width: '100%', maxWidth: '500px', background: 'rgba(242, 242, 247, 0.85)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', borderTop: '0.5px solid var(--separator)', padding: '16px 20px 32px 20px', zIndex: 100 }}>
+      {/* NATIVE APPLE TOOLBAR (Contextual Actions) */}
+      <div className="tool-bar">
          {request.status === 'WAITING_FOR_QUOTE' && (
            <button className="btn" style={{ width: '100%' }} onClick={generateSupplierLink} disabled={generatingLink}>
              {generatingLink ? 'Création...' : 'Partager Lien Usine'}
            </button>
          )}
          {request.status === 'QUOTED' && quotes.length > 0 && (
-           <div style={{ textAlign: 'center', fontWeight: 600, color: 'var(--faded)', fontSize: '15px', padding: '14px 0' }}>
+           <div style={{ textAlign: 'center', fontWeight: 600, color: 'var(--faded)', fontSize: '15px' }}>
              Analysez et acceptez un devis ci-dessus
            </div>
          )}
          {request.status === 'MANAGER_REVIEW' && (
-           <a href={`https://wa.me/33607808501?text=${encodeURIComponent(`Validation. Taille ${request.size}\n${window.location.origin}/review/${params.id}`)}`} target="_blank" rel="noopener noreferrer" className="btn" style={{ width: '100%', background: 'var(--success)' }}>
+           <a href={`https://wa.me/33607808501?text=${encodeURIComponent(`Validation. Taille ${request.size}\n${window.location.origin}/review/${params.id}`)}`} target="_blank" rel="noopener noreferrer" className="btn" style={{ width: '100%', background: '#34C759' }}>
              Demander Validation (Mirza)
            </a>
          )}
@@ -327,7 +327,7 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
            </button>
          )}
          {request.status === 'IN_PRODUCTION' && (
-           <button className="btn btn-ghost" style={{ width: '100%', border: '1px solid var(--accent)' }} onClick={() => moveNextStep('SHIPPED')}>
+           <button className="btn btn-ghost" style={{ width: '100%', border: '1.5px solid var(--accent)' }} onClick={() => moveNextStep('SHIPPED')}>
              Marquer comme Expédié
            </button>
          )}
@@ -337,7 +337,7 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
            </button>
          )}
          {request.status === 'DELIVERED' && (
-           <div style={{ display: 'flex', gap: '12px' }}>
+           <div style={{ display: 'flex', gap: '12px', width: '100%' }}>
              <button className="btn btn-ghost" style={{ flex: 1, background: 'rgba(0,122,255,0.1)' }} onClick={() => generatePDF('QUOTE')}>Devis PDF</button>
              <button className="btn btn-ghost" style={{ flex: 1, background: 'rgba(0,122,255,0.1)' }} onClick={() => generatePDF('INVOICE')}>Facture PDF</button>
            </div>

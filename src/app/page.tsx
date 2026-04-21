@@ -154,61 +154,58 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* SMART BOTTOM DASHBOARD (Global Navigation) */}
-      <div style={{ 
-        position: 'fixed', 
-        bottom: 0, 
-        left: '50%', 
-        transform: 'translateX(-50%)', 
-        width: '100%', 
-        maxWidth: '500px', 
-        background: 'rgba(242, 242, 247, 0.85)', 
-        backdropFilter: 'blur(20px)', 
-        WebkitBackdropFilter: 'blur(20px)', 
-        borderTop: '0.5px solid var(--separator)', 
-        padding: '12px 0 24px 0', 
-        zIndex: 100,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '12px'
-      }}>
-        {/* SEGMENTED CONTROL NATIVE */}
-        <div style={{ 
-          display: 'flex', 
-          gap: '4px', 
-          overflowX: 'auto', 
-          padding: '0 16px',
-          scrollbarWidth: 'none',
-        }}>
-          {filterOptions.map((opt) => (
-            <button
-              key={opt.value}
-              onClick={() => setFilter(opt.value)}
-              style={{
-                padding: '8px 16px',
-                borderRadius: '20px',
-                border: 'none',
-                fontSize: '14px',
-                fontWeight: 600,
-                whiteSpace: 'nowrap',
-                background: filter === opt.value ? 'var(--foreground)' : 'rgba(120, 120, 128, 0.12)',
-                color: filter === opt.value ? 'var(--background)' : 'var(--foreground)',
-                transition: 'all 0.2s ease-out'
-              }}
-            >
-              {opt.label === 'All' ? 'Tous' : opt.label}
-            </button>
-          ))}
-        </div>
+      {/* NATIVE APPLE TAB BAR */}
+      <nav className="tab-bar">
+        <button 
+          onClick={() => { setFilter('ALL'); }}
+          className={`tab-item ${filter === 'ALL' ? 'active' : ''}`}
+          style={{ background: 'transparent', border: 'none' }}
+        >
+          <Clock size={24} />
+          <span>Projets</span>
+        </button>
+        
+        <Link href="/requests/new" className="tab-item">
+          <Plus size={24} />
+          <span>Nouveau</span>
+        </Link>
 
-        <div style={{ padding: '0 16px' }}>
-          <Link href="/requests/new" style={{ textDecoration: 'none' }}>
-            <div className="btn" style={{ width: '100%' }}>
-              + Nouveau Projet
-            </div>
-          </Link>
+        {/* This effectively replaces the generic filters with a cleaner interaction */}
+        <div style={{ position: 'relative', flex: 1, display: 'flex', justifyContent: 'center' }}>
+          <select 
+            value={filter} 
+            onChange={(e) => setFilter(e.target.value as any)}
+            className="tab-item"
+            style={{ 
+              background: 'transparent', 
+              border: 'none', 
+              appearance: 'none',
+              textAlign: 'center',
+              width: '100%',
+              padding: 0,
+              margin: 0,
+              color: filter !== 'ALL' ? 'var(--accent)' : 'var(--faded)'
+            }}
+          >
+            <option value="ALL">Filtres</option>
+            {filterOptions.filter(o => o.value !== 'ALL').map(opt => (
+              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            ))}
+          </select>
+          <div style={{ position: 'absolute', pointerEvents: 'none', top: '8px' }}>
+             <Package size={24} color={filter !== 'ALL' ? 'var(--accent)' : 'var(--faded)'} />
+          </div>
+          <span style={{ 
+            position: 'absolute', 
+            bottom: '0px', 
+            fontSize: '10px', 
+            fontWeight: 500, 
+            color: filter !== 'ALL' ? 'var(--accent)' : 'var(--faded)' 
+          }}>
+            {filter === 'ALL' ? 'Catégories' : filter.replace(/_/g, ' ')}
+          </span>
         </div>
-      </div>
+      </nav>
     </div>
   );
 }
