@@ -26,7 +26,7 @@ if (typeof window !== "undefined" && auth) {
 
 export const waitForAuth = () => {
   return new Promise((resolve) => {
-    const unsubscribe = auth.onAuthStateChanged((user) => {
+    const unsubscribe = auth.onAuthStateChanged((user: any) => {
       if (user) {
         resolve(user);
         unsubscribe();
