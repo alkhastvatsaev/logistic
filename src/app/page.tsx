@@ -15,6 +15,7 @@ export interface SupplierRequest {
   status: RequestStatus;
   createdAt: number;
   productionDeadline?: number;
+  deliveryEstimation?: number;
   size?: string;
   imageUrl?: string;
 }
@@ -64,17 +65,18 @@ export default function Dashboard() {
     }
   };
 
-  const renderTimer = (req: SupplierRequest) => {
-    if (req.status === 'IN_PRODUCTION' && req.productionDeadline) {
-      const remainingMs = req.productionDeadline - Date.now();
-      const remainingDays = Math.ceil(remainingMs / (1000 * 60 * 60 * 24));
-      
-      if (remainingDays < 0) {
-        return <span style={{ color: 'red', fontWeight: 600 }}>Delayed</span>;
-      }
-      return <span style={{ fontWeight: 600 }}>{remainingDays} day{remainingDays > 1 ? 's' : ''} left</span>;
+  const renderTimeline = (req: any) => {
+    if (req.deliveryEstimation && req.status !== 'DELIVERED') {
+      const date = new Date(req.deliveryEstimation);
+      return (
+        <span style={{ color: 'var(--success)', fontWeight: 600 }}>
+          Livraison: {date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}
+        </span>
+      );
     }
-    return <span style={{ color: 'var(--faded)' }}>{new Date(req.createdAt).toLocaleDateString()}</span>;
+    const diff = Date.now() - req.createdAt;
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    return days === 0 ? "Aujourd'hui" : `Il y a ${days}j`;
   };
 
   return (
@@ -191,7 +193,7 @@ export default function Dashboard() {
                         )}
                       </div>
                       <div style={{ textAlign: 'right', fontSize: '12px', color: 'var(--faded)' }}>
-                        {renderTimer(req)}
+                        {renderTimeline(req)}
                       </div>
                     </div>
                   </div>

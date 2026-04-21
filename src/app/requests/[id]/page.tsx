@@ -96,10 +96,21 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
   const acceptQuote = async (quote: Quote) => {
     if (!confirm("Accepter ce devis et lancer la production ?")) return;
     try {
+      const prodDays = Number(quote.productionTimeDays) || 7;
+      const shippingDays = 7; // Shenzhen -> France Fixed
+      const totalDays = prodDays + shippingDays;
+      
+      const productionDeadline = Date.now() + (prodDays * 24 * 60 * 60 * 1000);
+      const deliveryEstimation = Date.now() + (totalDays * 24 * 60 * 60 * 1000);
+
       const updates: any = {};
       updates[`requests/${params.id}/status`] = "IN_PRODUCTION";
       updates[`requests/${params.id}/acceptedQuoteId`] = quote.id;
       updates[`requests/${params.id}/acceptedTokenId`] = quote.shareTokenId;
+      updates[`requests/${params.id}/productionDeadline`] = productionDeadline;
+      updates[`requests/${params.id}/deliveryEstimation`] = deliveryEstimation;
+      updates[`requests/${params.id}/updatedAt`] = Date.now();
+      
       await update(rtdbRef(rtdb), updates);
     } catch (error) { alert("Erreur acceptation"); }
   };
@@ -174,6 +185,24 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
       <div style={{ marginTop: '32px' }}>
         <p style={{ padding: '0 16px 8px 16px', fontSize: '13px', color: 'var(--faded)', fontWeight: 600 }}>GESTION & VALIDATION</p>
         <div className="list-group">
+          {request.deliveryEstimation && (
+            <div className="row-item" style={{ background: 'var(--background)', margin: '12px 16px', borderRadius: '12px', border: 'none' }}>
+               <label style={{ color: 'var(--accent)', marginBottom: '8px', display: 'block' }}>CALENDRIER ESTIMÉ</label>
+               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ textAlign: 'left' }}>
+                    <p style={{ fontSize: '11px', color: 'var(--faded)' }}>Sortie Usine</p>
+                    <p style={{ fontSize: '14px', fontWeight: 600 }}>{new Date(request.productionDeadline).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}</p>
+                  </div>
+                  <div style={{ height: '1px', flex: 1, background: 'var(--border)', margin: '0 12px', position: 'relative' }}>
+                    <div style={{ position: 'absolute', right: 0, top: '-3px', width: '6px', height: '6px', background: 'var(--border)', borderRadius: '50%' }}></div>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <p style={{ fontSize: '11px', color: 'var(--faded)' }}>Arrivée France</p>
+                    <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--success)' }}>{new Date(request.deliveryEstimation).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}</p>
+                  </div>
+               </div>
+            </div>
+          )}
           {request.status === 'MANAGER_REVIEW' && (
             <div className="row-item" style={{ padding: '16px' }}>
               <a 
