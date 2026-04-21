@@ -117,14 +117,11 @@ export default function SupplierPortal({ params }: { params: { token: string } }
   // SCENARIO 3: SHIPPED
   if (shippingSubmitted) {
     return (
-      <div className="layout">
-        <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="py-20 text-center flex flex-col items-center">
-          <PackageCheck size={64} className="text-green-500 mb-6" />
-          <h1 className="title mb-2">Shipment Confirmed</h1>
-          <p className="subtitle">The buyer has been notified of the FedEx tracking number.</p>
-          <div style={{ marginTop: '24px', padding: '12px 24px', background: 'rgba(34,197,94,0.1)', color: '#22c55e', borderRadius: '8px', fontWeight: 600}}>
-            {request.trackingNumber || trackingNumber}
-          </div>
+      <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '0 24px' }}>
+        <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}>
+          <CheckCircle size={64} className="text-green-500" style={{ margin: '0 auto 24px auto' }} />
+          <h1 className="title" style={{ fontSize: '24px', marginBottom: '8px' }}>Shipment Confirmed</h1>
+          <p className="subtitle">FedEx Tracking: {request.trackingNumber || trackingNumber}</p>
         </motion.div>
       </div>
     );
@@ -133,44 +130,43 @@ export default function SupplierPortal({ params }: { params: { token: string } }
   // SCENARIO 2: IN PRODUCTION -> Ask for tracking
   if (request.status === "IN_PRODUCTION" && request.acceptedTokenId === params.token) {
     return (
-      <div className="layout">
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ padding: '0px 0 48px 0', maxWidth: '100%', margin: '0 auto' }}>
-          <header style={{ padding: '32px 0 16px 0', border: 'none', marginBottom: 0, textAlign: 'center' }}>
-            <Truck size={48} color="var(--foreground)" style={{ margin: '0 auto 16px auto' }} />
-            <h1 className="title" style={{ fontSize: '1.5rem' }}>Production Phase Active</h1>
-            <p className="subtitle mt-2">When production is finished and packaged, please provide the FedEx Tracking Number below.</p>
-          </header>
+      <div style={{ padding: '40px 20px' }}>
+        <header style={{ textAlign: 'center', marginBottom: '32px' }}>
+          <Truck size={48} color="var(--accent)" style={{ margin: '0 auto 16px auto' }} />
+          <h1 className="title" style={{ fontSize: '24px' }}>Production Active</h1>
+          <p className="subtitle">Enter FedEx tracking number once shipped</p>
+        </header>
 
-          <form onSubmit={handleShippingSubmit} className="card" style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginTop: '24px' }}>
-            <div>
-              <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '8px', fontWeight: 600 }}>FedEx Tracking Number</label>
+        <form onSubmit={handleShippingSubmit}>
+          <div className="list-group">
+            <div className="row-item">
+              <label>FedEx Tracking Number</label>
               <input 
                 required 
                 type="text" 
                 value={trackingNumber} 
                 onChange={e => setTrackingNumber(e.target.value)} 
-                placeholder="e.g. 123456789012" 
-                style={{ fontSize: '1.1rem', letterSpacing: '1px' }}
+                placeholder="1234 5678 9012" 
+                style={{ fontSize: '24px', fontWeight: 600, textAlign: 'center', letterSpacing: '1px' }}
               />
             </div>
-            <button type="submit" className="btn" style={{ width: '100%', padding: '16px', fontSize: '1.1rem' }}>
-              Confirm Shipment
-            </button>
-          </form>
-        </motion.div>
+          </div>
+          <button type="submit" className="btn" style={{ width: '100%', padding: '18px' }}>
+            Confirm Shipment
+          </button>
+        </form>
       </div>
     );
   }
 
-  // SCENARIO 1.5: QUOTE ALREADY SUBMITTED & NOT ACCEPTED YET
+  // SCENARIO 1.5: QUOTE ALREADY SUBMITTED
   if (submitted) {
     return (
-      <div className="layout">
-        <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="py-20 text-center flex flex-col items-center">
-          <CheckCircle size={64} className="text-green-500 mb-6" />
-          <h1 className="title mb-2">Quote Submitted</h1>
-          <p className="subtitle">Thank you. The buyer will review your price and contact you shortly.</p>
-          <p className="text-sm text-faded mt-4 max-w-sm">If your quote is accepted, you will be able to return to this exact same link to provide the FedEx tracking number later.</p>
+      <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '0 24px' }}>
+        <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}>
+          <CheckCircle size={64} style={{ color: 'var(--success)', margin: '0 auto 24px auto' }} />
+          <h1 className="title" style={{ fontSize: '24px', marginBottom: '8px' }}>Quote Submitted</h1>
+          <p className="subtitle">Waiting for buyer review</p>
         </motion.div>
       </div>
     );
@@ -178,29 +174,31 @@ export default function SupplierPortal({ params }: { params: { token: string } }
 
   // SCENARIO 1: FIRST TIME QUOTE FORM
   return (
-    <div className="layout">
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ padding: '0 0 48px 0' }}>
-        <header style={{ paddingBottom: '32px', border: 'none', textAlign: 'center', marginBottom: 0 }}>
-          <h1 className="title" style={{ fontSize: '1.6rem', marginBottom: '8px' }}>{request.title}</h1>
-          <p className="subtitle" style={{ fontSize: '0.9rem' }}>Factory Quote Submission</p>
-        </header>
+    <div style={{ padding: '40px 0' }}>
+      <header style={{ textAlign: 'center', marginBottom: '32px', padding: '0 20px' }}>
+        <p style={{ fontSize: '12px', textTransform: 'uppercase', color: 'var(--faded)', fontWeight: 600, letterSpacing: '1px' }}>MANUFACTURING REVIEW</p>
+        <h1 className="title" style={{ fontSize: '28px', marginTop: '4px' }}>{request.title}</h1>
+      </header>
 
-        <div className="list-group" style={{ marginBottom: '24px', border: '1px solid var(--accent)', background: 'rgba(0, 122, 255, 0.05)' }}>
-          <div style={{ padding: '12px 16px 4px 16px', fontSize: '0.75rem', fontWeight: 600, color: 'var(--accent)' }}>SHIPPING DESTINATION (FRANCE)</div>
-          <div className="row-item" style={{ fontSize: '0.85rem', lineHeight: '1.4', padding: '0 16px 12px 16px', border: 'none' }}>
-            <strong>SACHA BENSADOUN (laisser chez TNT)</strong><br />
-            FedEx Express – Geispolsheim<br />
-            4 Rue des Imprimeurs, 67118 Geispolsheim, France<br />
-            Tel: +33 7 67 69 38 04
+      <div style={{ padding: '0 20px' }}>
+        <div className="list-group" style={{ background: 'rgba(0, 122, 255, 0.05)', border: '1px solid rgba(0, 122, 255, 0.1)' }}>
+          <div style={{ padding: '12px 16px 4px 16px', fontSize: '11px', fontWeight: 700, color: 'var(--accent)' }}>SHIP TO DESTINATION (FRANCE)</div>
+          <div className="row-item" style={{ border: 'none', background: 'transparent', paddingBottom: '16px' }}>
+            <p style={{ fontSize: '14px', lineHeight: '1.5', color: 'var(--foreground)', fontWeight: 500 }}>
+              <strong>SACHA BENSADOUN</strong><br />
+              FedEx Express – Geispolsheim<br />
+              4 Rue des Imprimeurs, 67118 Geispolsheim<br />
+              France
+            </p>
           </div>
         </div>
 
         {request.imageUrl && (
-          <div style={{ marginBottom: '24px' }}>
+          <div style={{ marginBottom: '32px', borderRadius: '16px', overflow: 'hidden', background: '#fff', border: '0.5px solid var(--separator)' }}>
             <img 
               src={request.imageUrl} 
               alt="Reference" 
-              style={{ width: '100%', borderRadius: 'var(--radius)', aspectRatio: '1/1', objectFit: 'cover' }} 
+              style={{ width: '100%', aspectRatio: '1/1', objectFit: 'contain' }} 
             />
           </div>
         )}
@@ -208,18 +206,18 @@ export default function SupplierPortal({ params }: { params: { token: string } }
         <form onSubmit={handleSubmitQuote}>
           <div className="list-group">
             <div className="row-item">
-              <label>Supplier Name</label>
-              <input required type="text" value={supplierName} onChange={e => setSupplierName(e.target.value)} placeholder="Factory A" />
+              <label>Factory Name</label>
+              <input required type="text" value={supplierName} onChange={e => setSupplierName(e.target.value)} placeholder="Enter factory ID" />
             </div>
           </div>
 
           <div className="list-group">
             <div className="row-item">
-              <label>Jewelry Price (¥)</label>
-              <input required type="number" step="0.01" value={priceRMB} onChange={e => setPriceRMB(e.target.value)} placeholder="0.00" />
+              <label>Jewelry Price (RMB ¥)</label>
+              <input required type="number" step="0.01" value={priceRMB} onChange={e => setPriceRMB(e.target.value)} placeholder="0.00" style={{ fontWeight: 600 }} />
             </div>
             <div className="row-item">
-              <label>FedEx Cost (¥)</label>
+              <label>Shipping Cost (RMB ¥)</label>
               <input required type="number" step="0.01" value={shippingCostRMB} onChange={e => setShippingCostRMB(e.target.value)} placeholder="0.00" />
             </div>
             <div className="row-item">
@@ -229,28 +227,28 @@ export default function SupplierPortal({ params }: { params: { token: string } }
           </div>
 
           <div className="list-group">
-            <div style={{ display: 'flex', borderBottom: '0.5px solid var(--border)' }}>
-              <div className="row-item" style={{ flex: 1, borderBottom: 'none', borderRight: '0.5px solid var(--border)' }}>
+            <div style={{ display: 'flex' }}>
+              <div className="row-item" style={{ flex: 1, borderRight: '0.5px solid var(--separator)' }}>
                 <label>Total Weight (g)</label>
-                <input required type="number" step="0.01" value={totalWeight} onChange={e => setTotalWeight(e.target.value)} placeholder="0.00" />
+                <input required type="number" step="0.1" value={totalWeight} onChange={e => setTotalWeight(e.target.value)} placeholder="0.0" />
               </div>
-              <div className="row-item" style={{ flex: 1, borderBottom: 'none' }}>
+              <div className="row-item" style={{ flex: 1 }}>
                 <label>Gold Weight (g)</label>
-                <input required type="number" step="0.01" value={goldWeight} onChange={e => setGoldWeight(e.target.value)} placeholder="0.00" />
+                <input required type="number" step="0.1" value={goldWeight} onChange={e => setGoldWeight(e.target.value)} placeholder="0.0" />
               </div>
             </div>
-            <div style={{ display: 'flex', borderBottom: '0.5px solid var(--border)' }}>
-              <div className="row-item" style={{ flex: 1, borderBottom: 'none', borderRight: '0.5px solid var(--border)' }}>
+            <div style={{ display: 'flex', borderTop: '0.5px solid var(--separator)' }}>
+              <div className="row-item" style={{ flex: 1, borderRight: '0.5px solid var(--separator)' }}>
                 <label>Diamond Count</label>
                 <input required type="number" value={diamondCount} onChange={e => setDiamondCount(e.target.value)} placeholder="0" />
               </div>
-              <div className="row-item" style={{ flex: 1, borderBottom: 'none' }}>
+              <div className="row-item" style={{ flex: 1 }}>
                 <label>Total Carat (ct)</label>
                 <input required type="number" step="0.01" value={totalCarat} onChange={e => setTotalCarat(e.target.value)} placeholder="0.00" />
               </div>
             </div>
-            <div className="row-item">
-              <label>Diamond Type</label>
+            <div className="row-item" style={{ borderTop: '0.5px solid var(--separator)' }}>
+              <label>Diamond Quality</label>
               <select value={diamondType} onChange={e => setDiamondType(e.target.value)}>
                 <option value="Lab Grown">Lab Grown (CVD/HPHT)</option>
                 <option value="Natural">Natural / Mined</option>
@@ -260,12 +258,11 @@ export default function SupplierPortal({ params }: { params: { token: string } }
             </div>
           </div>
 
-          <button type="submit" className="btn" style={{ width: '100%', marginTop: '8px' }}>
-            Submit Quote
+          <button type="submit" className="btn" style={{ width: '100%', padding: '18px', fontSize: '18px', marginBottom: '40px' }}>
+            Submit Performance Data
           </button>
         </form>
-      </motion.div>
+      </div>
     </div>
   );
-;
 }
