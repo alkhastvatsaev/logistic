@@ -16,6 +16,7 @@ export interface SupplierRequest {
   createdAt: number;
   productionDeadline?: number;
   size?: string;
+  imageUrl?: string;
 }
 
 export default function Dashboard() {
@@ -74,8 +75,8 @@ export default function Dashboard() {
     >
       <header style={{ paddingBottom: '20px', marginBottom: '24px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <h1 className="title" style={{ fontSize: '1.8rem', lineHeight: '1.1' }}>Reach</h1>
-          <p className="subtitle" style={{ fontSize: '0.85rem', marginTop: '4px' }}>Logistic Hub</p>
+          <h1 className="title" style={{ fontSize: '1.8rem', lineHeight: '1.1' }}>Logistics</h1>
+          <p className="subtitle" style={{ fontSize: '0.85rem', marginTop: '4px' }}>Overview</p>
         </div>
         <Link href="/requests/new" className="btn" style={{ padding: '10px 20px', fontSize: '0.9rem' }}>
           <Plus size={18} />
@@ -114,30 +115,43 @@ export default function Dashboard() {
                 href={`/requests/${req.id}`} 
                 className="card block" 
                 style={{ 
-                  padding: '16px', 
+                  padding: '12px', 
                   textDecoration: 'none',
-                  display: 'block',
+                  display: 'flex',
+                  gap: '12px',
+                  alignItems: 'center',
                   width: '100%'
                 }}
               >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <h3 style={{ fontWeight: 600, fontSize: '1.1rem', margin: 0 }}>{req.title}</h3>
-                  {getStatusIcon(req.status)}
-                </div>
-                <div style={{ marginTop: '8px', fontSize: '0.85rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                    <span style={{ 
-                      color: 'var(--faded)',
-                      fontWeight: 500
-                    }}>
-                      {req.status === 'WAITING_FOR_QUOTE' ? 'Waiting' : req.status.replace(/_/g, ' ')}
-                    </span>
-                    {req.size && (
-                      <span style={{ color: 'var(--faded)', opacity: 0.6 }}>• {req.size}</span>
-                    )}
+                {req.imageUrl ? (
+                  <img 
+                    src={req.imageUrl} 
+                    alt={req.title} 
+                    style={{ width: '50px', height: '50px', borderRadius: '8px', objectFit: 'cover' }} 
+                  />
+                ) : (
+                  <div style={{ width: '50px', height: '50px', borderRadius: '8px', background: 'var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Package size={20} color="var(--faded)" />
                   </div>
-                  <div style={{ textAlign: 'right' }}>
-                    {renderTimer(req)}
+                )}
+
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <h3 style={{ fontWeight: 600, fontSize: '1rem', margin: 0 }}>{req.title}</h3>
+                    {getStatusIcon(req.status)}
+                  </div>
+                  <div style={{ marginTop: '4px', fontSize: '0.8rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                      <span style={{ color: 'var(--faded)', fontWeight: 500 }}>
+                        {req.status === 'WAITING_FOR_QUOTE' ? 'Waiting' : req.status.replace(/_/g, ' ')}
+                      </span>
+                      {req.size && (
+                        <span style={{ color: 'var(--faded)', opacity: 0.6 }}>• {req.size}</span>
+                      )}
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      {renderTimer(req)}
+                    </div>
                   </div>
                 </div>
               </Link>
