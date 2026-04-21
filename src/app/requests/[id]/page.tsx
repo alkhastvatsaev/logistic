@@ -258,37 +258,55 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
              Current Status: {request.status.replace(/_/g, ' ')}
            </h3>
            
-           <div style={{ marginTop: '16px', display: 'flex', gap: '8px', justifyContent: 'center' }}>
-             {request.status === 'QUOTED' && (
-               <button className="btn" style={{ padding: '8px 16px', fontSize: '0.85rem' }} onClick={() => moveNextStep('MANAGER_REVIEW')}>
-                 Approve Choice (MIRZA)
-               </button>
-             )}
+           <div style={{ marginTop: '16px', display: 'flex', flexDirection: 'column', gap: '12px', alignItems: 'center', width: '100%' }}>
              {request.status === 'MANAGER_REVIEW' && (
-               <button className="btn" style={{ padding: '8px 16px', fontSize: '0.85rem' }} onClick={() => moveNextStep('WAITING_FOR_DEPOSIT')}>
-                 Confirm Client Deposit
-               </button>
+               <div style={{ width: '100%', padding: '0 20px' }}>
+                 <a 
+                   href={`https://wa.me/33607808501?text=${encodeURIComponent(`Bonjour Mirza, voici une nouvelle pièce à valider :\n\n${request.title}\n${window.location.origin}/review/${params.id}`)}`}
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   className="btn"
+                   style={{ width: '100%', background: '#25D366', border: 'none', color: '#fff', padding: '16px', fontSize: '1rem' }}
+                 >
+                   Envoyer à Mirza pour Validation (WhatsApp)
+                 </a>
+                 <p style={{ fontSize: '0.75rem', color: 'var(--faded)', marginTop: '8px', textAlign: 'center' }}>
+                   Mirza recevra un lien simplifié pour Valider ou Refuser la commande.
+                 </p>
+               </div>
              )}
-             {request.status === 'WAITING_FOR_DEPOSIT' && (
-               <button className="btn" style={{ padding: '8px 16px', fontSize: '0.85rem' }} onClick={() => moveNextStep('IN_PRODUCTION')}>
-                 Start Production
-               </button>
-             )}
-             {request.status === 'IN_PRODUCTION' && (
-               <button className="btn" style={{ padding: '8px 16px', fontSize: '0.85rem' }} onClick={() => moveNextStep('FINAL_PAYMENT')}>
-                 Production Finished
-               </button>
-             )}
-             {request.status === 'FINAL_PAYMENT' && (
-               <button className="btn" style={{ padding: '8px 16px', fontSize: '0.85rem' }} onClick={() => moveNextStep('SHIPPED')}>
-                 Confirm Final Payment & Shipping
-               </button>
-             )}
-             {request.status === 'SHIPPED' && (
-               <button className="btn" style={{ padding: '8px 16px', fontSize: '0.85rem', backgroundColor: '#34c759' }} onClick={() => moveNextStep('DELIVERED')}>
-                 Confirm Delivery
-               </button>
-             )}
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center' }}>
+                {request.status === 'QUOTED' && (
+                  <button className="btn" style={{ padding: '8px 16px', fontSize: '0.85rem' }} onClick={() => moveNextStep('MANAGER_REVIEW')}>
+                    Envoyer pour Validation (MIRZA)
+                  </button>
+                )}
+                {request.status === 'MANAGER_REVIEW' && (
+                  <button className="btn btn-ghost" style={{ padding: '8px 16px', fontSize: '0.85rem', border: '1px solid var(--border)' }} onClick={() => moveNextStep('WAITING_FOR_DEPOSIT')}>
+                    Passer à l'étape Paiement Acompte
+                  </button>
+                )}
+                {request.status === 'WAITING_FOR_DEPOSIT' && (
+                  <button className="btn" style={{ padding: '8px 16px', fontSize: '0.85rem' }} onClick={() => moveNextStep('IN_PRODUCTION')}>
+                    Dépôt Reçu (Lancer Production)
+                  </button>
+                )}
+                {request.status === 'IN_PRODUCTION' && (
+                  <button className="btn" style={{ padding: '8px 16px', fontSize: '0.85rem' }} onClick={() => moveNextStep('FINAL_PAYMENT')}>
+                    Production Terminée
+                  </button>
+                )}
+                {request.status === 'FINAL_PAYMENT' && (
+                  <button className="btn" style={{ padding: '8px 16px', fontSize: '0.85rem' }} onClick={() => moveNextStep('SHIPPED')}>
+                    Solde Reçu (Prêt à Expédier)
+                  </button>
+                )}
+                 {request.status === 'SHIPPED' && (
+                  <button className="btn" style={{ padding: '8px 16px', fontSize: '0.85rem', backgroundColor: '#34c759' }} onClick={() => moveNextStep('DELIVERED')}>
+                    Confirmer Réception Finale
+                  </button>
+                )}
+              </div>
              {!isLocked && request.status !== 'QUOTED' && request.status !== 'DELIVERED' && (
                 <button className="btn btn-ghost" onClick={generateSupplierLink} disabled={generatingLink} style={{ padding: '8px 16px', fontSize: '0.85rem' }}>
                   {generatingLink ? <span className="animate-spin">⟳</span> : <Share size={18} />}
