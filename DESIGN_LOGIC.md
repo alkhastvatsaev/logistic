@@ -18,3 +18,12 @@
 ## 4. Composants
 - **Inputs** : Pas de bordures sur 4 côtés. Intégrés dans les lignes de liste ou très discrets.
 - **Boutons** : Format "Pill" ou rectangle avec arrondis de 12px. Pas d'ombres portées agressives.
+
+## 5. Workflow Étendu
+- WAITING_FOR_QUOTE : Attente des prix usine.
+- MANAGER_REVIEW : Mirza doit valider le prix et la qualité.
+- WAITING_FOR_DEPOSIT : Attente du paiement de l'acompte client.
+- IN_PRODUCTION : Validation usine et début fabrication.
+- FINAL_PAYMENT : Production finie, attente du reste du paiement.
+- SHIPPED : Expédié via FedEx.
+- DELIVERED : Livraison confirmée.
