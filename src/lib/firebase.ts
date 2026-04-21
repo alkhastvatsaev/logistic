@@ -24,4 +24,20 @@ if (typeof window !== "undefined" && auth) {
   signInAnonymously(auth).catch(err => console.log("Auth wait:", err.message));
 }
 
+export const waitForAuth = () => {
+  return new Promise((resolve) => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      if (user) {
+        resolve(user);
+        unsubscribe();
+      }
+    });
+    // Timeout after 3 seconds if no auth
+    setTimeout(() => {
+      resolve(null);
+      unsubscribe();
+    }, 3000);
+  });
+};
+
 export { app, db, storage, auth };

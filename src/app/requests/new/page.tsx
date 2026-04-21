@@ -7,7 +7,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { collection, addDoc } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { db, storage } from "@/lib/firebase";
+import { db, storage, waitForAuth } from "@/lib/firebase";
 
 export default function NewRequest() {
   const router = useRouter();
@@ -23,6 +23,9 @@ export default function NewRequest() {
     const timeout = (ms: number) => new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout: Firebase is taking too long to respond. Check your connection or Firebase rules.")), ms));
 
     try {
+      console.log("Waiting for auth...");
+      await waitForAuth();
+      
       console.log("Starting submission for:", title);
       let imageUrl = "";
       
@@ -118,17 +121,41 @@ export default function NewRequest() {
               flexDirection: 'column', 
               alignItems: 'center', 
               justifyContent: 'center',
-              border: '1px dashed var(--faded)', 
+              border: file ? '1.5px solid var(--accent)' : '1px dashed var(--faded)', 
               borderRadius: 'var(--radius)', 
-              padding: '48px',
+              padding: file ? '12px' : '48px',
               cursor: 'pointer',
+              overflow: 'hidden',
               transition: 'all 0.2s ease',
-              backgroundColor: file ? 'rgba(255,255,255,0.05)' : 'transparent'
+              backgroundColor: 'rgba(255,255,255,0.02)',
+              position: 'relative'
             }}>
-              <UploadCloud size={32} color={file ? "var(--foreground)" : "var(--faded)"} style={{ marginBottom: '12px' }}/>
-              <span style={{ color: file ? 'var(--foreground)' : 'var(--faded)' }}>
-                {file ? file.name : "Click to upload an image"}
-              </span>
+              {file ? (
+                <div style={{ width: '100%', textAlign: 'center' }}>
+                  <img 
+                    src={URL.createObjectURL(file)} 
+                    alt="Preview" 
+                    style={{ 
+                      width: '100%', 
+                      height: 'auto', 
+                      maxHeight: '300px', 
+                      objectFit: 'cover', 
+                      borderRadius: '8px',
+                      display: 'block'
+                    }} 
+                  />
+                  <div style={{ marginTop: '12px', fontSize: '0.8rem', color: 'var(--faded)' }}>
+                    {file.name} (Click to change)
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <UploadCloud size={32} color="var(--faded)" style={{ marginBottom: '12px' }}/>
+                  <span style={{ color: 'var(--faded)' }}>
+                    Click to upload a reference photo
+                  </span>
+                </>
+              )}
               <input 
                 type="file" 
                 accept="image/*" 
