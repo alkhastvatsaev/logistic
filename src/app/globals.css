@@ -1,33 +1,31 @@
 :root {
-  --background-raw: 245, 245, 247;
+  /* Apple System Colors - Strict HIG */
+  --background: #F2F2F7;
+  --secondary-bg: #FFFFFF;
   --foreground: #000000;
+  
   --accent: #007AFF;
   --success: #34C759;
   --danger: #FF3B30;
   --warning: #FF9500;
   
-  /* GLASSMORPHISM 2026 */
-  --glass-bg: rgba(255, 255, 255, 0.65);
-  --glass-border: rgba(255, 255, 255, 0.4);
-  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.05);
-  
-  --radius-lg: 32px;
-  --radius-md: 24px;
-  --radius-sm: 12px;
-  
-  --faded: rgba(0, 0, 0, 0.5);
-  --separator: rgba(0, 0, 0, 0.08);
+  --faded: rgba(60, 60, 67, 0.6);
+  --separator: rgba(60, 60, 67, 0.29); /* Hairline border */
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background-raw: 0, 0, 0;
+    --background: #000000;
+    --secondary-bg: #1C1C1E;
     --foreground: #FFFFFF;
-    --glass-bg: rgba(28, 28, 30, 0.65);
-    --glass-border: rgba(255, 255, 255, 0.1);
-    --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
-    --faded: rgba(255, 255, 255, 0.5);
-    --separator: rgba(255, 255, 255, 0.1);
+    
+    --accent: #0A84FF;
+    --success: #32D74B;
+    --danger: #FF453A;
+    --warning: #FF9F0A;
+    
+    --faded: rgba(235, 235, 245, 0.6);
+    --separator: rgba(84, 84, 88, 0.65);
   }
 }
 
@@ -41,51 +39,36 @@ body {
   margin: 0;
   padding: 0;
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", sans-serif;
-  background: rgb(var(--background-raw));
+  background: var(--background);
   color: var(--foreground);
   overflow-x: hidden;
-  /* MESH GRADIENT MOTHERSHIP */
-  background-image: 
-    radial-gradient(at 0% 0%, hsla(210, 100%, 90%, 0.4) 0px, transparent 50%),
-    radial-gradient(at 100% 0%, hsla(280, 100%, 95%, 0.3) 0px, transparent 50%),
-    radial-gradient(at 100% 100%, hsla(200, 100%, 90%, 0.4) 0px, transparent 50%),
-    radial-gradient(at 0% 100%, hsla(320, 100%, 95%, 0.3) 0px, transparent 50%);
-  background-attachment: fixed;
   min-height: 100vh;
-}
-
-@media (prefers-color-scheme: dark) {
-  body {
-    background-image: 
-      radial-gradient(at 0% 0%, hsla(210, 100%, 15%, 0.3) 0px, transparent 50%),
-      radial-gradient(at 100% 0%, hsla(280, 100%, 10%, 0.2) 0px, transparent 50%);
-  }
 }
 
 .layout {
   max-width: 500px;
   margin: 0 auto;
-  padding: 0 20px;
+  padding: 0px; 
 }
 
-/* 2026 FLOATING GLASS GROUP */
+/* 
+  APPLE INSET GROUPED PATTERN
+  The cornerstone of true iOS design.
+*/
 .list-group {
-  background: var(--glass-bg);
-  backdrop-filter: blur(30px) saturate(180%);
-  -webkit-backdrop-filter: blur(30px) saturate(180%);
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--glass-border);
-  box-shadow: var(--glass-shadow);
-  margin-bottom: 24px;
+  background: var(--secondary-bg);
+  border-radius: 10px;
+  margin: 0 16px 24px 16px;
   overflow: hidden;
 }
 
 .row-item {
   display: flex;
   flex-direction: column;
-  padding: 20px;
-  border-bottom: 1px solid var(--separator);
-  transition: background 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 12px 16px;
+  border-bottom: 0.5px solid var(--separator);
+  transition: background 0.15s ease;
+  min-height: 44px; /* Minimum Apple touch target */
 }
 
 .row-item:last-child {
@@ -93,7 +76,7 @@ body {
 }
 
 .row-item:active {
-  background: rgba(0, 0, 0, 0.05);
+  background: rgba(0, 0, 0, 0.05); /* Native tap highlight */
 }
 
 @media (prefers-color-scheme: dark) {
@@ -102,96 +85,73 @@ body {
   }
 }
 
+/* TYPOGRAPHY */
 h1.title {
-  font-size: 38px;
-  font-weight: 800;
-  letter-spacing: -1px;
+  font-size: 34px;
+  font-weight: 700;
+  letter-spacing: -0.8px;
   margin: 0 0 4px 0;
-  background: linear-gradient(to bottom right, var(--foreground) 60%, var(--faded));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: var(--foreground);
 }
 
 .subtitle {
-  font-size: 17px;
-  font-weight: 500;
+  font-size: 15px;
+  font-weight: 400;
   color: var(--faded);
   margin: 0;
 }
 
 label {
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 400;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
   color: var(--faded);
-  margin-bottom: 8px;
+  margin-bottom: 4px;
   display: block;
 }
 
+/* INPUTS (NATIVE FEEL) */
 input, select, textarea {
   width: 100%;
-  background: rgba(0, 0, 0, 0.04);
+  background: transparent;
   border: none;
-  border-radius: var(--radius-sm);
-  padding: 14px;
+  padding: 8px 0;
   font-size: 17px;
   font-family: inherit;
   color: var(--foreground);
-  transition: all 0.2s ease;
-}
-
-@media (prefers-color-scheme: dark) {
-  input, select, textarea {
-    background: rgba(255, 255, 255, 0.05);
-  }
 }
 
 input:focus {
   outline: none;
-  background: rgba(0, 0, 0, 0.08);
-  box-shadow: 0 0 0 2px var(--accent);
 }
 
+/* NATIVE SYSTEM BUTTONS */
 .btn {
   background: var(--accent);
   color: white;
   border: none;
-  border-radius: var(--radius-md);
-  padding: 16px 24px;
-  font-size: 16px;
-  font-weight: 700;
+  border-radius: 10px; /* Standard iOS button radius */
+  padding: 14px 20px;
+  font-size: 17px;
+  font-weight: 600;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 8px 20px rgba(0, 122, 255, 0.25);
+  gap: 8px;
+  transition: opacity 0.2s ease;
 }
 
 .btn:active {
-  transform: scale(0.96);
-  opacity: 0.9;
+  opacity: 0.7;
 }
 
 .btn-ghost {
-  background: var(--glass-bg);
+  background: transparent;
   color: var(--accent);
-  box-shadow: none;
-  border: 1px solid var(--glass-border);
 }
 
-.card {
-  background: var(--glass-bg);
-  backdrop-filter: blur(24px) saturate(180%);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
-  border-radius: var(--radius-lg);
-  padding: 24px;
-  border: 1px solid var(--glass-border);
-  box-shadow: var(--glass-shadow);
-}
-
+/* ANIMATIONS */
 .animate-pulse {
   animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }

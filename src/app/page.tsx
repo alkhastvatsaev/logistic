@@ -80,34 +80,28 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="layout" style={{ paddingTop: '40px' }}>
-      <header style={{ marginBottom: '32px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+    <div className="layout" style={{ paddingTop: '24px' }}>
+      <header style={{ marginBottom: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', padding: '0 16px' }}>
         <div>
           <h1 className="title">Logistique</h1>
-          <p className="subtitle">Aujourd'hui</p>
         </div>
         <Link href="/requests/new" style={{ 
-          background: 'var(--accent)', 
-          color: '#fff', 
-          width: '50px', 
-          height: '50px', 
-          borderRadius: '50%', 
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: 'center',
-          boxShadow: '0 10px 20px rgba(0, 122, 255, 0.3)',
-          textDecoration: 'none'
+          color: 'var(--accent)', 
+          textDecoration: 'none',
+          fontWeight: 600,
+          fontSize: '17px',
+          paddingBottom: '4px'
         }}>
-          <Plus size={28} />
+          Nouveau
         </Link>
       </header>
 
-      {/* FILTER BAR 2026 */}
+      {/* SEGMENTED CONTROL NATIVE */}
       <div style={{ 
         display: 'flex', 
-        gap: '12px', 
+        gap: '4px', 
         overflowX: 'auto', 
-        paddingBottom: '24px',
+        padding: '0 16px 20px 16px',
         scrollbarWidth: 'none',
       }}>
         {filterOptions.map((opt) => (
@@ -115,17 +109,15 @@ export default function Dashboard() {
             key={opt.value}
             onClick={() => setFilter(opt.value)}
             style={{
-              padding: '10px 20px',
-              borderRadius: '24px',
+              padding: '6px 14px',
+              borderRadius: '14px',
               border: 'none',
-              fontSize: '15px',
-              fontWeight: 700,
+              fontSize: '14px',
+              fontWeight: 500,
               whiteSpace: 'nowrap',
-              background: filter === opt.value ? 'var(--foreground)' : 'var(--glass-bg)',
+              background: filter === opt.value ? 'var(--foreground)' : 'rgba(120, 120, 128, 0.12)',
               color: filter === opt.value ? 'var(--background)' : 'var(--foreground)',
-              backdropFilter: 'blur(10px)',
-              boxShadow: filter === opt.value ? '0 8px 16px rgba(0,0,0,0.1)' : 'none',
-              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+              transition: 'all 0.2s ease-out'
             }}
           >
             {opt.label === 'All' ? 'Tous' : opt.label}
@@ -134,32 +126,37 @@ export default function Dashboard() {
       </div>
 
       {loading ? (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <div style={{ padding: '0 16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
           {[1, 2, 3].map(i => (
-            <div key={i} className="list-group animate-pulse" style={{ height: '100px', opacity: 0.3 }}></div>
+            <div key={i} className="list-group animate-pulse" style={{ height: '70px', opacity: 0.3, margin: 0 }}></div>
           ))}
         </div>
+      ) : requests.filter(r => filter === 'ALL' || r.status === filter).length === 0 ? (
+        <div style={{ padding: '40px 20px', textAlign: 'center', color: 'var(--faded)' }}>
+          <Package size={32} style={{ margin: '0 auto 12px auto', opacity: 0.5 }} />
+          <p style={{ fontSize: '15px' }}>Aucun projet en cours.</p>
+        </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+        <div className="list-group">
           {requests
             .filter(r => filter === 'ALL' || r.status === filter)
             .map((req, i) => (
               <motion.div 
                 key={req.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.05, type: 'spring', damping: 20 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.2 }}
               >
                 <Link 
                   href={`/requests/${req.id}`} 
-                  className="list-group"
+                  className="row-item"
                   style={{ 
                     textDecoration: 'none',
                     display: 'flex',
+                    flexDirection: 'row',
                     alignItems: 'center',
-                    padding: '20px',
-                    gap: '20px',
-                    marginBottom: 0
+                    padding: '12px 16px',
+                    gap: '12px',
                   }}
                 >
                   <div style={{ position: 'relative' }}>
@@ -167,44 +164,28 @@ export default function Dashboard() {
                       <img 
                         src={req.imageUrl} 
                         alt={req.title} 
-                        style={{ width: '80px', height: '80px', borderRadius: '18px', objectFit: 'cover', boxShadow: '0 8px 16px rgba(0,0,0,0.1)' }} 
+                        style={{ width: '48px', height: '48px', borderRadius: '8px', objectFit: 'cover' }} 
                       />
                     ) : (
-                      <div style={{ width: '80px', height: '80px', borderRadius: '18px', background: 'var(--background)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <Package size={32} color="var(--separator)" />
+                      <div style={{ width: '48px', height: '48px', borderRadius: '8px', background: 'rgba(120, 120, 128, 0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <Package size={20} color="var(--faded)" />
                       </div>
                     )}
-                    <div style={{ 
-                      position: 'absolute', 
-                      bottom: '-6px', 
-                      right: '-6px', 
-                      background: '#fff', 
-                      borderRadius: '50%', 
-                      padding: '4px',
-                      boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
-                      display: 'flex'
-                    }}>
-                       {getStatusIcon(req.status)}
-                    </div>
                   </div>
 
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <h3 style={{ fontWeight: 700, fontSize: '19px', margin: 0, color: 'var(--foreground)', letterSpacing: '-0.4px' }}>
-                      {req.title}
-                    </h3>
-                    <div style={{ marginTop: '6px', fontSize: '14px', fontWeight: 500, color: 'var(--faded)', display: 'flex', justifyContent: 'space-between' }}>
-                       <span>{req.size ? `Taille ${req.size}` : 'Standard'}</span>
-                       {renderTimeline(req)}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                       <h3 style={{ fontWeight: 600, fontSize: '17px', margin: 0, color: 'var(--foreground)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                         {req.title}
+                       </h3>
+                       <div style={{ fontSize: '13px', color: 'var(--faded)', whiteSpace: 'nowrap', marginLeft: '8px' }}>
+                          {renderTimeline(req)}
+                       </div>
                     </div>
-                    <div style={{ 
-                      marginTop: '10px', 
-                      fontSize: '11px', 
-                      fontWeight: 800, 
-                      textTransform: 'uppercase', 
-                      color: 'var(--accent)',
-                      letterSpacing: '0.5px'
-                    }}>
-                      {req.status.replace(/_/g, ' ')}
+                    
+                    <div style={{ marginTop: '2px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                       <p style={{ fontSize: '14px', margin: 0, color: 'var(--faded)' }}>{req.size ? `Taille ${req.size}` : 'Standard'}</p>
+                       <p style={{ fontSize: '13px', margin: 0, color: 'var(--faded)' }}>{req.status.replace(/_/g, ' ')}</p>
                     </div>
                   </div>
                 </Link>
