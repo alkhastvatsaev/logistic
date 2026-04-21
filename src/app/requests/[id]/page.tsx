@@ -36,6 +36,9 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
   const [paymentReceipt, setPaymentReceipt] = useState("");
   const [payments, setPayments] = useState<any[]>([]);
   const [isUploadingReceipt, setIsUploadingReceipt] = useState(false);
+  const [sellingPrice, setSellingPrice] = useState("");
+
+  const EUR_RMB_RATE = 0.13;
 
   const sizeOptions = Array.from({ length: 15 }, (_, i) => (49 + i).toString())
     .concat(Array.from({ length: 9 }, (_, i) => (14 + i).toString() + " cm"))
@@ -48,6 +51,7 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
       if (data) {
         setRequest({ id: params.id, ...data });
         if (data.trackingNumber) setTrackingNumber(data.trackingNumber);
+        if (data.sellingPrice) setSellingPrice(data.sellingPrice.toString());
       }
     });
 
@@ -76,6 +80,27 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
 
     return () => { unsubsRequest(); unsubsQuotes(); unsubsPay(); };
   }, [params.id]);
+
+  const updateSellingPrice = async () => {
+    try {
+      await update(rtdbRef(rtdb, `requests/${params.id}`), { sellingPrice: parseFloat(sellingPrice) });
+      alert("Prix de vente enregistré");
+    } catch (e) { alert("Erreur"); }
+  };
+
+  const getFinancialTotals = () => {
+    const acceptedQuote = quotes.find(q => q.id === request?.acceptedQuoteId);
+    if (!acceptedQuote) return null;
+
+    const costRMB = (parseFloat(acceptedQuote.priceRMB.toString()) || 0) + (parseFloat(acceptedQuote.shippingCostRMB.toString()) || 0);
+    const costEUR = costRMB * EUR_RMB_RATE;
+    const sPrice = parseFloat(sellingPrice) || 0;
+    const profit = sPrice - costEUR;
+    const paid = payments.reduce((acc, p) => acc + (parseFloat(p.amount) || 0), 0);
+    const balance = sPrice - paid;
+
+    return { costEUR, sPrice, profit, paid, balance };
+  };
 
   const generateSupplierLink = async () => {
     setGeneratingLink(true);
@@ -155,8 +180,12 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
     } catch (e) { alert("Erreur paiement"); }
   };
 
-  if (loading) return <div className="layout py-20 text-center">Chargement...</div>;
+  if (loading) return <div className="layout py-20 text-center animate-pulse">Chargement...</div>;
   if (!request) return <div className="layout py-20 text-center">Projet non trouvé.</div>;
+
+  const generatePDF = (type: 'QUOTE' | 'INVOICE') => {
+    alert(`Génération du ${type === 'QUOTE' ? 'Devis (Mirza)' : 'Recap Facture (Interne)'} en cours...`);
+  };
 
   return (
     <div style={{ padding: '20px 0 60px 0' }}>
@@ -186,19 +215,17 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
         <p style={{ padding: '0 16px 8px 16px', fontSize: '13px', color: 'var(--faded)', fontWeight: 600 }}>GESTION & VALIDATION</p>
         <div className="list-group">
           {request.deliveryEstimation && (
-            <div className="row-item" style={{ background: 'var(--background)', margin: '12px 16px', borderRadius: '12px', border: 'none' }}>
+            <div className="row-item" style={{ background: 'rgba(0, 122, 255, 0.05)', margin: '12px 16px', borderRadius: '12px', border: 'none' }}>
                <label style={{ color: 'var(--accent)', marginBottom: '8px', display: 'block' }}>CALENDRIER ESTIMÉ</label>
                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div style={{ textAlign: 'left' }}>
                     <p style={{ fontSize: '11px', color: 'var(--faded)' }}>Sortie Usine</p>
-                    <p style={{ fontSize: '14px', fontWeight: 600 }}>{new Date(request.productionDeadline).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}</p>
+                    <p style={{ fontSize: '12px', fontWeight: 600 }}>{new Date(request.productionDeadline).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}</p>
                   </div>
-                  <div style={{ height: '1px', flex: 1, background: 'var(--border)', margin: '0 12px', position: 'relative' }}>
-                    <div style={{ position: 'absolute', right: 0, top: '-3px', width: '6px', height: '6px', background: 'var(--border)', borderRadius: '50%' }}></div>
-                  </div>
+                  <div style={{ height: '1px', flex: 1, background: 'var(--border)', margin: '0 12px' }}></div>
                   <div style={{ textAlign: 'right' }}>
                     <p style={{ fontSize: '11px', color: 'var(--faded)' }}>Arrivée France</p>
-                    <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--success)' }}>{new Date(request.deliveryEstimation).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}</p>
+                    <p style={{ fontSize: '12px', fontWeight: 600, color: 'var(--success)' }}>{new Date(request.deliveryEstimation).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}</p>
                   </div>
                </div>
             </div>
@@ -229,6 +256,76 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
         </div>
       </div>
 
+      {/* SECTION 5: FINANCES & PROFITS */}
+      <div style={{ marginTop: '32px' }}>
+        <p style={{ padding: '0 16px 8px 16px', fontSize: '13px', color: 'var(--faded)', fontWeight: 600 }}>FINANCES & PROFITS</p>
+        <div className="list-group">
+          {/* PRIX DE VENTE */}
+          <div className="row-item">
+            <label>Prix de Vente Client (€)</label>
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: '8px' }}>
+               <input type="number" value={sellingPrice} onChange={e => setSellingPrice(e.target.value)} placeholder="0.00" style={{ fontSize: '24px', fontWeight: 700, flex: 1 }} />
+               <button className="btn btn-ghost" onClick={updateSellingPrice} style={{ padding: '8px' }}><Save size={20} /></button>
+            </div>
+          </div>
+
+          {/* BILAN SI DEVIS ACCEPTE */}
+          {getFinancialTotals() && (
+            <div style={{ padding: '16px', background: 'var(--background)', margin: '12px 16px', borderRadius: '12px' }}>
+               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                  <div>
+                    <label style={{ fontSize: '11px' }}>Profit Net</label>
+                    <p style={{ fontSize: '18px', fontWeight: 700, color: 'var(--success)' }}>{getFinancialTotals()?.profit.toFixed(2)} €</p>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <label style={{ fontSize: '11px' }}>Part/pers (50%)</label>
+                    <p style={{ fontSize: '18px', fontWeight: 700, color: 'var(--accent)' }}>{(getFinancialTotals()?.profit! / 2).toFixed(2)} €</p>
+                  </div>
+               </div>
+               <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: '0.5px solid var(--separator)', fontSize: '13px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                    <span style={{ color: 'var(--faded)' }}>Cout Revient (Usine+DHL)</span>
+                    <span>{getFinancialTotals()?.costEUR.toFixed(2)} €</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                    <span style={{ color: 'var(--faded)' }}>Acompte Versé</span>
+                    <span style={{ color: 'var(--success)', fontWeight: 600 }}>{getFinancialTotals()?.paid.toFixed(2)} €</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 700, marginTop: '8px' }}>
+                    <span>Reste à Payer</span>
+                    <span style={{ color: getFinancialTotals()?.balance! <= 0 ? 'var(--success)' : 'var(--danger)' }}>
+                      {getFinancialTotals()?.balance! <= 0 ? "SOLDE OK ✓" : `${getFinancialTotals()?.balance.toFixed(2)} €`}
+                    </span>
+                  </div>
+               </div>
+            </div>
+          )}
+
+          {/* AJOUT PAIEMENT */}
+          <div className="row-item" style={{ borderTop: '0.5px solid var(--separator)' }}>
+             <label>Nouveau Versement (€)</label>
+             <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-end', marginTop: '8px' }}>
+                <input type="number" value={paymentAmount} onChange={e => setPaymentAmount(e.target.value)} placeholder="0.00" style={{ flex: 1, fontWeight: 600 }} />
+                <label style={{ padding: '8px 12px', background: paymentReceipt ? 'var(--success)' : 'var(--background)', borderRadius: '10px', fontSize: '12px', color: paymentReceipt ? '#fff' : 'var(--accent)', cursor: 'pointer' }}>
+                   {isUploadingReceipt ? '...' : paymentReceipt ? 'MÉMO ✓' : '+ REÇU'}
+                   <input type="file" hidden accept="image/*" onChange={handleReceiptUpload} />
+                </label>
+             </div>
+             <button className="btn" style={{ marginTop: '16px', width: '100%', background: 'var(--accent)' }} disabled={!paymentAmount || !paymentReceipt} onClick={saveRIAPayment}>Enregistrer le paiement</button>
+          </div>
+
+          {/* DOCUMENTS PDF */}
+          <div style={{ padding: '16px', display: 'flex', gap: '8px' }}>
+             <button className="btn btn-ghost" style={{ flex: 1, fontSize: '13px', background: 'var(--secondary-bg)' }} onClick={() => generatePDF('QUOTE')}>
+                Devis PDF
+             </button>
+             <button className="btn btn-ghost" style={{ flex: 1, fontSize: '13px', background: 'var(--secondary-bg)' }} onClick={() => generatePDF('INVOICE')}>
+                Facture Recap
+             </button>
+          </div>
+        </div>
+      </div>
+
       {/* SECTION 3: USINES & DEVIS */}
       <div style={{ marginTop: '32px' }}>
         <p style={{ padding: '0 16px 8px 16px', fontSize: '13px', color: 'var(--faded)', fontWeight: 600 }}>USINES & DEVIS</p>
@@ -245,7 +342,7 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
                 <div style={{ flex: 1 }}>
                   <h4 style={{ fontWeight: 600, fontSize: '16px' }}>{q.supplierName}</h4>
                   <p style={{ fontSize: '13px', color: 'var(--faded)', marginTop: '2px' }}>Or: {q.goldWeight}g • Tot: {q.totalWeight}g • {q.productionTimeDays}j</p>
-                  <p style={{ fontSize: '13px', color: 'var(--faded)' }}>Diam : {q.diamondCount} ({q.totalCarat}ct)</p>
+                  <p style={{ fontSize: '13px', color: 'var(--faded)' }}>Diam : {q.diamondCount} ({q.totalCarat}ct) {q.diamondType}</p>
                 </div>
                 <div style={{ textAlign: 'right' }}>
                   <div style={{ fontSize: '18px', fontWeight: 700 }}>¥{q.priceRMB}</div>
@@ -284,30 +381,6 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
               <a href={`https://www.fedex.com/fedextrack/?trknbr=${request.trackingNumber}`} target="_blank" className="btn btn-ghost" style={{ width: '100%', fontSize: '14px', background: 'var(--background)', borderRadius: 0 }}>Ouvrir le suivi FedEx</a>
             </div>
           )}
-        </div>
-      </div>
-
-      {/* SECTION 5: FINANCE (RIA) */}
-      <div style={{ marginTop: '32px' }}>
-        <p style={{ padding: '0 16px 8px 16px', fontSize: '13px', color: 'var(--faded)', fontWeight: 600 }}>FINANCE (RIA -> ALIPAY)</p>
-        <div className="list-group">
-          <div className="row-item">
-            <label>Enregistrer un transfert (€)</label>
-            <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-end', marginTop: '8px' }}>
-              <input type="number" value={paymentAmount} onChange={e => setPaymentAmount(e.target.value)} placeholder="0.00" style={{ fontSize: '24px', fontWeight: 700, flex: 1 }} />
-              <label style={{ padding: '8px 12px', background: paymentReceipt ? 'var(--success)' : 'var(--background)', borderRadius: '10px', fontSize: '12px', color: paymentReceipt ? '#fff' : 'var(--accent)', cursor: 'pointer' }}>
-                {isUploadingReceipt ? '...' : paymentReceipt ? 'OK ✓' : '+ PHOTO'}
-                <input type="file" hidden accept="image/*" onChange={handleReceiptUpload} />
-              </label>
-            </div>
-            <button className="btn" style={{ marginTop: '16px', width: '100%' }} disabled={!paymentAmount || !paymentReceipt} onClick={saveRIAPayment}>Enregistrer</button>
-          </div>
-          {payments.length > 0 && payments.map((p, idx) => (
-            <div key={idx} className="row-item" style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div><span style={{ fontWeight: 600 }}>{p.amount} €</span><span style={{ fontSize: '11px', color: 'var(--faded)', marginLeft: '8px' }}>{new Date(p.createdAt).toLocaleDateString()}</span></div>
-              {p.receiptUrl && <a href={p.receiptUrl} target="_blank" style={{ fontSize: '13px', color: 'var(--accent)', fontWeight: 600, textDecoration: 'none' }}>Reçu</a>}
-            </div>
-          ))}
         </div>
       </div>
 
