@@ -105,11 +105,18 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
       });
       
       const link = `${window.location.origin}/q/${newTokenRef.key}`;
-      await navigator.clipboard.writeText(link);
+      
+      try {
+        await navigator.clipboard.writeText(link);
+      } catch (clipErr) {
+        console.warn("Clipboard access denied, link generated anyway");
+      }
+      
       setCopiedLink(link);
       setTimeout(() => setCopiedLink(""), 4000);
-    } catch (e) {
-      alert("Failed to generate link");
+    } catch (e: any) {
+      console.error("Link Gen Error:", e);
+      alert(`Failed to generate link: ${e.message}`);
     } finally {
       setGeneratingLink(false);
     }
