@@ -233,7 +233,7 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
           {request.status === 'MANAGER_REVIEW' && (
             <div className="row-item" style={{ padding: '16px' }}>
               <a 
-                href={`https://wa.me/33607808501?text=${encodeURIComponent(`Bonjour Mirza, voici une nouvelle pièce à valider :\n\n${request.title}\n${window.location.origin}/review/${params.id}`)}`}
+                href={`https://wa.me/33607808501?text=${encodeURIComponent(`Validation pour ${request.title} en taille ${request.size}\n${window.location.origin}/review/${params.id}`)}`}
                 target="_blank" rel="noopener noreferrer" className="btn" style={{ width: '100%', background: '#25D366', border: 'none' }}
               >
                 Envoyer à Mirza (WhatsApp)
