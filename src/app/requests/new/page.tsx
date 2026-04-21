@@ -11,8 +11,15 @@ export default function NewRequest() {
   const router = useRouter();
   const [title, setTitle] = useState("");
   const [file, setFile] = useState<File | null>(null);
-  const [size, setSize] = useState("");
+  const [category, setCategory] = useState<"Ring" | "Bracelet" | "Necklace">("Ring");
+  const [size, setSize] = useState("52");
   const [loading, setLoading] = useState(false);
+
+  const sizeOptions = {
+    Ring: Array.from({ length: 15 }, (_, i) => (49 + i).toString()),
+    Bracelet: Array.from({ length: 9 }, (_, i) => (14 + i).toString() + " cm"),
+    Necklace: ["38 cm", "40 cm", "42 cm", "45 cm", "50 cm", "55 cm", "60 cm", "70 cm", "80 cm"]
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -93,13 +100,30 @@ export default function NewRequest() {
               />
             </div>
             <div className="row-item">
+              <label>Jewelry Type</label>
+              <select 
+                value={category}
+                onChange={(e) => {
+                  const cat = e.target.value as any;
+                  setCategory(cat);
+                  setSize(sizeOptions[cat as keyof typeof sizeOptions][0]);
+                }}
+              >
+                <option value="Ring">Ring (Bague)</option>
+                <option value="Bracelet">Bracelet</option>
+                <option value="Necklace">Necklace (Collier)</option>
+              </select>
+            </div>
+            <div className="row-item">
               <label>Size / Dimensions</label>
-              <input 
-                type="text" 
-                placeholder="e.g. 54 or 18cm" 
+              <select 
                 value={size}
                 onChange={(e) => setSize(e.target.value)}
-              />
+              >
+                {sizeOptions[category].map(s => (
+                  <option key={s} value={s}>{s}</option>
+                ))}
+              </select>
             </div>
           </div>
 

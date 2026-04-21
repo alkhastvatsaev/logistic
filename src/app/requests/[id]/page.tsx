@@ -33,6 +33,13 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
   const [copiedLink, setCopiedLink] = useState("");
   const [isEditingSize, setIsEditingSize] = useState(false);
   const [newSize, setNewSize] = useState("");
+  const [newCategory, setNewCategory] = useState<"Ring" | "Bracelet" | "Necklace">("Ring");
+
+  const sizeOptions = {
+    Ring: Array.from({ length: 15 }, (_, i) => (49 + i).toString()),
+    Bracelet: Array.from({ length: 9 }, (_, i) => (14 + i).toString() + " cm"),
+    Necklace: ["38 cm", "40 cm", "42 cm", "45 cm", "50 cm", "55 cm", "60 cm", "70 cm", "80 cm"]
+  };
 
   const EUR_RMB_RATE = 0.13;
 
@@ -306,20 +313,38 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
             <div>
               <label>Specification Size</label>
               {isEditingSize ? (
-                <input 
-                  autoFocus
-                  value={newSize} 
-                  onChange={e => setNewSize(e.target.value)}
-                  onBlur={updateSize}
-                  onKeyDown={e => e.key === 'Enter' && updateSize()}
-                  style={{ fontWeight: 600 }}
-                />
+                <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
+                  <select 
+                    value={newCategory}
+                    onChange={(e) => {
+                      const cat = e.target.value as any;
+                      setNewCategory(cat);
+                      setNewSize(sizeOptions[cat as keyof typeof sizeOptions][0]);
+                    }}
+                    style={{ padding: '4px', fontSize: '0.9rem' }}
+                  >
+                    <option value="Ring">Ring</option>
+                    <option value="Bracelet">Bracelet</option>
+                    <option value="Necklace">Necklace</option>
+                  </select>
+                  <select 
+                    value={newSize} 
+                    onChange={e => setNewSize(e.target.value)}
+                    onBlur={updateSize}
+                    style={{ fontWeight: 600, padding: '4px' }}
+                  >
+                    {sizeOptions[newCategory].map(s => (
+                      <option key={s} value={s}>{s}</option>
+                    ))}
+                  </select>
+                </div>
               ) : (
                 <div style={{ fontWeight: 600, fontSize: '1.1rem' }}>{request.size || "Not specified"}</div>
               )}
             </div>
             <button className="btn btn-ghost" style={{ padding: '8px', borderRadius: '50%' }} onClick={() => {
-              setNewSize(request.size || "");
+              setNewSize(request.size || "52");
+              setNewCategory(request.size?.includes('cm') ? 'Bracelet' : request.size && parseInt(request.size) > 30 ? 'Necklace' : 'Ring');
               setIsEditingSize(true);
             }}>
               <Edit3 size={16} />
