@@ -34,6 +34,11 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
   const [isEditingSize, setIsEditingSize] = useState(false);
   const [newSize, setNewSize] = useState("");
   const [newCategory, setNewCategory] = useState<"Ring" | "Bracelet" | "Necklace">("Ring");
+  const [trackingNumber, setTrackingNumber] = useState("");
+  const [paymentAmount, setPaymentAmount] = useState("");
+  const [paymentReceipt, setPaymentReceipt] = useState("");
+  const [payments, setPayments] = useState<any[]>([]);
+  const [isUploadingReceipt, setIsUploadingReceipt] = useState(false);
 
   const sizeOptions = {
     Ring: Array.from({ length: 15 }, (_, i) => (49 + i).toString()),
@@ -50,6 +55,7 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
       const data = snapshot.val();
       if (data) {
         setRequest({ id: params.id, ...data });
+        if (data.trackingNumber) setTrackingNumber(data.trackingNumber);
       }
     });
 
@@ -69,9 +75,22 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
       setLoading(false);
     });
 
+    // 3. Fetch Payments
+    const payRef = rtdbRef(rtdb, `payments/${params.id}`);
+    const unsubsPay = onValue(payRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        const list = Object.keys(data).map(key => ({ ...data[key], id: key }));
+        setPayments(list);
+      } else {
+        setPayments([]);
+      }
+    });
+
     return () => {
       unsubsRequest();
       unsubsQuotes();
+      unsubsPay();
     };
   }, [params.id]);
 
@@ -121,6 +140,44 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
       });
     } catch (e) {
       alert("Status update failed");
+    }
+  };
+
+  const updateTracking = async () => {
+    try {
+      await update(rtdbRef(rtdb, `requests/${params.id}`), { trackingNumber });
+      alert("FedEx tracking updated");
+    } catch (e) {
+      alert("Failed to update tracking");
+    }
+  };
+
+  const handleReceiptUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files?.[0]) return;
+    setIsUploadingReceipt(true);
+    const reader = new FileReader();
+    reader.onload = async (ev) => {
+      const base64 = ev.target?.result as string;
+      setPaymentReceipt(base64);
+      setIsUploadingReceipt(false);
+    };
+    reader.readAsDataURL(e.target.files[0]);
+  };
+
+  const saveRIAPayment = async () => {
+    try {
+      const paymentRef = push(rtdbRef(rtdb, `payments/${params.id}`));
+      await set(paymentRef, {
+        amount: paymentAmount,
+        receiptUrl: paymentReceipt,
+        method: "RIA -> Alipay",
+        createdAt: Date.now()
+      });
+      setPaymentAmount("");
+      setPaymentReceipt("");
+      alert("RIA Payment recorded");
+    } catch (e) {
+      alert("Failed to save payment");
     }
   };
 
@@ -307,7 +364,87 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
         </motion.div>
       )}
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', paddingBottom: '40px' }}>
+        
+        {/* ADMIN: LOGISTICS */}
+        <div className="list-group">
+          <div style={{ padding: '16px 16px 8px 16px', fontSize: '0.9rem', fontWeight: 600, color: 'var(--accent)' }}>ADMIN: LOGISTICS</div>
+          <div className="row-item" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            <div style={{ flex: 1 }}>
+              <label>FedEx Tracking Number</label>
+              <input 
+                placeholder="Paste Tracking #" 
+                value={trackingNumber}
+                onChange={e => setTrackingNumber(e.target.value)}
+                style={{ fontWeight: 600 }}
+              />
+            </div>
+            <button className="btn" onClick={updateTracking} style={{ padding: '8px 12px', marginTop: '16px' }}>Save</button>
+          </div>
+        </div>
+
+        {/* ADMIN: PAYMENTS (RIA -> ALIPAY) */}
+        <div className="list-group">
+          <div style={{ padding: '16px 16px 8px 16px', fontSize: '0.9rem', fontWeight: 600, color: 'var(--accent)' }}>RIA PAYMENT (ALIPAY)</div>
+          <div className="row-item" style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+            <div style={{ flex: 1 }}>
+              <label>Amount (EUR)</label>
+              <input 
+                type="number" 
+                placeholder="e.g. 1500" 
+                value={paymentAmount}
+                onChange={e => setPaymentAmount(e.target.value)}
+              />
+            </div>
+            <div style={{ flex: 1 }}>
+              <label>RIA Receipt</label>
+              <label style={{ 
+                display: 'block', 
+                padding: '8px', 
+                background: paymentReceipt ? 'var(--accent)' : 'var(--secondary-bg)', 
+                borderRadius: '8px', 
+                textAlign: 'center',
+                cursor: 'pointer',
+                color: paymentReceipt ? '#fff' : 'var(--foreground)',
+                fontSize: '0.8rem'
+              }}>
+                {isUploadingReceipt ? "..." : paymentReceipt ? "Ready ✓" : "+ Add Photo"}
+                <input type="file" hidden accept="image/*" onChange={handleReceiptUpload} />
+              </label>
+            </div>
+          </div>
+          <div style={{ padding: '8px 16px 16px 16px' }}>
+            <button 
+              className="btn" 
+              style={{ width: '100%' }} 
+              disabled={!paymentAmount || !paymentReceipt}
+              onClick={saveRIAPayment}
+            >
+              Record RIA Transfer
+            </button>
+          </div>
+          {payments.length > 0 && (
+            <div style={{ borderTop: '1px solid var(--border)', padding: '8px 16px 16px 16px' }}>
+              <label style={{ fontSize: '0.75rem', marginBottom: '8px', display: 'block', color: 'var(--faded)' }}>Payment History</label>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {payments.map((p, idx) => (
+                  <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.9rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <div style={{ padding: '4px', background: '#34c759', borderRadius: '4px' }}>
+                        <CheckCircle size={10} color="white" />
+                      </div>
+                      <span style={{ fontWeight: 500 }}>{p.amount}€</span>
+                      <span style={{ fontSize: '0.7rem', color: 'var(--faded)' }}>{new Date(p.createdAt).toLocaleDateString()}</span>
+                    </div>
+                    {p.receiptUrl && (
+                      <a href={p.receiptUrl} target="_blank" className="btn btn-ghost" style={{ padding: '4px 8px', fontSize: '0.7rem' }}>Receipt</a>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
         <div className="list-group">
           <div className="row-item" style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
