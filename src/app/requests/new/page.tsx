@@ -68,126 +68,118 @@ export default function NewRequest() {
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, x: -10 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ duration: 0.3 }}
-    >
-      <Link href="/" className="btn btn-ghost mb-8" style={{ padding: "8px 16px" }}>
-        <ArrowLeft size={16} />
-        Back
-      </Link>
-
-      <header>
-        <div>
-          <h1 className="title">New Specification</h1>
-          <p className="subtitle">Start a new quote request to send to suppliers.</p>
+    <div style={{ padding: '20px 0' }}>
+      <header style={{ marginBottom: '32px', padding: '0 4px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '8px' }}>
+           <button onClick={() => router.back()} style={{ background: 'transparent', border: 'none', color: 'var(--accent)', fontSize: '17px', padding: 0 }}>
+             Cancel
+           </button>
+           <h2 style={{ fontSize: '17px', fontWeight: 600, color: 'var(--foreground)' }}>New Order</h2>
+           <button 
+             onClick={handleSubmit} 
+             disabled={loading || !title} 
+             style={{ background: 'transparent', border: 'none', color: title ? 'var(--accent)' : 'var(--faded)', fontSize: '17px', fontWeight: 600, padding: 0 }}
+           >
+             {loading ? '...' : 'Done'}
+           </button>
         </div>
       </header>
 
-      <div style={{ maxWidth: '600px', margin: '0 auto' }}>
-        <form onSubmit={handleSubmit}>
-          <div className="list-group">
-            <div className="row-item">
-              <label>Jewelry Reference</label>
-              <input 
-                type="text" 
-                placeholder="e.g. Bracelet Tennis Diamants 18k" 
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                required
-                autoFocus
-              />
-            </div>
-            <div className="row-item">
-              <label>Jewelry Type</label>
-              <select 
-                value={category}
-                onChange={(e) => {
-                  const cat = e.target.value as any;
-                  setCategory(cat);
-                  setSize(sizeOptions[cat as keyof typeof sizeOptions][0]);
-                }}
-              >
-                <option value="Ring">Ring (Bague)</option>
-                <option value="Bracelet">Bracelet</option>
-                <option value="Necklace">Necklace (Collier)</option>
-              </select>
-            </div>
-            <div className="row-item">
-              <label>Size / Dimensions</label>
-              <select 
-                value={size}
-                onChange={(e) => setSize(e.target.value)}
-              >
-                {sizeOptions[category].map(s => (
-                  <option key={s} value={s}>{s}</option>
-                ))}
-              </select>
-            </div>
+      <form onSubmit={handleSubmit} style={{ maxWidth: '100%' }}>
+        <div className="list-group">
+          <div className="row-item">
+            <label>Name</label>
+            <input 
+              required
+              type="text" 
+              placeholder="Clash Ring, etc." 
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              autoFocus
+            />
           </div>
+        </div>
 
-          <div className="list-group">
-            <div className="row-item" style={{ padding: '0' }}>
-              <label style={{ padding: '12px 16px 4px 16px' }}>Reference Photo</label>
-              <label style={{ 
-                display: 'flex', 
-                flexDirection: 'column', 
-                alignItems: 'center', 
-                justifyContent: 'center',
-                padding: file ? '12px' : '48px',
-                cursor: 'pointer',
-                transition: 'all 0.2s ease',
-                position: 'relative'
-              }}>
-                {file ? (
-                  <div style={{ width: '100%', textAlign: 'center' }}>
-                    <img 
-                      src={URL.createObjectURL(file)} 
-                      alt="Preview" 
-                      style={{ 
-                        width: '100%', 
-                        maxHeight: '300px', 
-                        objectFit: 'cover', 
-                        borderRadius: '8px'
-                      }} 
-                    />
-                    <div style={{ marginTop: '8px', fontSize: '0.8rem', color: 'var(--faded)' }}>
-                      Click to change photo
-                    </div>
+        <div className="list-group">
+          <div className="row-item">
+            <label>Category</label>
+            <select 
+              value={category}
+              onChange={(e) => {
+                const cat = e.target.value as any;
+                setCategory(cat);
+                setSize(sizeOptions[cat as keyof typeof sizeOptions][0]);
+              }}
+            >
+              <option value="Ring">Ring</option>
+              <option value="Bracelet">Bracelet</option>
+              <option value="Necklace">Necklace</option>
+            </select>
+          </div>
+          <div className="row-item">
+            <label>Size</label>
+            <select 
+              value={size}
+              onChange={(e) => setSize(e.target.value)}
+            >
+              {sizeOptions[category as keyof typeof sizeOptions].map(s => (
+                <option key={s} value={s}>{s}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <div className="list-group">
+          <div className="row-item" style={{ padding: 0 }}>
+            <label style={{ padding: '12px 16px 4px 16px' }}>Photo Evidence</label>
+            <label style={{ 
+              display: 'flex', 
+              flexDirection: 'column', 
+              alignItems: 'center', 
+              justifyContent: 'center',
+              padding: file ? '12px' : '32px',
+              cursor: 'pointer',
+              background: 'var(--secondary-bg)',
+            }}>
+              {file ? (
+                <div style={{ width: '100%', textAlign: 'center' }}>
+                  <img 
+                    src={URL.createObjectURL(file)} 
+                    alt="Preview" 
+                    style={{ 
+                      width: '100%', 
+                      maxHeight: '200px', 
+                      objectFit: 'contain', 
+                      borderRadius: '8px'
+                    }} 
+                  />
+                  <div style={{ marginTop: '8px', fontSize: '13px', color: 'var(--accent)' }}>
+                    Tap to change
                   </div>
-                ) : (
-                  <>
-                    <UploadCloud size={32} color="var(--accent)" style={{ marginBottom: '12px' }}/>
-                    <span style={{ color: 'var(--accent)', fontWeight: 500 }}>
-                      Add Photo
-                    </span>
-                  </>
-                )}
-                <input 
-                  type="file" 
-                  accept="image/*" 
-                  onChange={(e) => {
-                    if (e.target.files && e.target.files[0]) {
-                      setFile(e.target.files[0]);
-                    }
-                  }}
-                  style={{ display: 'none' }}
-                />
-              </label>
-            </div>
+                </div>
+              ) : (
+                <div style={{ color: 'var(--accent)', fontSize: '17px', fontWeight: 500 }}>
+                  Add Reference Photo
+                </div>
+              )}
+              <input 
+                type="file" 
+                accept="image/*" 
+                onChange={(e) => {
+                  if (e.target.files && e.target.files[0]) {
+                    setFile(e.target.files[0]);
+                  }
+                }}
+                style={{ display: 'none' }}
+              />
+            </label>
           </div>
+        </div>
 
-          <button 
-            type="submit" 
-            className="btn" 
-            disabled={loading || !title}
-            style={{ width: '100%', marginTop: '8px' }}
-          >
-            {loading ? "Processing..." : "Create Specification"}
-          </button>
-        </form>
-      </div>
-    </motion.div>
+        <p style={{ margin: '32px 0', fontSize: '13px', color: 'var(--faded)', textAlign: 'center', padding: '0 20px' }}>
+          This data will be synchronized with our supplier matrix for immediate manufacturing review.
+        </p>
+      </form>
+    </div>
   );
 }

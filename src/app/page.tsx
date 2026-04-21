@@ -79,28 +79,26 @@ export default function Dashboard() {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, ease: "easeOut" }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      style={{ padding: '20px 0' }}
     >
-      <header style={{ paddingBottom: '20px', marginBottom: '16px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div>
-          <h1 className="title" style={{ fontSize: '1.8rem', lineHeight: '1.1' }}>Logistics</h1>
-          <p className="subtitle" style={{ fontSize: '0.85rem', marginTop: '4px' }}>Overview</p>
+      <header style={{ marginBottom: '24px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '8px' }}>
+          <h1 className="title">Logistics</h1>
+          <Link href="/requests/new" style={{ color: 'var(--accent)', textDecoration: 'none', fontWeight: 600, fontSize: '17px' }}>
+            New
+          </Link>
         </div>
-        <Link href="/requests/new" className="btn" style={{ padding: '10px 20px', fontSize: '0.9rem' }}>
-          <Plus size={18} />
-          <span>New</span>
-        </Link>
+        <p className="subtitle">Overview</p>
       </header>
 
-      {/* FILTER BAR */}
+      {/* FILTER BAR: PURE APPLE PILLS */}
       <div style={{ 
         display: 'flex', 
         gap: '8px', 
         overflowX: 'auto', 
-        paddingBottom: '16px',
-        marginBottom: '16px',
+        paddingBottom: '20px',
         scrollbarWidth: 'none',
       }}>
         {filterOptions.map((opt) => (
@@ -108,15 +106,15 @@ export default function Dashboard() {
             key={opt.value}
             onClick={() => setFilter(opt.value)}
             style={{
-              padding: '6px 14px',
-              borderRadius: '16px',
+              padding: '8px 16px',
+              borderRadius: '20px',
               border: 'none',
-              fontSize: '0.8rem',
+              fontSize: '14px',
               fontWeight: 600,
               whiteSpace: 'nowrap',
-              background: filter === opt.value ? 'var(--accent)' : 'var(--secondary-bg)',
-              color: filter === opt.value ? '#fff' : 'var(--faded)',
-              transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
+              background: filter === opt.value ? 'var(--foreground)' : 'var(--secondary-bg)',
+              color: filter === opt.value ? 'var(--secondary-bg)' : 'var(--faded)',
+              transition: 'all 0.2s ease'
             }}
           >
             {opt.label}
@@ -139,63 +137,67 @@ export default function Dashboard() {
           </div>
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        <div className="list-group">
           {requests
             .filter(r => filter === 'ALL' || r.status === filter)
             .map((req, i) => (
-            <motion.div 
-              key={req.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.05 }}
-              style={{ width: '100%' }}
-            >
-              <Link 
-                href={`/requests/${req.id}`} 
-                className="card block" 
-                style={{ 
-                  padding: '12px', 
-                  textDecoration: 'none',
-                  display: 'flex',
-                  gap: '12px',
-                  alignItems: 'center',
-                  width: '100%'
-                }}
+              <motion.div 
+                key={req.id}
+                initial={{ opacity: 0, x: 10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: i * 0.03 }}
+                style={{ width: '100%' }}
               >
-                {req.imageUrl ? (
-                  <img 
-                    src={req.imageUrl} 
-                    alt={req.title} 
-                    style={{ width: '50px', height: '50px', borderRadius: '8px', objectFit: 'cover' }} 
-                  />
-                ) : (
-                  <div style={{ width: '50px', height: '50px', borderRadius: '8px', background: 'var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <Package size={20} color="var(--faded)" />
-                  </div>
-                )}
+                <Link 
+                  href={`/requests/${req.id}`} 
+                  className="row-item" 
+                  style={{ 
+                    textDecoration: 'none',
+                    display: 'flex',
+                    gap: '16px',
+                    alignItems: 'center',
+                    padding: '12px 16px',
+                    background: 'var(--secondary-bg)'
+                  }}
+                >
+                  {req.imageUrl ? (
+                    <img 
+                      src={req.imageUrl} 
+                      alt={req.title} 
+                      style={{ width: '60px', height: '60px', borderRadius: '8px', objectFit: 'cover' }} 
+                    />
+                  ) : (
+                    <div style={{ width: '60px', height: '60px', borderRadius: '8px', background: 'var(--background)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Package size={24} color="var(--border)" />
+                    </div>
+                  )}
 
-                <div style={{ flex: 1 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <h3 style={{ fontWeight: 600, fontSize: '1rem', margin: 0 }}>{req.title}</h3>
-                    {getStatusIcon(req.status)}
-                  </div>
-                  <div style={{ marginTop: '4px', fontSize: '0.8rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                      <span style={{ color: 'var(--faded)', fontWeight: 500 }}>
-                        {req.status === 'WAITING_FOR_QUOTE' ? 'Waiting' : req.status.replace(/_/g, ' ')}
-                      </span>
-                      {req.size && (
-                        <span style={{ color: 'var(--faded)', opacity: 0.6 }}>• {req.size}</span>
-                      )}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <h3 style={{ fontWeight: 600, fontSize: '17px', margin: 0, color: 'var(--foreground)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {req.title}
+                      </h3>
+                      <div style={{ transform: 'scale(0.8)', opacity: 0.8 }}>
+                        {getStatusIcon(req.status)}
+                      </div>
                     </div>
-                    <div style={{ textAlign: 'right' }}>
-                      {renderTimer(req)}
+                    <div style={{ marginTop: '4px', fontSize: '14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div style={{ display: 'flex', gap: '6px', alignItems: 'center', color: 'var(--faded)' }}>
+                        <span>
+                          {req.status === 'WAITING_FOR_QUOTE' ? 'Waiting' : req.status.replace(/_/g, ' ')}
+                        </span>
+                        {req.size && (
+                          <span style={{ opacity: 0.5 }}>• {req.size}</span>
+                        )}
+                      </div>
+                      <div style={{ textAlign: 'right', fontSize: '12px', color: 'var(--faded)' }}>
+                        {renderTimer(req)}
+                      </div>
                     </div>
                   </div>
-                </div>
-              </Link>
-            </motion.div>
-          ))}
+                </Link>
+              </motion.div>
+            ))}
         </div>
       )}
     </motion.div>
