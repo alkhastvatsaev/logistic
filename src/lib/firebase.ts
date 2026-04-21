@@ -2,6 +2,7 @@ import { initializeApp, getApps, getApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 import { getAuth, signInAnonymously } from "firebase/auth";
+import { getDatabase, ref as rtdbRef, set, onValue, push, get, update } from "firebase/database";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -18,6 +19,7 @@ const app = !getApps().length && isConfigValid ? initializeApp(firebaseConfig) :
 const db = app ? getFirestore(app) : (null as any);
 const storage = app ? getStorage(app) : (null as any);
 const auth = app ? getAuth(app) : (null as any);
+const rtdb = app ? getDatabase(app) : (null as any);
 
 // Attempt anonymous sign-in to satisfy "auth != null" security rules
 if (typeof window !== "undefined" && auth) {
@@ -40,4 +42,4 @@ export const waitForAuth = () => {
   });
 };
 
-export { app, db, storage, auth };
+export { app, db, storage, auth, rtdb, rtdbRef, set, onValue, push, get, update };

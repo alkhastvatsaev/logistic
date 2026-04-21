@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { doc, getDoc, collection, query, where, getDocs, addDoc, updateDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { rtdb, rtdbRef, onValue, set, push, get, update } from "@/lib/firebase";
 import { motion } from "framer-motion";
 import { ArrowLeft, Share, Copy, CheckCircle, PackageSearch } from "lucide-react";
 import Link from "next/link";
@@ -33,37 +32,48 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
   const EUR_RMB_RATE = 0.13;
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const docRef = doc(db, "requests", params.id);
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-          setRequest({ id: docSnap.id, ...docSnap.data() } as any);
-        }
-
-        const q = query(collection(db, "quotes"), where("requestId", "==", params.id));
-        const quoteSnaps = await getDocs(q);
-        const fetchedQuotes = quoteSnaps.docs.map(d => ({ id: d.id, ...d.data() })) as Quote[];
-        setQuotes(fetchedQuotes);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      } finally {
-        setLoading(false);
+    // 1. Fetch Request
+    const requestRef = rtdbRef(rtdb, `requests/${params.id}`);
+    const unsubsRequest = onValue(requestRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        setRequest({ id: params.id, ...data });
       }
+    });
+
+    // 2. Fetch Quotes for this request
+    const quotesRef = rtdbRef(rtdb, `quotes/${params.id}`);
+    const unsubsQuotes = onValue(quotesRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        const list = Object.keys(data).map(key => ({
+          ...data[key],
+          id: key
+        }));
+        setQuotes(list);
+      } else {
+        setQuotes([]);
+      }
+      setLoading(false);
+    });
+
+    return () => {
+      unsubsRequest();
+      unsubsQuotes();
     };
-    fetchData();
   }, [params.id]);
 
   const generateSupplierLink = async () => {
     setGeneratingLink(true);
     try {
-      const tokenRef = await addDoc(collection(db, "shareTokens"), {
+      const newTokenRef = push(rtdbRef(rtdb, "shareTokens"));
+      await set(newTokenRef, {
         requestId: params.id,
         createdAt: Date.now(),
         used: false
       });
       
-      const link = `${window.location.origin}/q/${tokenRef.id}`;
+      const link = `${window.location.origin}/q/${newTokenRef.key}`;
       await navigator.clipboard.writeText(link);
       setCopiedLink(link);
       setTimeout(() => setCopiedLink(""), 4000);
@@ -79,13 +89,13 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
     
     try {
       const deadline = Date.now() + (quote.productionTimeDays * 24 * 60 * 60 * 1000);
-      await updateDoc(doc(db, "requests", params.id), {
-        status: "IN_PRODUCTION",
-        acceptedQuoteId: quote.id,
-        acceptedTokenId: quote.shareTokenId,
-        productionDeadline: deadline
-      });
-      setRequest(prev => prev ? { ...prev, status: "IN_PRODUCTION", acceptedQuoteId: quote.id } : null);
+      const updates: any = {};
+      updates[`requests/${params.id}/status`] = "IN_PRODUCTION";
+      updates[`requests/${params.id}/acceptedQuoteId`] = quote.id;
+      updates[`requests/${params.id}/acceptedTokenId`] = quote.shareTokenId;
+      updates[`requests/${params.id}/productionDeadline`] = deadline;
+      
+      await update(rtdbRef(rtdb), updates);
     } catch (error) {
       alert("Failed to accept quote");
     }

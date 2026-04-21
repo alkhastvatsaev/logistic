@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { doc, getDoc, collection, addDoc, updateDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { rtdb, rtdbRef, get, set, push, update } from "@/lib/firebase";
 import { motion } from "framer-motion";
 import { CheckCircle, Truck, PackageCheck } from "lucide-react";
 
@@ -30,27 +29,24 @@ export default function SupplierPortal({ params }: { params: { token: string } }
   useEffect(() => {
     const fetchTokenAndRequest = async () => {
       try {
-        const tokenRef = doc(db, "shareTokens", params.token);
-        const tokenSnap = await getDoc(tokenRef);
+        const tokenSnap = await get(rtdbRef(rtdb, `shareTokens/${params.token}`));
 
         if (tokenSnap.exists()) {
-          const tData = tokenSnap.data();
+          const tData = tokenSnap.val();
           setTokenData(tData);
 
-          const reqRef = doc(db, "requests", tData.requestId);
-          const reqSnap = await getDoc(reqRef);
+          const reqSnap = await get(rtdbRef(rtdb, `requests/${tData.requestId}`));
           
           if (reqSnap.exists()) {
-            const reqData = { id: reqSnap.id, ...reqSnap.data() } as any;
+            const reqData = { id: reqSnap.key, ...reqSnap.val() } as any;
             setRequest(reqData);
 
-            // Is this token the one that was accepted, and is it in production?
             if (reqData.status === "SHIPPED" && reqData.acceptedTokenId === params.token) {
                setShippingSubmitted(true);
             }
 
             if (tData.used && reqData.status !== "IN_PRODUCTION") {
-              setSubmitted(true); // normal quote submission completion
+              setSubmitted(true);
             }
           }
         }
@@ -68,8 +64,8 @@ export default function SupplierPortal({ params }: { params: { token: string } }
     setLoading(true);
 
     try {
-      await addDoc(collection(db, "quotes"), {
-        requestId: tokenData.requestId,
+      const newQuoteRef = push(rtdbRef(rtdb, `quotes/${tokenData.requestId}`));
+      await set(newQuoteRef, {
         shareTokenId: params.token,
         supplierName,
         priceRMB: Number(priceRMB),
@@ -83,9 +79,11 @@ export default function SupplierPortal({ params }: { params: { token: string } }
         createdAt: Date.now()
       });
 
-      await updateDoc(doc(db, "shareTokens", params.token), { used: true });
-      await updateDoc(doc(db, "requests", tokenData.requestId), { status: "QUOTED" });
-
+      const updates: any = {};
+      updates[`shareTokens/${params.token}/used`] = true;
+      updates[`requests/${tokenData.requestId}/status`] = "QUOTED";
+      
+      await update(rtdbRef(rtdb), updates);
       setSubmitted(true);
     } catch (error) {
       alert("Error submitting. Please try again.");
@@ -99,11 +97,12 @@ export default function SupplierPortal({ params }: { params: { token: string } }
     if (!trackingNumber) return;
     setLoading(true);
     try {
-      await updateDoc(doc(db, "requests", tokenData.requestId), { 
-        status: "SHIPPED",
-        trackingNumber: trackingNumber,
-        shippedAt: Date.now()
-      });
+      const updates: any = {};
+      updates[`requests/${tokenData.requestId}/status`] = "SHIPPED";
+      updates[`requests/${tokenData.requestId}/trackingNumber`] = trackingNumber;
+      updates[`requests/${tokenData.requestId}/shippedAt`] = Date.now();
+      
+      await update(rtdbRef(rtdb), updates);
       setShippingSubmitted(true);
     } catch (error) {
       alert("Error updating tracking");

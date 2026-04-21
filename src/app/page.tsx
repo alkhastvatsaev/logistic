@@ -4,8 +4,7 @@ import { motion } from "framer-motion";
 import { Plus, Package, Clock, ShieldCheck, Truck } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { collection, query, getDocs, orderBy } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { rtdb, rtdbRef, onValue } from "@/lib/firebase";
 
 export type RequestStatus = "DRAFT" | "WAITING_FOR_QUOTE" | "QUOTED" | "IN_PRODUCTION" | "SHIPPED" | "DELIVERED";
 
@@ -22,19 +21,23 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchRequests = async () => {
-      try {
-        const q = query(collection(db, "requests"), orderBy("createdAt", "desc"));
-        const snapshot = await getDocs(q);
-        const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as SupplierRequest[];
-        setRequests(data);
-      } catch (error) {
-        console.error("Error fetching requests:", error);
-      } finally {
-        setLoading(false);
+    const requestsRef = rtdbRef(rtdb, "requests");
+    const unsubscribe = onValue(requestsRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        // Convert object to array and sort by createdAt
+        const list = Object.keys(data).map(key => ({
+          ...data[key],
+          id: key
+        })).sort((a, b) => b.createdAt - a.createdAt);
+        setRequests(list);
+      } else {
+        setRequests([]);
       }
-    };
-    fetchRequests();
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
   }, []);
 
   const getStatusIcon = (status: RequestStatus) => {

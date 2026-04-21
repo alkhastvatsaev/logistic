@@ -5,9 +5,7 @@ import { motion } from "framer-motion";
 import { ArrowLeft, UploadCloud } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { collection, addDoc } from "firebase/firestore";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { db, storage, waitForAuth } from "@/lib/firebase";
+import { rtdb, rtdbRef, push, set } from "@/lib/firebase";
 
 export default function NewRequest() {
   const router = useRouter();
@@ -23,60 +21,38 @@ export default function NewRequest() {
     const timeout = (ms: number) => new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout: Firebase is taking too long to respond. Check your connection or Firebase rules.")), ms));
 
     try {
-      console.log("Waiting for auth...");
-      await waitForAuth();
-      
-      console.log("Starting submission for:", title);
+      console.log("Starting Realtime DB submission...");
       let imageUrl = "";
       
       if (file) {
-        console.log("📸 Server-side upload starting for:", file.name);
-        try {
-          const formData = new FormData();
-          formData.append("file", file);
-          
-          const uploadResponse = await fetch("/api/upload", {
-            method: "POST",
-            body: formData,
-          });
-          
-          if (!uploadResponse.ok) {
-            const errData = await uploadResponse.json();
-            throw new Error(errData.error || "Server upload failed");
-          }
-          
-          const { url } = await uploadResponse.json();
-          imageUrl = url;
-          console.log("✅ Image uploaded via Bridge:", imageUrl);
-        } catch (storageErr: any) {
-          console.error("❌ BRIDGE UPLOAD FAILED:", storageErr);
-          alert(`Erreur Image (Bridge): ${storageErr.message}`);
-          setLoading(false);
-          return;
-        }
+        // Convert to Base64
+        console.log("📸 Converting image to Base64...");
+        const reader = new FileReader();
+        const base64Promise = new Promise<string>((resolve) => {
+          reader.onload = (e) => resolve(e.target?.result as string);
+          reader.readAsDataURL(file);
+        });
+        imageUrl = await base64Promise;
       }
 
-      // 1. Create a global request with 10s timeout
-      console.log("Adding document to Firestore...");
-      try {
-        const addDocPromise = addDoc(collection(db, "requests"), {
-          title,
-          imageUrl,
-          status: "WAITING_FOR_QUOTE",
-          createdAt: Date.now(),
-          updatedAt: Date.now()
-        });
-        const docRef: any = await Promise.race([addDocPromise, timeout(10000)]);
-        console.log("Document added with ID:", docRef.id);
-        router.push(`/requests/${docRef.id}`);
-      } catch (dbErr: any) {
-        console.error("DATABASE ERROR:", dbErr);
-        alert(`Firestore Error: ${dbErr.message}`);
-      }
+      // Save to Realtime Database
+      const newRef = push(rtdbRef(rtdb, "requests"));
+      const data = {
+        id: newRef.key,
+        title,
+        imageUrl,
+        status: "WAITING_FOR_QUOTE",
+        createdAt: Date.now(),
+        updatedAt: Date.now()
+      };
+      
+      await set(newRef, data);
+      console.log("✅ Saved to Realtime DB with ID:", newRef.key);
+      router.push(`/requests/${newRef.key}`);
 
     } catch (outerError: any) {
-      console.error("CRITICAL ERROR during flow:", outerError);
-      alert(`Critical Error: ${outerError.message}`);
+      console.error("CRITICAL ERROR:", outerError);
+      alert(`Error: ${outerError.message}`);
     } finally {
       setLoading(false);
     }
