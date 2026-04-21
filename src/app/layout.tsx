@@ -17,6 +17,8 @@ export const viewport: Viewport = {
   userScalable: false,
 };
 
+import DebugTerminal from "@/components/DebugTerminal";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -31,6 +33,7 @@ export default function RootLayout({
         <main className="layout">
           {children}
         </main>
+        <DebugTerminal />
       </body>
     </html>
   );
