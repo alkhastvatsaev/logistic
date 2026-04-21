@@ -22,6 +22,16 @@ export interface SupplierRequest {
 export default function Dashboard() {
   const [requests, setRequests] = useState<SupplierRequest[]>([]);
   const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState<RequestStatus | "ALL">("ALL");
+
+  const filterOptions: { label: string, value: RequestStatus | "ALL" }[] = [
+    { label: "All", value: "ALL" },
+    { label: "Quotes", value: "WAITING_FOR_QUOTE" },
+    { label: "Review", value: "MANAGER_REVIEW" },
+    { label: "Deposit", value: "WAITING_FOR_DEPOSIT" },
+    { label: "Factory", value: "IN_PRODUCTION" },
+    { label: "Shipped", value: "SHIPPED" },
+  ];
 
   useEffect(() => {
     const requestsRef = rtdbRef(rtdb, "requests");
@@ -73,7 +83,7 @@ export default function Dashboard() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: "easeOut" }}
     >
-      <header style={{ paddingBottom: '20px', marginBottom: '24px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <header style={{ paddingBottom: '20px', marginBottom: '16px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
           <h1 className="title" style={{ fontSize: '1.8rem', lineHeight: '1.1' }}>Logistics</h1>
           <p className="subtitle" style={{ fontSize: '0.85rem', marginTop: '4px' }}>Overview</p>
@@ -84,26 +94,55 @@ export default function Dashboard() {
         </Link>
       </header>
 
+      {/* FILTER BAR */}
+      <div style={{ 
+        display: 'flex', 
+        gap: '8px', 
+        overflowX: 'auto', 
+        paddingBottom: '16px',
+        marginBottom: '16px',
+        scrollbarWidth: 'none',
+      }}>
+        {filterOptions.map((opt) => (
+          <button
+            key={opt.value}
+            onClick={() => setFilter(opt.value)}
+            style={{
+              padding: '6px 14px',
+              borderRadius: '16px',
+              border: 'none',
+              fontSize: '0.8rem',
+              fontWeight: 600,
+              whiteSpace: 'nowrap',
+              background: filter === opt.value ? 'var(--accent)' : 'var(--secondary-bg)',
+              color: filter === opt.value ? '#fff' : 'var(--faded)',
+              transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
+            }}
+          >
+            {opt.label}
+          </button>
+        ))}
+      </div>
+
       {loading ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           {[1, 2, 3].map(i => (
             <div key={i} className="card animate-pulse" style={{ height: '80px', opacity: 0.5 }}></div>
           ))}
         </div>
-      ) : requests.length === 0 ? (
+      ) : requests.filter(r => filter === 'ALL' || r.status === filter).length === 0 ? (
         <div className="card text-center py-20" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', borderStyle: 'dashed' }}>
           <Package size={48} color="var(--faded)" style={{ opacity: 0.5 }} />
           <div>
-            <h3 style={{ fontWeight: 500, fontSize: '1.1rem', marginBottom: '8px' }}>No active requests</h3>
-            <p className="subtitle" style={{ fontSize: '0.9rem' }}>Start by creating a new jewelry specification.</p>
+            <h3 style={{ fontWeight: 500, fontSize: '1.1rem', marginBottom: '8px' }}>Empty stage</h3>
+            <p className="subtitle" style={{ fontSize: '0.9rem' }}>No projects currently at this step.</p>
           </div>
-          <Link href="/requests/new" className="btn btn-ghost mt-4">
-            Create First
-          </Link>
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          {requests.map((req, i) => (
+          {requests
+            .filter(r => filter === 'ALL' || r.status === filter)
+            .map((req, i) => (
             <motion.div 
               key={req.id}
               initial={{ opacity: 0, y: 10 }}

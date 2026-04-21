@@ -311,6 +311,26 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
         <div className="list-group">
           <div className="row-item" style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
+              <label>Project Status</label>
+              <select 
+                value={request.status} 
+                onChange={(e) => moveNextStep(e.target.value)}
+                style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--accent)', padding: '4px 0', background: 'transparent', border: 'none' }}
+              >
+                <option value="WAITING_FOR_QUOTE">Waiting for Quote</option>
+                <option value="QUOTED">Quotes Received</option>
+                <option value="MANAGER_REVIEW">Manager Review (Mirza)</option>
+                <option value="WAITING_FOR_DEPOSIT">Waiting for Deposit</option>
+                <option value="IN_PRODUCTION">In Factory Production</option>
+                <option value="FINAL_PAYMENT">Final Balance Payment</option>
+                <option value="SHIPPED">Shipped (FedEx)</option>
+                <option value="DELIVERED">Delivered</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="row-item" style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div>
               <label>Specification Size</label>
               {isEditingSize ? (
                 <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
