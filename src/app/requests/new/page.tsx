@@ -30,23 +30,27 @@ export default function NewRequest() {
       let imageUrl = "";
       
       if (file) {
-        console.log("📸 Starting image upload for:", file.name);
+        console.log("📸 Server-side upload starting for:", file.name);
         try {
-          const storageRef = ref(storage, `requests/${Date.now()}_${file.name}`);
-          const uploadPromise = uploadBytes(storageRef, file);
+          const formData = new FormData();
+          formData.append("file", file);
           
-          // Use a faster timeout for immediate feedback
-          const snapshot: any = await Promise.race([uploadPromise, timeout(10000)]);
+          const uploadResponse = await fetch("/api/upload", {
+            method: "POST",
+            body: formData,
+          });
           
-          console.log("✅ Image uploaded to Storage");
-          imageUrl = await getDownloadURL(snapshot.ref);
-        } catch (storageErr: any) {
-          console.error("❌ STORAGE FAILED:", storageErr);
-          let extra = "\n\nAstuce : Vérifiez que 'Anonymous Auth' est activé et que vos règles Storage autorisent l'écriture.";
-          if (storageErr.message?.includes("CORS")) {
-            extra = "\n\nErreur CORS detection. Vous devez configurer CORS sur votre bucket Firebase.";
+          if (!uploadResponse.ok) {
+            const errData = await uploadResponse.json();
+            throw new Error(errData.error || "Server upload failed");
           }
-          alert(`Erreur Image : ${storageErr.message}${extra}`);
+          
+          const { url } = await uploadResponse.json();
+          imageUrl = url;
+          console.log("✅ Image uploaded via Bridge:", imageUrl);
+        } catch (storageErr: any) {
+          console.error("❌ BRIDGE UPLOAD FAILED:", storageErr);
+          alert(`Erreur Image (Bridge): ${storageErr.message}`);
           setLoading(false);
           return;
         }
