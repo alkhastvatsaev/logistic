@@ -30,23 +30,23 @@ export default function NewRequest() {
       let imageUrl = "";
       
       if (file) {
-        console.log("Uploading file...");
+        console.log("📸 Starting image upload for:", file.name);
         try {
-          // Upload photo to Firebase Storage with 15s timeout
           const storageRef = ref(storage, `requests/${Date.now()}_${file.name}`);
           const uploadPromise = uploadBytes(storageRef, file);
-          const snapshot: any = await Promise.race([uploadPromise, timeout(15000)]);
+          
+          // Use a faster timeout for immediate feedback
+          const snapshot: any = await Promise.race([uploadPromise, timeout(10000)]);
+          
+          console.log("✅ Image uploaded to Storage");
           imageUrl = await getDownloadURL(snapshot.ref);
-          console.log("File uploaded, URL:", imageUrl);
         } catch (storageErr: any) {
-          console.error("STORAGE ERROR:", storageErr);
-          let extraMsg = "";
-          if (storageErr.message?.includes("Timeout")) {
-            extraMsg = " (Connection timed out)";
-          } else if (storageErr.code === "storage/unauthorized") {
-            extraMsg = " -> Check Firebase Console: Enable Anonymous Auth and set Storage Rules to allow authenticated users.";
+          console.error("❌ STORAGE FAILED:", storageErr);
+          let extra = "\n\nAstuce : Vérifiez que 'Anonymous Auth' est activé et que vos règles Storage autorisent l'écriture.";
+          if (storageErr.message?.includes("CORS")) {
+            extra = "\n\nErreur CORS detection. Vous devez configurer CORS sur votre bucket Firebase.";
           }
-          alert(`Firebase Storage Error: ${storageErr.message}${extraMsg}`);
+          alert(`Erreur Image : ${storageErr.message}${extra}`);
           setLoading(false);
           return;
         }
