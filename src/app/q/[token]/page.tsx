@@ -185,6 +185,16 @@ export default function SupplierPortal({ params }: { params: { token: string } }
           <p className="subtitle" style={{ fontSize: '0.9rem' }}>Factory Quote Submission</p>
         </header>
 
+        <div className="list-group" style={{ marginBottom: '24px', border: '1px solid var(--accent)', background: 'rgba(0, 122, 255, 0.05)' }}>
+          <div style={{ padding: '12px 16px 4px 16px', fontSize: '0.75rem', fontWeight: 600, color: 'var(--accent)' }}>SHIPPING DESTINATION (FRANCE)</div>
+          <div className="row-item" style={{ fontSize: '0.85rem', lineHeight: '1.4', padding: '0 16px 12px 16px', border: 'none' }}>
+            <strong>SACHA BENSADOUN (laisser chez TNT)</strong><br />
+            FedEx Express – Geispolsheim<br />
+            4 Rue des Imprimeurs, 67118 Geispolsheim, France<br />
+            Tel: +33 7 67 69 38 04
+          </div>
+        </div>
+
         {request.imageUrl && (
           <div style={{ marginBottom: '24px' }}>
             <img 

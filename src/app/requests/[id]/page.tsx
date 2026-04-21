@@ -368,18 +368,37 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
         
         {/* ADMIN: LOGISTICS */}
         <div className="list-group">
-          <div style={{ padding: '16px 16px 8px 16px', fontSize: '0.9rem', fontWeight: 600, color: 'var(--accent)' }}>ADMIN: LOGISTICS</div>
-          <div className="row-item" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-            <div style={{ flex: 1 }}>
-              <label>FedEx Tracking Number</label>
+          <div style={{ padding: '16px 16px 8px 16px', fontSize: '0.9rem', fontWeight: 600, color: 'var(--accent)' }}>SHIPPING DESTINATION</div>
+          <div className="row-item" style={{ background: 'var(--secondary-bg)', margin: '8px 16px', borderRadius: '8px', padding: '12px' }}>
+            <div style={{ fontSize: '0.85rem', lineHeight: '1.5', color: 'var(--foreground)' }}>
+              <strong>SACHA BENSADOUN (laisser chez TNT)</strong><br />
+              FedEx Express – Geispolsheim<br />
+              4 Rue des Imprimeurs, 67118 Geispolsheim, France<br />
+              Tel: +33 7 67 69 38 04
+            </div>
+            <button 
+              className="btn btn-ghost" 
+              style={{ padding: '4px 8px', fontSize: '0.7rem', marginTop: '8px', border: '1px solid var(--border)' }}
+              onClick={() => {
+                navigator.clipboard.writeText("SACHA BENSADOUN (laisser chez TNT), FedEx Express – Geispolsheim, 4 Rue des Imprimeurs, 67118 Geispolsheim, France. Tel: +33 7 67 69 38 04");
+                alert("Address copied to clipboard!");
+              }}
+            >
+              Copy for Supplier
+            </button>
+          </div>
+          
+          <div style={{ padding: '8px 16px 8px 16px' }}>
+            <label>FedEx Tracking Number</label>
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
               <input 
                 placeholder="Paste Tracking #" 
                 value={trackingNumber}
                 onChange={e => setTrackingNumber(e.target.value)}
                 style={{ fontWeight: 600 }}
               />
+              <button className="btn" onClick={updateTracking} style={{ padding: '8px 12px' }}>Save</button>
             </div>
-            <button className="btn" onClick={updateTracking} style={{ padding: '8px 12px', marginTop: '16px' }}>Save</button>
           </div>
         </div>
 
