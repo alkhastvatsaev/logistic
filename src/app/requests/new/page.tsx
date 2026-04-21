@@ -11,6 +11,7 @@ export default function NewRequest() {
   const router = useRouter();
   const [title, setTitle] = useState("");
   const [file, setFile] = useState<File | null>(null);
+  const [size, setSize] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -40,6 +41,7 @@ export default function NewRequest() {
       const data = {
         id: newRef.key,
         title,
+        size,
         imageUrl,
         status: "WAITING_FOR_QUOTE",
         createdAt: Date.now(),
@@ -76,86 +78,89 @@ export default function NewRequest() {
         </div>
       </header>
 
-      <div className="card" style={{ maxWidth: '600px', margin: '0 auto' }}>
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-          <div>
-            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500 }}>
-              Jewelry Name / Reference
-            </label>
-            <input 
-              type="text" 
-              placeholder="e.g. 18k Rose Gold Diamond Tennis Bracelet" 
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              required
-              autoFocus
-            />
+      <div style={{ maxWidth: '600px', margin: '0 auto' }}>
+        <form onSubmit={handleSubmit}>
+          <div className="list-group">
+            <div className="row-item">
+              <label>Jewelry Reference</label>
+              <input 
+                type="text" 
+                placeholder="e.g. Bracelet Tennis Diamants 18k" 
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                required
+                autoFocus
+              />
+            </div>
+            <div className="row-item">
+              <label>Size / Dimensions</label>
+              <input 
+                type="text" 
+                placeholder="e.g. 54 or 18cm" 
+                value={size}
+                onChange={(e) => setSize(e.target.value)}
+              />
+            </div>
           </div>
 
-          <div>
-            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500 }}>
-              Reference Photo
-            </label>
-            <label style={{ 
-              display: 'flex', 
-              flexDirection: 'column', 
-              alignItems: 'center', 
-              justifyContent: 'center',
-              border: file ? '1.5px solid var(--accent)' : '1px dashed var(--faded)', 
-              borderRadius: 'var(--radius)', 
-              padding: file ? '12px' : '48px',
-              cursor: 'pointer',
-              overflow: 'hidden',
-              transition: 'all 0.2s ease',
-              backgroundColor: 'rgba(255,255,255,0.02)',
-              position: 'relative'
-            }}>
-              {file ? (
-                <div style={{ width: '100%', textAlign: 'center' }}>
-                  <img 
-                    src={URL.createObjectURL(file)} 
-                    alt="Preview" 
-                    style={{ 
-                      width: '100%', 
-                      height: 'auto', 
-                      maxHeight: '300px', 
-                      objectFit: 'cover', 
-                      borderRadius: '8px',
-                      display: 'block'
-                    }} 
-                  />
-                  <div style={{ marginTop: '12px', fontSize: '0.8rem', color: 'var(--faded)' }}>
-                    {file.name} (Click to change)
+          <div className="list-group">
+            <div className="row-item" style={{ padding: '0' }}>
+              <label style={{ padding: '12px 16px 4px 16px' }}>Reference Photo</label>
+              <label style={{ 
+                display: 'flex', 
+                flexDirection: 'column', 
+                alignItems: 'center', 
+                justifyContent: 'center',
+                padding: file ? '12px' : '48px',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+                position: 'relative'
+              }}>
+                {file ? (
+                  <div style={{ width: '100%', textAlign: 'center' }}>
+                    <img 
+                      src={URL.createObjectURL(file)} 
+                      alt="Preview" 
+                      style={{ 
+                        width: '100%', 
+                        maxHeight: '300px', 
+                        objectFit: 'cover', 
+                        borderRadius: '8px'
+                      }} 
+                    />
+                    <div style={{ marginTop: '8px', fontSize: '0.8rem', color: 'var(--faded)' }}>
+                      Click to change photo
+                    </div>
                   </div>
-                </div>
-              ) : (
-                <>
-                  <UploadCloud size={32} color="var(--faded)" style={{ marginBottom: '12px' }}/>
-                  <span style={{ color: 'var(--faded)' }}>
-                    Click to upload a reference photo
-                  </span>
-                </>
-              )}
-              <input 
-                type="file" 
-                accept="image/*" 
-                onChange={(e) => {
-                  if (e.target.files && e.target.files[0]) {
-                    setFile(e.target.files[0]);
-                  }
-                }}
-                style={{ display: 'none' }}
-              />
-            </label>
+                ) : (
+                  <>
+                    <UploadCloud size={32} color="var(--accent)" style={{ marginBottom: '12px' }}/>
+                    <span style={{ color: 'var(--accent)', fontWeight: 500 }}>
+                      Add Photo
+                    </span>
+                  </>
+                )}
+                <input 
+                  type="file" 
+                  accept="image/*" 
+                  onChange={(e) => {
+                    if (e.target.files && e.target.files[0]) {
+                      setFile(e.target.files[0]);
+                    }
+                  }}
+                  style={{ display: 'none' }}
+                />
+              </label>
+            </div>
           </div>
 
           <button 
             type="submit" 
             className="btn" 
             disabled={loading || !title}
-            style={{ width: '100%', marginTop: '16px' }}
+            style={{ width: '100%', marginTop: '8px' }}
           >
-            {loading ? "Creating System Record..." : "Initialize Request"}
+            {loading ? "Processing..." : "Create Specification"}
           </button>
         </form>
       </div>

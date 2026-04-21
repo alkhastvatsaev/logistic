@@ -113,12 +113,17 @@ export default function Dashboard() {
                   {getStatusIcon(req.status)}
                 </div>
                 <div style={{ marginTop: '8px', fontSize: '0.85rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ 
-                    color: 'var(--faded)',
-                    fontWeight: 500
-                  }}>
-                    {req.status === 'WAITING_FOR_QUOTE' ? 'Waiting' : req.status.replace(/_/g, ' ')}
-                  </span>
+                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                    <span style={{ 
+                      color: 'var(--faded)',
+                      fontWeight: 500
+                    }}>
+                      {req.status === 'WAITING_FOR_QUOTE' ? 'Waiting' : req.status.replace(/_/g, ' ')}
+                    </span>
+                    {req.size && (
+                      <span style={{ color: 'var(--faded)', opacity: 0.6 }}>• {req.size}</span>
+                    )}
+                  </div>
                   <div style={{ textAlign: 'right' }}>
                     {renderTimer(req)}
                   </div>
