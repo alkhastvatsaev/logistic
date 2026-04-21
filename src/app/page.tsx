@@ -80,27 +80,34 @@ export default function Dashboard() {
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      style={{ padding: '20px 0' }}
-    >
-      <header style={{ marginBottom: '24px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '8px' }}>
-          <h1 className="title">Logistics</h1>
-          <Link href="/requests/new" style={{ color: 'var(--accent)', textDecoration: 'none', fontWeight: 600, fontSize: '17px' }}>
-            New
-          </Link>
+    <div className="layout" style={{ paddingTop: '40px' }}>
+      <header style={{ marginBottom: '32px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <div>
+          <h1 className="title">Logistique</h1>
+          <p className="subtitle">Aujourd'hui</p>
         </div>
-        <p className="subtitle">Overview</p>
+        <Link href="/requests/new" style={{ 
+          background: 'var(--accent)', 
+          color: '#fff', 
+          width: '50px', 
+          height: '50px', 
+          borderRadius: '50%', 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center',
+          boxShadow: '0 10px 20px rgba(0, 122, 255, 0.3)',
+          textDecoration: 'none'
+        }}>
+          <Plus size={28} />
+        </Link>
       </header>
 
-      {/* FILTER BAR: PURE APPLE PILLS */}
+      {/* FILTER BAR 2026 */}
       <div style={{ 
         display: 'flex', 
-        gap: '8px', 
+        gap: '12px', 
         overflowX: 'auto', 
-        paddingBottom: '20px',
+        paddingBottom: '24px',
         scrollbarWidth: 'none',
       }}>
         {filterOptions.map((opt) => (
@@ -108,93 +115,96 @@ export default function Dashboard() {
             key={opt.value}
             onClick={() => setFilter(opt.value)}
             style={{
-              padding: '8px 16px',
-              borderRadius: '20px',
+              padding: '10px 20px',
+              borderRadius: '24px',
               border: 'none',
-              fontSize: '14px',
-              fontWeight: 600,
+              fontSize: '15px',
+              fontWeight: 700,
               whiteSpace: 'nowrap',
-              background: filter === opt.value ? 'var(--foreground)' : 'var(--secondary-bg)',
-              color: filter === opt.value ? 'var(--secondary-bg)' : 'var(--faded)',
-              transition: 'all 0.2s ease'
+              background: filter === opt.value ? 'var(--foreground)' : 'var(--glass-bg)',
+              color: filter === opt.value ? 'var(--background)' : 'var(--foreground)',
+              backdropFilter: 'blur(10px)',
+              boxShadow: filter === opt.value ? '0 8px 16px rgba(0,0,0,0.1)' : 'none',
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
             }}
           >
-            {opt.label}
+            {opt.label === 'All' ? 'Tous' : opt.label}
           </button>
         ))}
       </div>
 
       {loading ? (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           {[1, 2, 3].map(i => (
-            <div key={i} className="card animate-pulse" style={{ height: '80px', opacity: 0.5 }}></div>
+            <div key={i} className="list-group animate-pulse" style={{ height: '100px', opacity: 0.3 }}></div>
           ))}
         </div>
-      ) : requests.filter(r => filter === 'ALL' || r.status === filter).length === 0 ? (
-        <div className="card text-center py-20" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', borderStyle: 'dashed' }}>
-          <Package size={48} color="var(--faded)" style={{ opacity: 0.5 }} />
-          <div>
-            <h3 style={{ fontWeight: 500, fontSize: '1.1rem', marginBottom: '8px' }}>Empty stage</h3>
-            <p className="subtitle" style={{ fontSize: '0.9rem' }}>No projects currently at this step.</p>
-          </div>
-        </div>
       ) : (
-        <div className="list-group">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           {requests
             .filter(r => filter === 'ALL' || r.status === filter)
             .map((req, i) => (
               <motion.div 
                 key={req.id}
-                initial={{ opacity: 0, x: 10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: i * 0.03 }}
-                style={{ width: '100%' }}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.05, type: 'spring', damping: 20 }}
               >
                 <Link 
                   href={`/requests/${req.id}`} 
-                  className="row-item" 
+                  className="list-group"
                   style={{ 
                     textDecoration: 'none',
                     display: 'flex',
-                    gap: '16px',
                     alignItems: 'center',
-                    padding: '12px 16px',
-                    background: 'var(--secondary-bg)'
+                    padding: '20px',
+                    gap: '20px',
+                    marginBottom: 0
                   }}
                 >
-                  {req.imageUrl ? (
-                    <img 
-                      src={req.imageUrl} 
-                      alt={req.title} 
-                      style={{ width: '60px', height: '60px', borderRadius: '8px', objectFit: 'cover' }} 
-                    />
-                  ) : (
-                    <div style={{ width: '60px', height: '60px', borderRadius: '8px', background: 'var(--background)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <Package size={24} color="var(--border)" />
+                  <div style={{ position: 'relative' }}>
+                    {req.imageUrl ? (
+                      <img 
+                        src={req.imageUrl} 
+                        alt={req.title} 
+                        style={{ width: '80px', height: '80px', borderRadius: '18px', objectFit: 'cover', boxShadow: '0 8px 16px rgba(0,0,0,0.1)' }} 
+                      />
+                    ) : (
+                      <div style={{ width: '80px', height: '80px', borderRadius: '18px', background: 'var(--background)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <Package size={32} color="var(--separator)" />
+                      </div>
+                    )}
+                    <div style={{ 
+                      position: 'absolute', 
+                      bottom: '-6px', 
+                      right: '-6px', 
+                      background: '#fff', 
+                      borderRadius: '50%', 
+                      padding: '4px',
+                      boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
+                      display: 'flex'
+                    }}>
+                       {getStatusIcon(req.status)}
                     </div>
-                  )}
+                  </div>
 
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <h3 style={{ fontWeight: 600, fontSize: '17px', margin: 0, color: 'var(--foreground)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        {req.title}
-                      </h3>
-                      <div style={{ transform: 'scale(0.8)', opacity: 0.8 }}>
-                        {getStatusIcon(req.status)}
-                      </div>
+                    <h3 style={{ fontWeight: 700, fontSize: '19px', margin: 0, color: 'var(--foreground)', letterSpacing: '-0.4px' }}>
+                      {req.title}
+                    </h3>
+                    <div style={{ marginTop: '6px', fontSize: '14px', fontWeight: 500, color: 'var(--faded)', display: 'flex', justifyContent: 'space-between' }}>
+                       <span>{req.size ? `Taille ${req.size}` : 'Standard'}</span>
+                       {renderTimeline(req)}
                     </div>
-                    <div style={{ marginTop: '4px', fontSize: '14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <div style={{ display: 'flex', gap: '6px', alignItems: 'center', color: 'var(--faded)' }}>
-                        <span>
-                          {req.status === 'WAITING_FOR_QUOTE' ? 'Waiting' : req.status.replace(/_/g, ' ')}
-                        </span>
-                        {req.size && (
-                          <span style={{ opacity: 0.5 }}>• {req.size}</span>
-                        )}
-                      </div>
-                      <div style={{ textAlign: 'right', fontSize: '12px', color: 'var(--faded)' }}>
-                        {renderTimeline(req)}
-                      </div>
+                    <div style={{ 
+                      marginTop: '10px', 
+                      fontSize: '11px', 
+                      fontWeight: 800, 
+                      textTransform: 'uppercase', 
+                      color: 'var(--accent)',
+                      letterSpacing: '0.5px'
+                    }}>
+                      {req.status.replace(/_/g, ' ')}
                     </div>
                   </div>
                 </Link>
@@ -202,6 +212,6 @@ export default function Dashboard() {
             ))}
         </div>
       )}
-    </motion.div>
+    </div>
   );
 }
