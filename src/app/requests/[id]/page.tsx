@@ -188,18 +188,18 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
   };
 
   return (
-    <div className="layout" style={{ paddingTop: '24px', paddingBottom: '60px' }}>
+    <div className="layout" style={{ paddingTop: '24px', paddingBottom: '140px' }}>
       {/* NATIVE HEADER */}
       <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 16px', marginBottom: '24px' }}>
         <button onClick={() => router.back()} style={{ background: 'transparent', border: 'none', color: 'var(--accent)', fontSize: '17px', display: 'flex', alignItems: 'center', gap: '4px', padding: 0 }}>
           <ArrowLeft size={22} /> Retour
         </button>
-        <div style={{ fontSize: '15px', fontWeight: 600, color: 'var(--foreground)' }}>
+        <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--faded)', textTransform: 'uppercase' }}>
           {request.status.replace(/_/g, ' ')}
         </div>
       </header>
 
-      {/* SECTION 1: VISUAL & TITLE */}
+      {/* CORE INFO */}
       <div style={{ padding: '0 16px', marginBottom: '32px' }}>
         {request.imageUrl && (
           <img 
@@ -209,171 +209,142 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
           />
         )}
         <h1 className="title">{request.title}</h1>
-        <p className="subtitle">ID: {params.id.slice(0, 8).toUpperCase()}</p>
+        <p className="subtitle">ID: {params.id.slice(0, 8).toUpperCase()} • Taille {request.size || 'STD'}</p>
       </div>
 
-      {/* SECTION 2: TIMELINE & VALIDATION */}
-      <p style={{ padding: '0 16px', fontSize: '13px', fontWeight: 600, color: 'var(--faded)', marginBottom: '8px', textTransform: 'uppercase' }}>Timeline & Validation</p>
+      {/* FINANCE (AUTO-SAVE) */}
       <div className="list-group">
-        {request.deliveryEstimation && (
-          <div className="row-item" style={{ background: 'rgba(0, 122, 255, 0.05)' }}>
-             <label style={{ color: 'var(--accent)' }}>Calendrier Estimé</label>
-             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '4px' }}>
-                <div>
-                   <p style={{ fontSize: '12px', color: 'var(--faded)', margin: 0 }}>Prod. terminée</p>
-                   <p style={{ fontSize: '15px', fontWeight: 600, margin: 0 }}>{new Date(request.productionDeadline).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}</p>
-                </div>
-                <div style={{ height: '1px', flex: 1, background: 'var(--separator)', margin: '0 16px' }}></div>
-                <div style={{ textAlign: 'right' }}>
-                   <p style={{ fontSize: '12px', color: 'var(--faded)', margin: 0 }}>Arrivée prévue</p>
-                   <p style={{ fontSize: '15px', fontWeight: 600, color: 'var(--success)', margin: 0 }}>{new Date(request.deliveryEstimation).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}</p>
-                </div>
-             </div>
-          </div>
-        )}
-        
-        {request.status === 'MANAGER_REVIEW' && (
-          <div className="row-item">
-            <a 
-              href={`https://wa.me/33607808501?text=${encodeURIComponent(`Validation pour ${request.title} en taille ${request.size}\n${window.location.origin}/review/${params.id}`)}`}
-              target="_blank" rel="noopener noreferrer" style={{ color: 'var(--success)', fontSize: '17px', fontWeight: 600, textDecoration: 'none', textAlign: 'center', padding: '4px 0' }}
-            >
-              Envoyer à Mirza WhatsApp
-            </a>
-          </div>
-        )}
-
-        <div className="row-item" style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-           <span style={{ fontSize: '17px' }}>Statut Manuel</span>
-           <select value={request.status} onChange={(e) => moveNextStep(e.target.value)} style={{ width: 'auto', textAlign: 'right', color: 'var(--faded)', padding: 0 }}>
-              <option value="WAITING_FOR_QUOTE">Attente Devis</option>
-              <option value="QUOTED">Devis Reçus</option>
-              <option value="MANAGER_REVIEW">Review Mirza</option>
-              <option value="WAITING_FOR_DEPOSIT">Attente Acompte</option>
-              <option value="IN_PRODUCTION">En Production</option>
-              <option value="FINAL_PAYMENT">Attente Solde</option>
-              <option value="SHIPPED">Expédié</option>
-              <option value="DELIVERED">Terminé</option>
-           </select>
-        </div>
-      </div>
-
-      {/* SECTION 3: FINANCE & PROFIT */}
-      <p style={{ padding: '0 16px', fontSize: '13px', fontWeight: 600, color: 'var(--faded)', marginBottom: '8px', textTransform: 'uppercase' }}>Finance & Profit</p>
-      <div className="list-group">
-        <div className="row-item">
+        <div className="row-item" style={{ padding: '16px' }}>
           <label>Prix de Vente Client (€)</label>
-          <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-             <input type="number" value={sellingPrice} onChange={e => setSellingPrice(e.target.value)} placeholder="0.00" style={{ fontSize: '22px', fontWeight: 600, flex: 1, padding: 0 }} />
-             <button className="btn btn-ghost" onClick={updateSellingPrice} style={{ padding: '4px' }}><Save size={20} /></button>
-          </div>
+          <input 
+            type="number" 
+            value={sellingPrice} 
+            onChange={e => setSellingPrice(e.target.value)} 
+            onBlur={updateSellingPrice}
+            placeholder="0.00" 
+            style={{ fontSize: '34px', fontWeight: 700, padding: 0, marginTop: '4px', color: sellingPrice ? 'var(--foreground)' : 'var(--faded)' }} 
+          />
         </div>
 
         {getFinancialTotals() && (
           <div className="row-item" style={{ background: 'var(--background)' }}>
-             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                <div>
-                   <p style={{ fontSize: '12px', color: 'var(--faded)', margin: 0 }}>Bénéfice Net</p>
-                   <p style={{ fontSize: '19px', fontWeight: 600, color: 'var(--success)', margin: '4px 0 0 0' }}>{getFinancialTotals()?.profit.toFixed(2)} €</p>
-                </div>
-                <div style={{ textAlign: 'right' }}>
-                   <p style={{ fontSize: '12px', color: 'var(--faded)', margin: 0 }}>Part par pers.</p>
-                   <p style={{ fontSize: '19px', fontWeight: 600, color: 'var(--foreground)', margin: '4px 0 0 0' }}>{(getFinancialTotals()?.profit! / 2).toFixed(2)} €</p>
-                </div>
+             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                <span style={{ fontSize: '15px' }}>Bénéfice Net</span>
+                <span style={{ fontSize: '17px', fontWeight: 600, color: 'var(--success)' }}>{getFinancialTotals()?.profit.toFixed(0)} €</span>
              </div>
-             
-             <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: '0.5px solid var(--separator)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', marginBottom: '8px' }}>
-                  <span style={{ color: 'var(--faded)' }}>Coût Usine & DHL</span>
-                  <span>{getFinancialTotals()?.costEUR.toFixed(2)} €</span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', marginBottom: '8px' }}>
-                  <span style={{ color: 'var(--faded)' }}>Acompte Versé</span>
-                  <span style={{ color: 'var(--success)' }}>{getFinancialTotals()?.paid.toFixed(2)} €</span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '15px', fontWeight: 600 }}>
-                  <span>Reste à Payer</span>
-                  <span style={{ color: getFinancialTotals()?.balance! <= 0 ? 'var(--success)' : 'var(--danger)' }}>
-                    {getFinancialTotals()?.balance! <= 0 ? "Solde OK" : `${getFinancialTotals()?.balance.toFixed(2)} €`}
-                  </span>
-                </div>
+             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ fontSize: '15px' }}>Part par pers.</span>
+                <span style={{ fontSize: '17px', fontWeight: 600 }}>{(getFinancialTotals()?.profit! / 2).toFixed(0)} €</span>
              </div>
           </div>
         )}
-
-        <div className="row-item" style={{ flexDirection: 'row' }}>
-           <button style={{ flex: 1, background: 'transparent', border: 'none', color: 'var(--accent)', fontSize: '15px', padding: '8px' }} onClick={() => generatePDF('QUOTE')}>
-              Générer Devis PDF
-           </button>
-           <div style={{ width: '0.5px', background: 'var(--separator)', margin: '0 8px' }}></div>
-           <button style={{ flex: 1, background: 'transparent', border: 'none', color: 'var(--accent)', fontSize: '15px', padding: '8px' }} onClick={() => generatePDF('INVOICE')}>
-              Recap Interne PDF
-           </button>
-        </div>
       </div>
 
-      {/* SECTION 4: USINES & DEVIS */}
-      <p style={{ padding: '0 16px', fontSize: '13px', fontWeight: 600, color: 'var(--faded)', marginBottom: '8px', textTransform: 'uppercase' }}>Usines & Devis</p>
+      {/* QUOTES */}
       <div className="list-group">
-        <div className="row-item" style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span style={{ fontSize: '17px' }}>Nouveau Lien Usine</span>
-          <button style={{ border: 'none', background: 'transparent', color: 'var(--accent)', display: 'flex', padding: '4px' }} onClick={generateSupplierLink} disabled={generatingLink}>
-             {generatingLink ? 'Création...' : <Share size={20} />}
-          </button>
-        </div>
-
         {quotes.map(q => (
-          <div key={q.id} className="row-item" style={{ background: request.acceptedQuoteId === q.id ? 'rgba(52, 199, 89, 0.05)' : 'transparent' }}>
-             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+          <div key={q.id} className="row-item">
+             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
                 <h4 style={{ margin: 0, fontSize: '17px', fontWeight: 600 }}>{q.supplierName}</h4>
                 <p style={{ margin: 0, fontSize: '17px', fontWeight: 600 }}>¥{q.priceRMB}</p>
              </div>
-             <p style={{ fontSize: '13px', color: 'var(--faded)', margin: '0 0 12px 0' }}>Or {q.goldWeight}g • Tot {q.totalWeight}g • Diam: {q.diamondCount} ({q.totalCarat}ct) • {q.productionTimeDays} jours</p>
+             <p style={{ fontSize: '13px', color: 'var(--faded)', margin: '0 0 12px 0' }}>Or {q.goldWeight}g • Diam: {q.diamondCount} ({q.totalCarat}ct) • {q.productionTimeDays}j</p>
              {request.acceptedQuoteId === q.id ? (
-               <span style={{ fontSize: '14px', color: 'var(--success)', fontWeight: 600 }}>Devis Accepté</span>
+               <span style={{ fontSize: '14px', color: 'var(--success)', fontWeight: 600 }}>Accepté ✓</span>
              ) : (
                <button 
-                 style={{ width: 'auto', alignSelf: 'flex-start', background: 'transparent', color: 'var(--accent)', border: 'none', fontSize: '14px', fontWeight: 600, padding: 0 }}
+                 style={{ width: 'auto', alignSelf: 'flex-start', background: 'transparent', color: 'var(--accent)', border: 'none', fontSize: '15px', fontWeight: 600, padding: 0 }}
                  onClick={() => acceptQuote(q)}
                  disabled={request.status !== 'QUOTED'}
                >
-                  Accepter
+                  Accepter ce devis
                </button>
              )}
           </div>
         ))}
         {quotes.length === 0 && (
-          <div className="row-item" style={{ textAlign: 'center', color: 'var(--faded)', fontSize: '15px' }}>Aucun devis reçu.</div>
+          <div className="row-item" style={{ textAlign: 'center', color: 'var(--faded)', fontSize: '15px', border: 'none' }}>
+            Aucun devis reçu pour l'instant.
+          </div>
         )}
       </div>
 
-      {/* SECTION 5: SPECS & SUPPRESSION */}
-      <p style={{ padding: '0 16px', fontSize: '13px', fontWeight: 600, color: 'var(--faded)', marginBottom: '8px', textTransform: 'uppercase' }}>Spécifications</p>
-      <div className="list-group">
-        <div className="row-item" style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-           <span style={{ fontSize: '17px' }}>Taille Demandée</span>
-           {isEditingSize ? (
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <select value={newSize} onChange={e => setNewSize(e.target.value)} style={{ padding: 0, color: 'var(--accent)', textAlign: 'right' }}>
-                  {sizeOptions.map(s => <option key={s} value={s}>{s}</option>)}
-                </select>
-                <button onClick={updateSize} style={{ border: 'none', background: 'transparent', color: 'var(--accent)', fontWeight: 600 }}>OK</button>
-              </div>
-            ) : (
-              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                <span style={{ fontSize: '17px', color: 'var(--faded)' }}>{request.size}</span>
-                <button style={{ border: 'none', background: 'transparent', color: 'var(--accent)', padding: 0 }} onClick={() => setIsEditingSize(true)}><Edit3 size={16} /></button>
-              </div>
-            )}
+      {/* TIMELINE */}
+      {request.deliveryEstimation && (
+        <div className="list-group">
+           <div className="row-item">
+             <label>Calendrier Estimé</label>
+             <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '8px' }}>
+                <div>
+                   <p style={{ fontSize: '13px', color: 'var(--faded)', margin: 0 }}>Prod. Usine</p>
+                   <p style={{ fontSize: '15px', fontWeight: 600, margin: 0 }}>{new Date(request.productionDeadline).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}</p>
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                   <p style={{ fontSize: '13px', color: 'var(--faded)', margin: 0 }}>Arrivée France</p>
+                   <p style={{ fontSize: '15px', fontWeight: 600, color: 'var(--success)', margin: 0 }}>{new Date(request.deliveryEstimation).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}</p>
+                </div>
+             </div>
+           </div>
         </div>
-        <div className="row-item" style={{ flexDirection: 'row', justifyContent: 'center' }}>
-           <button style={{ border: 'none', background: 'transparent', color: 'var(--danger)', fontSize: '17px', padding: '4px' }} onClick={async () => { if (confirm("Supprimer ce projet ?")) { await set(rtdbRef(rtdb, `requests/${params.id}`), null); router.push("/"); }}}>
-              Supprimer le Projet
-           </button>
-        </div>
+      )}
+
+      {/* ADVANCED OVERRIDE (HIDDEN) */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0 16px', opacity: 0.5 }}>
+         <select value={request.status} onChange={(e) => moveNextStep(e.target.value)} style={{ width: 'auto', fontSize: '13px', color: 'var(--faded)', padding: 0, fontWeight: 500 }}>
+             <option value="WAITING_FOR_QUOTE">Override: Attente Devis</option>
+             <option value="QUOTED">Override: Devis Reçus</option>
+             <option value="MANAGER_REVIEW">Override: Review Mirza</option>
+             <option value="WAITING_FOR_DEPOSIT">Override: Attente Acompte</option>
+             <option value="IN_PRODUCTION">Override: En Production</option>
+             <option value="SHIPPED">Override: Expédié</option>
+             <option value="DELIVERED">Override: Terminé</option>
+         </select>
+         <button style={{ border: 'none', background: 'transparent', color: 'var(--danger)', fontSize: '13px' }} onClick={async () => { if (confirm("Supprimer ce projet ?")) { await set(rtdbRef(rtdb, `requests/${params.id}`), null); router.push("/"); }}}>
+            Supprimer
+         </button>
       </div>
 
-      {copiedLink && <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ position: 'fixed', bottom: 40, left: '50%', transform: 'translateX(-50%)', background: 'rgba(0,0,0,0.8)', color: '#fff', padding: '12px 24px', borderRadius: '24px', fontSize: '14px', fontWeight: 500, backdropFilter: 'blur(10px)', zIndex: 100 }}>Lien Copié</motion.div>}
+      {/* SMART BOTTOM DASHBOARD (Ergonomics) */}
+      <div style={{ position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)', width: '100%', maxWidth: '500px', background: 'rgba(242, 242, 247, 0.85)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', borderTop: '0.5px solid var(--separator)', padding: '16px 20px 32px 20px', zIndex: 100 }}>
+         {request.status === 'WAITING_FOR_QUOTE' && (
+           <button className="btn" style={{ width: '100%' }} onClick={generateSupplierLink} disabled={generatingLink}>
+             {generatingLink ? 'Création...' : 'Partager Lien Usine'}
+           </button>
+         )}
+         {request.status === 'QUOTED' && quotes.length > 0 && (
+           <div style={{ textAlign: 'center', fontWeight: 600, color: 'var(--faded)', fontSize: '15px', padding: '14px 0' }}>
+             Analysez et acceptez un devis ci-dessus
+           </div>
+         )}
+         {request.status === 'MANAGER_REVIEW' && (
+           <a href={`https://wa.me/33607808501?text=${encodeURIComponent(`Validation. Taille ${request.size}\n${window.location.origin}/review/${params.id}`)}`} target="_blank" rel="noopener noreferrer" className="btn" style={{ width: '100%', background: 'var(--success)' }}>
+             Demander Validation (Mirza)
+           </a>
+         )}
+         {request.status === 'WAITING_FOR_DEPOSIT' && (
+           <button className="btn" style={{ width: '100%' }} onClick={() => moveNextStep('IN_PRODUCTION')}>
+             Acompte Reçu (Lancer Prod.)
+           </button>
+         )}
+         {request.status === 'IN_PRODUCTION' && (
+           <button className="btn btn-ghost" style={{ width: '100%', border: '1px solid var(--accent)' }} onClick={() => moveNextStep('SHIPPED')}>
+             Marquer comme Expédié
+           </button>
+         )}
+         {request.status === 'SHIPPED' && (
+           <button className="btn" style={{ width: '100%' }} onClick={() => moveNextStep('DELIVERED')}>
+             Marquer comme Livré
+           </button>
+         )}
+         {request.status === 'DELIVERED' && (
+           <div style={{ display: 'flex', gap: '12px' }}>
+             <button className="btn btn-ghost" style={{ flex: 1, background: 'rgba(0,122,255,0.1)' }} onClick={() => generatePDF('QUOTE')}>Devis PDF</button>
+             <button className="btn btn-ghost" style={{ flex: 1, background: 'rgba(0,122,255,0.1)' }} onClick={() => generatePDF('INVOICE')}>Facture PDF</button>
+           </div>
+         )}
+      </div>
+
+      {copiedLink && <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} style={{ position: 'fixed', top: '20px', left: '50%', transform: 'translateX(-50%)', background: 'var(--foreground)', color: 'var(--background)', padding: '12px 24px', borderRadius: '24px', textAlign: 'center', fontWeight: 600, fontSize: '14px', zIndex: 110, boxShadow: '0 10px 20px rgba(0,0,0,0.2)' }}>Lien Copié</motion.div>}
     </div>
   );
 }
