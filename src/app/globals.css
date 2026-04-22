@@ -128,26 +128,34 @@ input:focus {
 /* NATIVE SYSTEM BUTTONS */
 .btn {
   background: var(--accent);
-  color: white;
+  color: #fff;
   border: none;
-  border-radius: 10px; /* Standard iOS button radius */
-  padding: 14px 20px;
+  padding: 14px 24px;
+  border-radius: 12px;
   font-size: 17px;
   font-weight: 600;
   cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  transition: opacity 0.2s ease;
+  min-height: 50px;
 }
 
 .btn:active {
-  opacity: 0.7;
+  transform: scale(0.96);
+  opacity: 0.8;
+}
+
+.btn:disabled {
+  background: var(--secondary-bg);
+  color: var(--faded);
+  cursor: not-allowed;
 }
 
 .btn-ghost {
-  background: transparent;
+  background: rgba(120, 120, 128, 0.1);
   color: var(--accent);
 }
 
