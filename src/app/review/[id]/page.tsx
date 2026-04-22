@@ -3,7 +3,9 @@
 import { useEffect, useState } from "react";
 import { rtdb, rtdbRef, get, update } from "@/lib/firebase";
 import { motion } from "framer-motion";
-import { CheckCircle, XCircle } from "lucide-react";
+import { toast } from "sonner";
+import { CheckCircle, XCircle, ChevronRight } from "lucide-react";
+import { SmartImage } from "@/components/ui/SmartImage";
 
 export default function MirzaReview({ params }: { params: { id: string } }) {
   const [request, setRequest] = useState<any>(null);
@@ -45,136 +47,113 @@ export default function MirzaReview({ params }: { params: { id: string } }) {
     setLoading(true);
     try {
       const nextStatus = status === "APPROVED" ? "WAITING_FOR_DEPOSIT" : "WAITING_FOR_QUOTE";
-      
-      const updates: any = {
-        status: nextStatus,
-        mirzaDecision: status,
-        goldColor,
-        size, // Nouvelle taille (peut être la même ou modifiée)
-        updatedAt: Date.now()
-      };
-
-      // TRACE DE SÉCURITÉ : Si la taille est différente de l'originale
+      const updates: any = { status: nextStatus, mirzaDecision: status, goldColor, size, updatedAt: Date.now() };
       if (status === "APPROVED" && request.size !== size) {
         updates.originalSizeBeforeMirza = request.size;
         updates.sizeChangedByMirza = true;
       }
-
       await update(rtdbRef(rtdb, `requests/${params.id}`), updates);
       setDecision(status);
     } catch (e) {
-      alert("Erreur réseau");
+      toast.error("Erreur réseau");
     } finally {
       setLoading(false);
     }
   };
 
-  if (loading) return <div className="layout py-20 text-center font-bold">CHARGEMENT...</div>;
-  if (!request) return <div className="layout py-20 text-center">LIEN INVALIDE</div>;
+  if (loading) return <div className="layout" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', fontWeight: 900 }}>CHARGEMENT...</div>;
+  if (!request) return <div className="layout">LIEN INVALIDE</div>;
 
   if (decision) {
     return (
-      <div className="layout" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', textAlign: 'center' }}>
-        <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}>
-          <h1 className="title" style={{ color: decision === "APPROVED" ? '#34c759' : '#ff3b30', fontSize: '1.8rem' }}>
-            {decision === "APPROVED" ? "VALIDÉ ✅" : "REFUSÉ ❌"}
+      <div className="layout" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', textAlign: 'center', background: '#fff' }}>
+        <header style={{ position: 'absolute', top: '64px', width: '100%' }}>
+          <h1 className="cyber-title" style={{ fontSize: '24px', letterSpacing: '-0.08em' }}>
+            LOG<span style={{ color: 'var(--accent)' }}>IS.</span>
           </h1>
-          <p className="subtitle mt-2">DÉCISION ENREGISTRÉE DANS LE SYSTÈME</p>
+        </header>
+        <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}>
+          <div style={{ width: '80px', height: '80px', borderRadius: '40px', background: decision === "APPROVED" ? 'var(--accent)' : '#FF3B30', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px auto', boxShadow: '0 20px 40px rgba(0,0,0,0.05)' }}>
+            {decision === "APPROVED" ? <CheckCircle color="#fff" size={40} /> : <XCircle color="#fff" size={40} />}
+          </div>
+          <h1 style={{ fontWeight: 900, fontSize: '24px' }}>DECISION SYNCED</h1>
+          <p style={{ marginTop: '12px', color: 'var(--faded)', fontWeight: 600 }}>Action updated in system.</p>
         </motion.div>
       </div>
     );
   }
 
   return (
-    <div className="layout" style={{ 
-      height: '100vh', 
-      overflow: 'hidden', 
-      display: 'flex', 
-      flexDirection: 'column',
-      padding: '24px',
-      background: '#fff'
-    }}>
-      <header style={{ textAlign: 'center', marginBottom: '16px' }}>
-        <p style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '2px', color: '#8E8E93', fontWeight: 600 }}>VÉRIFICATION ADMINISTRATIVE</p>
-        <h1 style={{ fontSize: '1.4rem', fontWeight: 700, margin: '4px 0' }}>{request.title.toUpperCase()}</h1>
-      </header>
-
-      <div style={{ flex: 1, position: 'relative', borderRadius: '20px', overflow: 'hidden', background: '#F2F2F7', marginBottom: '24px' }}>
-        {request.imageUrl && (
-          <img src={request.imageUrl} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-        )}
+    <div className="layout" style={{ background: '#fff', minHeight: '100vh', paddingBottom: '160px' }}>
+      
+      {/* IMMERSIVE PRODUCT HERO */}
+      <div style={{ position: 'relative', height: '400px', backgroundColor: '#fff', overflow: 'hidden', borderRadius: '0 0 40px 40px', boxShadow: '0 20px 40px rgba(0,0,0,0.02)' }}>
+         {request.imageUrl && <SmartImage src={request.imageUrl} style={{ width: '100%', height: '100%' }} />}
       </div>
 
-      <div style={{ marginBottom: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-        <div style={{ display: 'flex', gap: '12px' }}>
-           <div style={{ flex: 1 }}>
-             <label style={{ fontSize: '0.7rem', textTransform: 'uppercase', color: '#8E8E93', marginBottom: '6px', display: 'block', fontWeight: 600 }}>CATÉGORIE</label>
-             <select 
-               value={category} 
-               onChange={(e) => {
-                 const cat = e.target.value as any;
-                 setCategory(cat);
-                 setSize(sizeOptions[cat as keyof typeof sizeOptions][0]);
-               }}
-               style={{ width: '100%', padding: '14px', borderRadius: '12px', background: '#F2F2F7', border: 'none', fontWeight: 700, fontSize: '0.9rem', appearance: 'none' }}
-             >
-               <option value="Bague">BAGUE</option>
-               <option value="Bracelet">BRACELET</option>
-               <option value="Collier">COLLIER</option>
-             </select>
-           </div>
-           <div style={{ flex: 1 }}>
-             <label style={{ fontSize: '0.7rem', textTransform: 'uppercase', color: '#8E8E93', marginBottom: '6px', display: 'block', fontWeight: 600 }}>TAILLE / LONGUEUR</label>
-             <select 
-               value={size} 
-               onChange={(e) => setSize(e.target.value)}
-               style={{ width: '100%', padding: '14px', borderRadius: '12px', background: '#F2F2F7', border: 'none', fontWeight: 700, fontSize: '0.9rem', appearance: 'none' }}
-             >
-               {sizeOptions[category as keyof typeof sizeOptions].map(s => <option key={s} value={s}>{s}</option>)}
-             </select>
-           </div>
-        </div>
+      <header style={{ padding: '32px 32px 8px 32px' }}>
+        <p className="cyber-label" style={{ color: 'var(--accent)', marginBottom: '4px' }}>ADMINISTRATIVE REVIEW</p>
+        <h1 style={{ fontWeight: 900, fontSize: '32px', letterSpacing: '-0.04em', textTransform: 'uppercase' }}>{request.title}</h1>
+      </header>
 
-        <div>
-          <label style={{ fontSize: '0.7rem', textTransform: 'uppercase', color: '#8E8E93', marginBottom: '6px', display: 'block', fontWeight: 600 }}>COULEUR DE L'OR</label>
-          <div style={{ display: 'flex', gap: '10px' }}>
-            {goldColors.map(color => (
-              <button 
-                key={color.value}
-                onClick={() => setGoldColor(color.value)}
-                style={{ 
-                  flex: 1, 
-                  padding: '12px 4px', 
-                  borderRadius: '12px', 
-                  fontSize: '0.7rem',
-                  fontWeight: 700,
-                  border: goldColor === color.value ? '2px solid #007AFF' : '1px solid #E5E5EA',
-                  background: goldColor === color.value ? '#007AFF' : '#fff',
-                  color: goldColor === color.value ? '#fff' : '#000',
-                  transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
-                }}
-              >
-                {color.label}
-              </button>
-            ))}
+      <div style={{ padding: '32px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '40px' }}>
+          
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+            <div style={{ background: '#F9F9F9', padding: '20px', borderRadius: '28px' }}>
+               <span className="cyber-label" style={{ fontSize: '8px' }}>CATEGORY</span>
+               <select 
+                 value={category} 
+                 onChange={(e) => { const cat = e.target.value as any; setCategory(cat); setSize(sizeOptions[cat as keyof typeof sizeOptions][0]); }}
+                 style={{ width: '100%', background: 'transparent', fontSize: '18px', fontWeight: 900, marginTop: '8px' }}
+               >
+                 <option value="Bague">Bagué</option>
+                 <option value="Bracelet">Bracelet</option>
+                 <option value="Collier">Collier</option>
+               </select>
+            </div>
+            <div style={{ background: '#F9F9F9', padding: '20px', borderRadius: '28px' }}>
+               <span className="cyber-label" style={{ fontSize: '8px' }}>FINAL SIZE</span>
+               <select 
+                 value={size} onChange={(e) => setSize(e.target.value)}
+                 style={{ width: '100%', background: 'transparent', fontSize: '18px', fontWeight: 900, marginTop: '8px', color: 'var(--accent)' }}
+               >
+                 {sizeOptions[category as keyof typeof sizeOptions].map(s => <option key={s} value={s}>{s}</option>)}
+               </select>
+            </div>
+          </div>
+
+          <div>
+             <p className="cyber-label" style={{ marginBottom: '16px' }}>GOLD COLOR / 黄金颜色</p>
+             <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '8px' }} className="hide-scrollbar">
+                {goldColors.map(c => (
+                   <button 
+                     key={c.value} onClick={() => setGoldColor(c.value)}
+                     style={{ 
+                       padding: '14px 24px', borderRadius: '24px', border: 'none',
+                       background: goldColor === c.value ? '#000' : '#F9F9F9',
+                       color: goldColor === c.value ? '#fff' : '#000',
+                       fontSize: '12px', fontWeight: 900, cursor: 'pointer',
+                       transition: 'all 0.3s ease', flexShrink: 0
+                     }}
+                   >
+                     {c.label}
+                   </button>
+                ))}
+             </div>
           </div>
         </div>
       </div>
 
-      <div style={{ display: 'flex', gap: '16px', marginBottom: '10px' }}>
-        <button 
-          onClick={() => handleDecision("REJECTED")}
-          style={{ flex: 1, padding: '22px', borderRadius: '16px', background: '#FF3B30', color: '#fff', fontSize: '1rem', fontWeight: 800, border: 'none', boxShadow: '0 4px 12px rgba(255, 59, 48, 0.2)' }}
-        >
-          REFUSER
-        </button>
-        <button 
-          onClick={() => handleDecision("APPROVED")}
-          style={{ flex: 1, padding: '22px', borderRadius: '16px', background: '#34C759', color: '#fff', fontSize: '1rem', fontWeight: 800, border: 'none', boxShadow: '0 4px 12px rgba(52, 199, 89, 0.2)' }}
-        >
-          VALIDER
-        </button>
+      <div className="vision-pill-container" style={{ position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)', padding: '40px 24px', pointerEvents: 'none' }}>
+         <div className="vision-pill" style={{ width: '280px', pointerEvents: 'auto' }}>
+            <button onClick={() => handleDecision("REJECTED")} className="vision-action" style={{ color: '#FF3B30' }}>REJECT</button>
+            <button onClick={() => handleDecision("APPROVED")} className="vision-action accent" style={{ width: '100%' }}>
+               APPROVE <ChevronRight size={18} strokeWidth={3} />
+            </button>
+         </div>
       </div>
+
     </div>
   );
 }

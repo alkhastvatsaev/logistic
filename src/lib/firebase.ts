@@ -1,8 +1,8 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
-import { getStorage } from "firebase/storage";
+import { getStorage, ref as storageRef, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { getAuth, signInAnonymously } from "firebase/auth";
-import { getDatabase, ref as rtdbRef, set, onValue, push, get, update } from "firebase/database";
+import { getDatabase, ref as rtdbRef, set, onValue, push, get, update, remove } from "firebase/database";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -43,4 +43,4 @@ export const waitForAuth = () => {
   });
 };
 
-export { app, db, storage, auth, rtdb, rtdbRef, set, onValue, push, get, update };
+export { app, db, storage, storageRef, uploadBytesResumable, getDownloadURL, auth, rtdb, rtdbRef, set, onValue, push, get, update, remove };

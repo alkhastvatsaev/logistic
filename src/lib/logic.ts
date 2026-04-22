@@ -3,15 +3,37 @@
  * Extracted for testability and consistency.
  */
 
-export const EUR_RMB_RATE = 0.13;
+export const EUR_RMB_RATE_DEFAULT = 0.135;
 export const SHIPPING_DAYS_TO_FRANCE = 7;
 
+/**
+ * Fetches the live exchange rate from CNY to EUR.
+ * Includes a safety buffer for banking and transfer fees.
+ */
+export async function fetchLiveRate(): Promise<number> {
+  try {
+    const res = await fetch('https://api.frankfurter.app/latest?from=CNY&to=EUR');
+    const data = await res.json();
+    const marketRate = data.rates.EUR;
+    // Add 3.5% buffer for Wise/Bank fees and volatility
+    return parseFloat((marketRate * 1.035).toFixed(4));
+  } catch (e) {
+    console.error("FX API Error, using safety default", e);
+    return EUR_RMB_RATE_DEFAULT;
+  }
+}
+
 export interface FinancialTotals {
+  itemCostEUR: number;
+  shippingEUR: number;
   costEUR: number;
   sPrice: number;
   profit: number;
   paid: number;
   balance: number;
+  adamPart: number;
+  mirzaPart: number;
+  rateUsed: number;
 }
 
 /**
@@ -20,18 +42,31 @@ export interface FinancialTotals {
 export function calculateFinancialTotals(
   acceptedQuote: { priceRMB: number; shippingCostRMB: number } | undefined,
   sellingPriceStr: string,
-  payments: { amount: string | number }[]
+  payments: { amount: string | number }[],
+  customRate?: number
 ): FinancialTotals | null {
   if (!acceptedQuote) return null;
 
-  const costRMB = (Number(acceptedQuote.priceRMB) || 0) + (Number(acceptedQuote.shippingCostRMB) || 0);
-  const costEUR = costRMB * EUR_RMB_RATE;
+  // We use a predefined rate if no custom rate is provided (Market + Safety Buffer)
+  // Current average is ~0.128, using 0.135 to cover fees & volatility
+  const rate = customRate || 0.135; 
+
+  const itemCostRMB = Number(acceptedQuote.priceRMB) || 0;
+  const shippingRMB = Number(acceptedQuote.shippingCostRMB) || 0;
+  
+  const itemCostEUR = itemCostRMB * rate;
+  const shippingEUR = shippingRMB * rate;
+  const costEUR = itemCostEUR + shippingEUR;
+  
   const sPrice = parseFloat(sellingPriceStr) || 0;
   const profit = sPrice - costEUR;
   const paid = payments.reduce((acc, p) => acc + (Number(p.amount) || 0), 0);
   const balance = sPrice - paid;
 
-  return { costEUR, sPrice, profit, paid, balance };
+  const adamPart = profit / 2;
+  const mirzaPart = profit / 2;
+
+  return { itemCostEUR, shippingEUR, costEUR, sPrice, profit, paid, balance, adamPart, mirzaPart, rateUsed: rate };
 }
 
 /**

@@ -1,180 +1,149 @@
 :root {
-  /* AVANT-GARDE 2030 THEME : Obsidian & Neon */
-  --background: #000000;
-  --secondary-bg: rgba(25, 25, 25, 0.6);
-  --foreground: #FFFFFF;
+  /* TITANE VISION 2030 */
+  --background: #FFFFFF;
+  --foreground: #000000;
+  --accent: #0044FF; 
+  --accent-glow: rgba(0, 68, 255, 0.15);
   
-  --accent: #E0FF00; /* Neon Yellow/Green - High contrast */
-  --accent-glow: rgba(224, 255, 0, 0.2);
+  --faded: rgba(0, 0, 0, 0.4);
+  --separator: rgba(0, 0, 0, 0.04);
   
-  --success: #00FF66;
-  --danger: #FF0055;
-  --warning: #FF3300;
-  
-  --faded: rgba(255, 255, 255, 0.4);
-  --separator: rgba(255, 255, 255, 0.05);
+  --shadow-float: 0 40px 80px rgba(0, 0, 0, 0.08);
+}
+
+::selection {
+  background: var(--accent);
+  color: white;
 }
 
 * {
   box-sizing: border-box;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  -webkit-tap-highlight-color: transparent;
+  margin: 0; padding: 0;
 }
 
 body {
-  margin: 0;
-  padding: 0;
-  font-family: "Inter", "Helvetica Neue", sans-serif;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   background: var(--background);
   color: var(--foreground);
   overflow-x: hidden;
-  min-height: 100vh;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.035em; /* Tighter Apple tracking */
 }
 
+/* NO BORDERS, PURE SPACE */
 .layout {
-  max-width: 500px;
+  max-width: 480px;
   margin: 0 auto;
-  position: relative;
   min-height: 100vh;
+  position: relative;
+  background: var(--background);
 }
 
-/* TYPOGRAPHY DYNAMIQUE (No Boundaries) */
-h1.title {
-  font-size: clamp(40px, 10vw, 64px);
-  font-weight: 800;
+/* CYBER TYPOGRAPHY (TITANE ARCHITECTURE) */
+.cyber-title {
+  font-size: clamp(40px, 10vw, 56px);
+  font-weight: 900;
+  letter-spacing: -0.06em;
+  line-height: 0.85;
+  text-transform: uppercase;
+}
+.cyber-title-sm {
+  font-size: 32px;
+  font-weight: 900;
   letter-spacing: -0.05em;
-  line-height: 0.9;
-  margin: 0;
-  color: var(--foreground);
-  text-transform: uppercase;
+  line-height: 1;
 }
-
-.subtitle {
-  font-size: 14px;
-  font-weight: 400;
+.cyber-label {
+  font-size: 10px;
+  font-weight: 800;
   color: var(--faded);
-  margin: 8px 0 0 0;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
 }
 
-/* FLOATING WIDGETS (Replacing standard cards) */
-.widget {
-  background: var(--secondary-bg);
-  backdrop-filter: blur(30px);
-  -webkit-backdrop-filter: blur(30px);
-  border-radius: 24px;
-  padding: 24px;
-  border: 1px solid var(--separator);
-  margin-bottom: 16px;
-}
-
-.widget-glass {
-  background: transparent;
-  padding: 16px 0;
-  border-bottom: 1px solid var(--separator);
-}
-
-/* FLOATING PILL NAVIGATION (Dynamic Island Concept) */
-.floating-pill-container {
-  position: fixed;
-  bottom: 24px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: calc(100% - 32px);
-  max-width: 468px;
-  z-index: 9999;
-  display: flex;
-  justify-content: center;
-}
-
-.floating-pill {
-  background: rgba(20, 20, 20, 0.85);
-  backdrop-filter: blur(40px);
+/* GLASSMORPHISM REFINEMENT */
+.vision-pill {
+  background: rgba(0, 0, 0, 0.4); /* Much lighter, more glass-like */
+  backdrop-filter: blur(40px); /* Deep blur */
   -webkit-backdrop-filter: blur(40px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 6px;
   border-radius: 100px;
-  padding: 8px;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  box-shadow: 0 20px 40px rgba(0,0,0,0.5);
-  width: 100%;
-  transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+  gap: 6px;
+  box-shadow: 0 40px 100px rgba(0,0,0,0.15); /* Softer shadow */
+  border: 1px solid rgba(255, 255, 255, 0.1); /* Hairline edge */
+  pointer-events: auto;
 }
 
-.pill-item {
-  color: var(--faded);
-  padding: 12px 24px;
-  border-radius: 100px;
-  font-size: 14px;
-  font-weight: 600;
-  text-decoration: none;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  gap: 8px;
+.vision-action {
+  flex: 1;
+  height: 52px;
+  border-radius: 26px;
   border: none;
   background: transparent;
+  color: rgba(255,255,255,0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 800;
   cursor: pointer;
+  text-decoration: none;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  outline: none;
 }
 
-.pill-item.active {
-  color: #000;
+.vision-action.active {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+}
+
+.vision-action.accent {
   background: var(--accent);
-  box-shadow: 0 0 20px var(--accent-glow);
+  color: #fff;
+  box-shadow: 0 8px 32px var(--accent-glow);
 }
 
-/* AVANT-GARDE BUTTONS */
-.btn-cyber {
+.vision-action:active { transform: scale(0.92); }
+
+/* BARE BONE BUTTONS (TITANE STYLE) */
+.btn-bare, .btn-main {
   background: var(--foreground);
   color: var(--background);
   border: none;
   border-radius: 100px;
-  padding: 16px 32px;
-  font-size: 16px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  padding: 24px;
+  font-size: 15px;
+  font-weight: 900;
+  letter-spacing: -0.02em;
   width: 100%;
+  cursor: pointer;
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 12px;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.btn-cyber.accent {
-  background: var(--accent);
-  color: #000;
+.btn-bare:active, .btn-main:active { transform: scale(0.96); opacity: 0.8; }
+
+/* INPUT REFINEMENTS (BORDERLESS) */
+input, select, textarea {
+  border: none !important;
+  outline: none !important;
+  font-family: inherit;
 }
 
-.btn-cyber:active {
-  transform: scale(0.95);
-  background: var(--faded);
-}
-
-.btn-cyber:disabled {
-  background: var(--secondary-bg);
-  color: var(--faded);
-}
-
-/* INPUTS MINIMALISTES */
-input.ghost-input {
-  background: transparent;
-  border: none;
-  color: var(--foreground);
-  font-size: clamp(32px, 8vw, 48px);
-  font-weight: 800;
-  letter-spacing: -0.05em;
-  width: 100%;
-  padding: 0;
-}
-input.ghost-input:focus { outline: none; }
-input.ghost-input::placeholder { color: var(--faded); }
-
+/* UTIL */
 .hide-scrollbar::-webkit-scrollbar { display: none; }
 .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type=number] {
+  -moz-appearance: textfield;
+}

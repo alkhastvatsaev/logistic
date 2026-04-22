@@ -1,4 +1,6 @@
 import type { Metadata, Viewport } from "next";
+import { Toaster } from "sonner";
+import { PageTransition } from "@/components/ui/PageTransition";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -28,8 +30,11 @@ export default function RootLayout({
         <link rel="manifest" href="/manifest.json" />
       </head>
       <body>
+        <Toaster position="top-center" richColors />
         <main className="layout">
-          {children}
+          <PageTransition>
+            {children}
+          </PageTransition>
         </main>
       </body>
     </html>

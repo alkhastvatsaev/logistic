@@ -1,349 +1,703 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { rtdb, rtdbRef, onValue, set, push, update } from "@/lib/firebase";
-import { motion } from "framer-motion";
+import { rtdb, rtdbRef, set, push, update, remove, storage, storageRef, uploadBytesResumable, getDownloadURL } from "@/lib/firebase";
+import { useRequestDetail } from "@/hooks/useFirebase";
+import { motion, AnimatePresence } from "framer-motion";
 import { calculateFinancialTotals, calculateDeliveryDates } from "@/lib/logic";
 export const dynamic = "force-dynamic";
-import { ArrowLeft, Share, Copy, CheckCircle, Trash2, Edit3, Save, Package, Clock, Truck, ShieldCheck } from "lucide-react";
+import { ArrowLeft, Trash2, ChevronRight, FileText, Copy, Check, Pencil, Save, Plus, Calculator, Truck, Package, Plane, Loader2, UploadCloud } from "lucide-react";
 import { useRouter } from "next/navigation";
-
-interface Quote {
-  id: string;
-  shareTokenId: string;
-  supplierName: string;
-  priceRMB: number;
-  totalWeight: number;
-  goldWeight: number;
-  diamondCount: number;
-  diamondType: string;
-  totalCarat: number;
-  shippingCostRMB: number;
-  productionTimeDays: number;
-  createdAt: number;
-}
+import { generateQuotePDF, generateInternalInvoicePDF } from "@/lib/pdf";
+import { toast } from "sonner";
+import { RequestStatus } from "../../page";
+import { SmartImage } from "@/components/ui/SmartImage";
+import { VisionPill } from "@/components/ui/VisionPill";
+import { TitaneLoader } from "@/components/ui/TitaneLoader";
 
 export default function RequestDetail({ params }: { params: { id: string } }) {
   const router = useRouter();
-  const [request, setRequest] = useState<any | null>(null);
-  const [quotes, setQuotes] = useState<Quote[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [generatingLink, setGeneratingLink] = useState(false);
-  const [copiedLink, setCopiedLink] = useState("");
-  const [isEditingSize, setIsEditingSize] = useState(false);
-  const [newSize, setNewSize] = useState("");
-  const [trackingNumber, setTrackingNumber] = useState("");
-  const [paymentAmount, setPaymentAmount] = useState("");
-  const [paymentReceipt, setPaymentReceipt] = useState("");
-  const [payments, setPayments] = useState<any[]>([]);
-  const [isUploadingReceipt, setIsUploadingReceipt] = useState(false);
+  const { request, quotes, payments, loading } = useRequestDetail(params.id);
   const [sellingPrice, setSellingPrice] = useState("");
-
-  const sizeOptions = Array.from({ length: 15 }, (_, i) => (49 + i).toString())
-    .concat(Array.from({ length: 9 }, (_, i) => (14 + i).toString() + " cm"))
-    .concat(["38 cm", "40 cm", "42 cm", "45 cm", "50 cm", "55 cm", "60 cm", "70 cm", "80 cm"]);
+  const [title, setTitle] = useState("");
+  const [brand, setBrand] = useState("");
+  const [size, setSize] = useState("");
+  const [category, setCategory] = useState("");
+  const [weight, setWeight] = useState("");
+  const [isEditing, setIsEditing] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [liveRate, setLiveRate] = useState(0.135);
 
   useEffect(() => {
-    const requestRef = rtdbRef(rtdb, `requests/${params.id}`);
-    const unsubsRequest = onValue(requestRef, (snapshot) => {
-      const data = snapshot.val();
-      if (data) {
-        setRequest({ id: params.id, ...data });
-        if (data.trackingNumber) setTrackingNumber(data.trackingNumber);
-        if (data.sellingPrice) setSellingPrice(data.sellingPrice.toString());
-      }
-    });
+    import("@/lib/logic").then(logic => logic.fetchLiveRate().then(setLiveRate));
+  }, []);
 
-    const quotesRef = rtdbRef(rtdb, `quotes/${params.id}`);
-    const unsubsQuotes = onValue(quotesRef, (snapshot) => {
-      const data = snapshot.val();
-      if (data) {
-        const list = Object.keys(data).map(key => ({ ...data[key], id: key }));
-        setQuotes(list);
-      } else {
-        setQuotes([]);
-      }
-      setLoading(false);
-    });
+  useEffect(() => {
+    if (request) {
+      if (request.sellingPrice) setSellingPrice(request.sellingPrice.toString());
+      if (request.title) setTitle(request.title);
+      if (request.brand) setBrand(request.brand);
+      if (request.size) setSize(request.size);
+      if (request.category) setCategory(request.category);
+      if (request.estimatedWeight) setWeight(request.estimatedWeight.toString());
+    }
+  }, [request]);
 
-    const payRef = rtdbRef(rtdb, `payments/${params.id}`);
-    const unsubsPay = onValue(payRef, (snapshot) => {
-      const data = snapshot.val();
-      if (data) {
-        const list = Object.keys(data).map(key => ({ ...data[key], id: key }));
-        setPayments(list);
-      } else {
-        setPayments([]);
-      }
-    });
-
-    return () => { unsubsRequest(); unsubsQuotes(); unsubsPay(); };
-  }, [params.id]);
-
-  const updateSellingPrice = async () => {
+  const saveField = async (field: string, value: any) => {
     try {
-      await update(rtdbRef(rtdb, `requests/${params.id}`), { sellingPrice: parseFloat(sellingPrice) });
-      alert("Prix de vente enregistré");
-    } catch (e) { alert("Erreur"); }
-  };
-
-  const getFinancialTotals = () => {
-    const acceptedQuote = quotes.find(q => q.id === request?.acceptedQuoteId);
-    return calculateFinancialTotals(acceptedQuote, sellingPrice, payments);
-  };
-
-  const generateSupplierLink = async () => {
-    setGeneratingLink(true);
-    try {
-      const newTokenRef = push(rtdbRef(rtdb, "shareTokens"));
-      await set(newTokenRef, { requestId: params.id, createdAt: Date.now(), used: false });
-      const link = `${window.location.origin}/q/${newTokenRef.key}`;
-      try { await navigator.clipboard.writeText(link); } catch(e) {}
-      setCopiedLink(link);
-      setTimeout(() => setCopiedLink(""), 4000);
-    } catch (e: any) {
-      alert(`Erreur Lien : ${e.message}`);
-    } finally {
-      setGeneratingLink(false);
+      await update(rtdbRef(rtdb, `requests/${params.id}`), { [field]: value });
+    } catch (e) {
+      console.error(e);
+      toast.error("Erreur de sauvegarde.");
     }
   };
 
-  const acceptQuote = async (quote: Quote) => {
-    if (!confirm("Accepter ce devis et lancer la production ?")) return;
-    try {
-      const { productionDeadline, deliveryEstimation } = calculateDeliveryDates(quote.productionTimeDays);
+  const [showQCModal, setShowQCModal] = useState(false);
+  const [qcUrl, setQCUrl] = useState("");
+  const [uploadProgress, setUploadProgress] = useState(0);
 
-      const updates: any = {};
-      updates[`requests/${params.id}/status`] = "IN_PRODUCTION";
-      updates[`requests/${params.id}/acceptedQuoteId`] = quote.id;
-      updates[`requests/${params.id}/acceptedTokenId`] = quote.shareTokenId;
-      updates[`requests/${params.id}/productionDeadline`] = productionDeadline;
-      updates[`requests/${params.id}/deliveryEstimation`] = deliveryEstimation;
-      updates[`requests/${params.id}/updatedAt`] = Date.now();
-      
-      await update(rtdbRef(rtdb), updates);
-    } catch (error) { alert("Erreur acceptation"); }
+  const handleQC = async (url: string) => {
+    // Media is optional only if explicitly skipped via empty string or user confirmed
+    try {
+      await update(rtdbRef(rtdb, `requests/${params.id}`), { 
+        qcMediaUrl: url || null,
+        status: 'FINAL_PAYMENT',
+        qcValidatedAt: Date.now()
+      });
+      setShowQCModal(false);
+      setQCUrl("");
+      toast.success("QC VALIDÉ : PASSAGE AU SOLDE.");
+    } catch (err) {
+      toast.error("Erreur de validation.");
+    }
   };
 
-  const moveNextStep = async (nextStatus: string) => {
+  const handleUpload = async (file: File) => {
+    if (!file) return;
+    toast.info("Initialisation de l'envoi...");
+    console.log("Starting upload for:", file.name);
+
     try {
-      await update(rtdbRef(rtdb, `requests/${params.id}`), { status: nextStatus, updatedAt: Date.now() });
-    } catch (e) { alert("Erreur status"); }
+      // Ensure we have a valid storage instance
+      if (!storage) throw new Error("Firebase Storage non configuré.");
+
+      const fileRef = storageRef(storage, `qc/${params.id}/${Date.now()}_${file.name}`);
+      const uploadTask = uploadBytesResumable(fileRef, file);
+
+      uploadTask.on('state_changed', 
+        (snapshot) => {
+          const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          setUploadProgress(progress);
+          console.log(`Upload progress: ${progress.toFixed(2)}%`);
+        }, 
+        (error) => {
+          console.error("Upload Task Error:", error);
+          toast.error("Erreur Firebase : " + error.code);
+          setUploadProgress(0);
+        }, 
+        async () => {
+          console.log("Upload finished, getting URL...");
+          const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+          await handleQC(downloadURL);
+          setUploadProgress(0);
+        }
+      );
+    } catch (err: any) {
+      console.error("HandleUpload Error:", err);
+      toast.error(err.message || "Erreur critique d'envoi.");
+    }
   };
 
-  const updateTracking = async () => {
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [paymentSlipUrl, setPaymentSlipUrl] = useState("");
+
+  const handlePaymentProof = async (url: string) => {
     try {
-      await update(rtdbRef(rtdb, `requests/${params.id}`), { trackingNumber });
-      alert("Suivi FedEx enregistré");
-    } catch (e) { alert("Erreur tracking"); }
+      await update(rtdbRef(rtdb, `requests/${params.id}`), { 
+        paymentSlipUrl: url || null,
+        status: 'SHIPPED',
+        paidAt: Date.now()
+      });
+      setShowPaymentModal(false);
+      setShowTrackingInput(true); // Open tracking after payment
+      toast.success("PAIEMENT CONFIRMÉ : ACTIVATION TRACKING.");
+    } catch (err) {
+      toast.error("Erreur de validation paiement.");
+    }
   };
 
-  const updateSize = async () => {
-    try {
-      await update(rtdbRef(rtdb, `requests/${params.id}`), { size: newSize });
-      setIsEditingSize(false);
-    } catch (e) { alert("Erreur taille"); }
+  const [showTrackingInput, setShowTrackingInput] = useState(false);
+  const [trackingNumber, setTrackingNumber] = useState("");
+  const [trackingData, setTrackingData] = useState<any>(null);
+
+  const handleShipment = async (num: string) => {
+    if (!num) return;
+    toast.info("Synchronisation avec le hub FedEx...");
+    
+    // Status update
+    await update(rtdbRef(rtdb, `requests/${params.id}`), { 
+      status: 'SHIPPED', 
+      trackingNumber: num,
+      shippedAt: Date.now()
+    });
+    
+    setTrackingNumber(num);
+    setShowTrackingInput(false);
+    toast.success("Expédition activée. Flux temps réel connecté.");
   };
 
-  const handleReceiptUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files?.[0]) return;
-    setIsUploadingReceipt(true);
-    const reader = new FileReader();
-    reader.onload = async (ev) => {
-      setPaymentReceipt(ev.target?.result as string);
-      setIsUploadingReceipt(false);
+  const getTrackingUrl = (num: string) => {
+    if (num.startsWith('7') || num.length === 12) return `https://www.fedex.com/fedextrack/?trknbr=${num}`;
+    return `https://www.dhl.com/en/express/tracking.html?AWB=${num}`;
+  };
+
+  const totals = calculateFinancialTotals(quotes.find(q => q.id === request?.acceptedQuoteId), sellingPrice, payments, liveRate);
+
+  const handleDeposit = async () => {
+    const sPrice = parseFloat(sellingPrice);
+    if (!sPrice || sPrice <= 0) return toast.error("Veuillez définir un prix de vente.");
+    
+    // Calculate 30%
+    const amount = sPrice * 0.3;
+    
+    await set(push(rtdbRef(rtdb, `payments/${params.id}`)), { 
+      amount, 
+      note: "Acompte 30%", 
+      createdAt: Date.now() 
+    });
+    
+    await update(rtdbRef(rtdb, `requests/${params.id}`), { status: 'IN_PRODUCTION' });
+    toast.success(`Acompte de ${amount.toFixed(0)}€ encaissé. En production !`);
+  };
+
+  const handleAcceptQuote = async (quote: any) => {
+    const dates = calculateDeliveryDates(quote.productionTimeDays);
+    await update(rtdbRef(rtdb, `requests/${params.id}`), {
+      acceptedQuoteId: quote.id,
+      status: 'MANAGER_REVIEW',
+      productionDeadline: dates.productionDeadline,
+      deliveryEstimation: dates.deliveryEstimation
+    });
+  };
+
+  const generatePDF = (t: 'QUOTE' | 'INVOICE') => {
+    if (!totals || !request) return;
+    const data = { 
+      id: request.id, title: request.title, size: request.size, 
+      sellingPrice: totals.sPrice, totals, status: request.status,
+      imageUrl: request.imageUrl, goldColor: request.goldColor 
     };
-    reader.readAsDataURL(e.target.files[0]);
+    if (t === 'QUOTE') generateQuotePDF(data); else generateInternalInvoicePDF(data);
   };
 
-  const saveRIAPayment = async () => {
-    try {
-      const paymentRef = push(rtdbRef(rtdb, `payments/${params.id}`));
-      await set(paymentRef, { amount: paymentAmount, receiptUrl: paymentReceipt, createdAt: Date.now() });
-      setPaymentAmount(""); setPaymentReceipt("");
-      alert("Paiement enregistré");
-    } catch (e) { alert("Erreur paiement"); }
-  };
-
-  if (loading) return <div className="layout py-20 text-center animate-pulse">Chargement...</div>;
-  if (!request) return <div className="layout py-20 text-center">Projet non trouvé.</div>;
-
-  const generatePDF = (type: 'QUOTE' | 'INVOICE') => {
-    alert(`Génération du ${type === 'QUOTE' ? 'Devis (Mirza)' : 'Recap Facture (Interne)'} en cours...`);
-  };
+  if (loading) return <TitaneLoader />;
+  if (!request) return <div className="layout">Request not found</div>;
 
   return (
-    <div className="layout" style={{ paddingBottom: '140px', backgroundColor: 'var(--background)' }}>
-      {/* 2030: HERO HEADER (Immersive Image) */}
-      <div style={{ position: 'relative', height: '400px', width: '100%', marginBottom: '24px' }}>
-        {request.imageUrl ? (
-          <img 
-            src={request.imageUrl} 
-            alt={request.title} 
-            style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.7 }} 
-          />
-        ) : (
-          <div style={{ width: '100%', height: '100%', background: 'linear-gradient(45deg, #111, #333)' }} />
-        )}
-        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'linear-gradient(to bottom, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 40%, rgba(0,0,0,1) 100%)' }} />
-        
-        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, padding: '24px', display: 'flex', justifyContent: 'space-between' }}>
-          <button onClick={() => router.back()} style={{ background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(10px)', border: 'none', color: '#fff', width: '48px', height: '48px', borderRadius: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-            <ArrowLeft size={20} />
-          </button>
-          <div style={{ background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(10px)', color: '#fff', padding: '0 16px', height: '48px', borderRadius: '24px', display: 'flex', alignItems: 'center', fontSize: '12px', fontWeight: 700, letterSpacing: '0.1em' }}>
-            {request.status.replace(/_/g, ' ')}
-          </div>
-        </div>
+    <div className="layout" style={{ background: '#fff', paddingBottom: '160px' }}>
+      
+      {/* IMMERSIVE HERO EDGE-TO-EDGE */}
+      <div style={{ position: 'relative', height: '440px', background: '#fff', overflow: 'hidden' }}>
+         <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
+           {request.imageUrl && <SmartImage src={request.imageUrl} style={{ width: '100%', height: '100%' }} />}
+         </div>
+         
+         <div style={{ position: 'absolute', top: '48px', left: '32px', right: '32px', display: 'flex', justifyContent: 'space-between', zIndex: 10 }}>
+            <button onClick={() => router.back()} style={{ width: '44px', height: '44px', borderRadius: '22px', background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
+               <ArrowLeft size={18} strokeWidth={3} />
+            </button>
+            <div style={{ display: 'flex', gap: '8px' }}>
+               <button onClick={() => setIsEditing(!isEditing)} style={{ width: '44px', height: '44px', borderRadius: '22px', background: isEditing ? 'var(--accent)' : 'rgba(0,0,0,0.3)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
+                  {isEditing ? <Save size={18} strokeWidth={2.5} /> : <Pencil size={18} strokeWidth={2.5} />}
+               </button>
+               <button onClick={() => setShowDeleteModal(true)} style={{ width: '44px', height: '44px', borderRadius: '22px', background: 'rgba(255,59,48,0.3)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FF3B30' }}>
+                  <Trash2 size={18} strokeWidth={2.5} />
+               </button>
+            </div>
+         </div>
 
-        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '24px' }}>
-          <h1 className="title" style={{ fontSize: 'clamp(32px, 8vw, 48px)' }}>{request.title}</h1>
-          <p className="subtitle">ID: {params.id.slice(0, 8).toUpperCase()} • SIZE {request.size || 'STD'}</p>
-        </div>
-      </div>
-
-      <div style={{ padding: '0 24px' }}>
-        {/* FINANCE WIDGET (Glass) */}
-        <div className="widget-glass" style={{ marginBottom: '40px' }}>
-          <label style={{ color: 'var(--accent)', fontWeight: 700 }}>SELLING PRICE (EUR)</label>
-          <input 
-            className="ghost-input"
-            type="number" 
-            value={sellingPrice} 
-            onChange={e => setSellingPrice(e.target.value)} 
-            onBlur={updateSellingPrice}
-            placeholder="0.00"
-            style={{ color: sellingPrice ? '#fff' : 'var(--faded)' }}
-          />
-          {getFinancialTotals() && (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginTop: '24px' }}>
-               <div>
-                  <span style={{ fontSize: '11px', color: 'var(--faded)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Net Profit</span>
-                  <div style={{ fontSize: '24px', fontWeight: 800, color: 'var(--success)', marginTop: '4px' }}>{getFinancialTotals()?.profit.toFixed(0)} €</div>
-               </div>
-               <div>
-                  <span style={{ fontSize: '11px', color: 'var(--faded)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Split 50/50</span>
-                  <div style={{ fontSize: '24px', fontWeight: 800, color: '#fff', marginTop: '4px' }}>{(getFinancialTotals()?.profit! / 2).toFixed(0)} €</div>
+         <div style={{ position: 'absolute', bottom: '48px', left: '48px', right: '48px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+               <div style={{ padding: '5px 14px', background: 'var(--accent)', borderRadius: '100px', fontSize: '9px', fontWeight: 900, color: '#fff', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+                  {request.status.replace(/_/g, ' ')}
                </div>
             </div>
-          )}
-        </div>
-
-        {/* QUOTES WIDGET */}
-        <div className="widget-glass" style={{ border: 'none' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '24px' }}>
-             <div style={{ width: '8px', height: '8px', background: 'var(--accent)', borderRadius: '50%' }} />
-             <span style={{ fontSize: '14px', fontWeight: 700, color: '#fff', letterSpacing: '0.1em' }}>FACTORY QUOTES</span>
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            {quotes.map(q => (
-              <div key={q.id} className="widget" style={{ marginBottom: 0, border: request.acceptedQuoteId === q.id ? '1px solid var(--accent)' : '1px solid var(--separator)' }}>
-                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                    <div>
-                      <h4 style={{ margin: '0 0 4px 0', fontSize: '18px', fontWeight: 800 }}>{q.supplierName}</h4>
-                      <p style={{ fontSize: '12px', color: 'var(--faded)', margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Au {q.goldWeight}g • {q.totalCarat}ct • {q.productionTimeDays} Days</p>
-                    </div>
-                    <div style={{ textAlign: 'right' }}>
-                      <p style={{ margin: 0, fontSize: '24px', fontWeight: 800, color: 'var(--accent)' }}>¥{q.priceRMB}</p>
-                    </div>
-                 </div>
-                 
-                 <div style={{ marginTop: '24px' }}>
-                   {request.acceptedQuoteId === q.id ? (
-                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--accent)', fontSize: '14px', fontWeight: 700 }}>
-                        <CheckCircle size={18} /> QUOTE ACCEPTED
-                     </div>
-                   ) : (
-                     <button 
-                       className="btn-cyber" 
-                       style={{ background: 'transparent', border: '1px solid var(--separator)', padding: '12px', fontSize: '14px' }}
-                       onClick={() => acceptQuote(q)}
-                       disabled={request.status !== 'QUOTED'}
-                     >
-                        SELECT QUOTE
-                     </button>
-                   )}
-                 </div>
-              </div>
-            ))}
-            {quotes.length === 0 && (
-              <div style={{ padding: '32px', textAlign: 'center', color: 'var(--faded)', fontSize: '14px', letterSpacing: '0.05em', border: '1px dashed var(--separator)', borderRadius: '24px' }}>
-                AWAITING TRANSMISSION...
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* TIMELINE NEON */}
-        {request.deliveryEstimation && (
-          <div className="widget-glass" style={{ border: 'none', marginTop: '32px' }}>
-             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '24px' }}>
-               <Clock size={16} color="var(--accent)" />
-               <span style={{ fontSize: '14px', fontWeight: 700, color: '#fff', letterSpacing: '0.1em' }}>TIMELINE</span>
-             </div>
-             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--secondary-bg)', padding: '16px 24px', borderRadius: '16px' }}>
-                <div>
-                   <p style={{ fontSize: '11px', color: 'var(--faded)', margin: '0 0 4px 0', textTransform: 'uppercase' }}>Factory Done</p>
-                   <p style={{ fontSize: '16px', fontWeight: 800, margin: 0 }}>{new Date(request.productionDeadline).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })}</p>
-                </div>
-                <div style={{ flex: 1, borderTop: '2px dashed var(--separator)', margin: '0 16px' }} />
-                <div style={{ textAlign: 'right' }}>
-                   <p style={{ fontSize: '11px', color: 'var(--accent)', margin: '0 0 4px 0', textTransform: 'uppercase' }}>Arrival (Paris)</p>
-                   <p style={{ fontSize: '16px', fontWeight: 800, color: '#fff', margin: 0 }}>{new Date(request.deliveryEstimation).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })}</p>
-                </div>
-             </div>
-          </div>
-        )}
-      </div>
-
-      {/* DYNAMIC ISLAND TOOLBAR : Floating Action Pill */}
-      <div className="floating-pill-container">
-         <div className="floating-pill" style={{ padding: '8px', justifyContent: 'center' }}>
-           {request.status === 'WAITING_FOR_QUOTE' && (
-             <button className="btn-cyber accent" onClick={generateSupplierLink} disabled={generatingLink}>
-               <Share size={20} /> {generatingLink ? 'LINKING...' : 'SHARE TO FACTORY'}
-             </button>
-           )}
-           {request.status === 'QUOTED' && quotes.length > 0 && (
-             <div style={{ color: 'var(--faded)', fontSize: '12px', fontWeight: 700, letterSpacing: '0.1em', padding: '16px 0' }}>
-               SELECT FACTORY QUOTE ABOVE
-             </div>
-           )}
-           {request.status === 'MANAGER_REVIEW' && (
-             <a href={`https://wa.me/33607808501?text=${encodeURIComponent(`Validation. T${request.size}\n${window.location.origin}/review/${params.id}`)}`} target="_blank" rel="noopener noreferrer" className="btn-cyber" style={{ background: '#00FF66', color: '#000' }}>
-               <ShieldCheck size={20} /> ASK REVIEW (MIRZA)
-             </a>
-           )}
-           {request.status === 'WAITING_FOR_DEPOSIT' && (
-             <button className="btn-cyber accent" onClick={() => moveNextStep('IN_PRODUCTION')}>
-               DEPOSIT RECEIVED (START)
-             </button>
-           )}
-           {request.status === 'IN_PRODUCTION' && (
-             <button className="btn-cyber" style={{ background: 'transparent', border: '1px solid var(--accent)', color: 'var(--accent)' }} onClick={() => moveNextStep('SHIPPED')}>
-               <Truck size={20} /> MARK EXPEDITED
-             </button>
-           )}
-           {request.status === 'SHIPPED' && (
-             <button className="btn-cyber accent" onClick={() => moveNextStep('DELIVERED')}>
-               <Package size={20} /> VERIFY DELIVERY
-             </button>
-           )}
-           {request.status === 'DELIVERED' && (
-             <div style={{ display: 'flex', gap: '8px', width: '100%' }}>
-               <button className="btn-cyber" style={{ flex: 1, padding: '16px 0', fontSize: '13px' }} onClick={() => generatePDF('QUOTE')}>PDF Devis</button>
-               <button className="btn-cyber" style={{ flex: 1, background: 'rgba(255,255,255,0.1)', padding: '16px 0', fontSize: '13px' }} onClick={() => generatePDF('INVOICE')}>PDF Facture</button>
-             </div>
-           )}
+            <h1 className="cyber-title" style={{ color: '#fff' }}>{request.title}</h1>
          </div>
       </div>
 
-      {copiedLink && (
-        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} style={{ position: 'fixed', top: '24px', left: '50%', transform: 'translateX(-50%)', background: 'var(--accent)', color: '#000', padding: '12px 24px', borderRadius: '100px', fontWeight: 800, fontSize: '12px', letterSpacing: '0.1em', zIndex: 9999 }}>
-          LINK COPIED TO CLIPBOARD
-        </motion.div>
-      )}
+      <div style={{ padding: '0 32px' }}>
+         
+         {/* TITLE & CATEGORY (EDITABLE) */}
+         <div style={{ marginBottom: '32px' }}>
+            {isEditing ? (
+              <input 
+                value={title} 
+                onChange={(e) => {
+                  setTitle(e.target.value);
+                  saveField('title', e.target.value);
+                }}
+                style={{ fontSize: '32px', fontWeight: 900, width: '100%', border: 'none', background: '#F9F9F9', padding: '12px 20px', borderRadius: '16px', letterSpacing: '-0.04em' }}
+              />
+            ) : (
+              <h1 style={{ fontSize: '36px', fontWeight: 900, letterSpacing: '-0.06em', margin: 0 }}>{request.title.toUpperCase()}</h1>
+            )}
+            <p className="cyber-label" style={{ marginTop: '8px', color: 'var(--accent)' }}>CONFIGURATION DÉTAILLÉE</p>
+             {/* SPECIFICATIONS GRID (HARMONIZED DESIGN) */}
+         <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 1fr)', gap: '16px', margin: '48px 0' }}>
+            {/* HOUSE */}
+            <div style={{ padding: '24px', borderRadius: '28px', background: '#F9F9F9', border: '1px solid rgba(0,0,0,0.02)' }}>
+               <span className="cyber-label" style={{ fontSize: '7px', opacity: 0.5 }}>HOUSE / 品牌</span>
+               {isEditing ? (
+                 <select 
+                   value={brand}
+                   onChange={(e) => {
+                     setBrand(e.target.value);
+                     saveField('brand', e.target.value);
+                   }}
+                   style={{ fontWeight: 900, fontSize: '13px', marginTop: '10px', width: '100%', border: 'none', background: 'transparent', padding: 0 }}
+                 >
+                   {["Cartier", "Van Cleef", "Bulgari", "Messika", "Tiffany", "Boucheron", "Custom Atelier"].map(h => <option key={h} value={h}>{h.toUpperCase()}</option>)}
+                 </select>
+               ) : (
+                 <p style={{ fontWeight: 900, fontSize: '15px', marginTop: '10px', letterSpacing: '-0.02em' }}>{request.brand?.toUpperCase() || '...'}</p>
+               )}
+            </div>
+
+            {/* SIZE */}
+            <div style={{ padding: '24px', borderRadius: '28px', background: '#F9F9F9', border: '1px solid rgba(0,0,0,0.02)' }}>
+               <span className="cyber-label" style={{ fontSize: '7px', opacity: 0.5 }}>SIZE / 规格</span>
+               {isEditing ? (
+                 <select 
+                   value={size}
+                   onChange={(e) => {
+                     setSize(e.target.value);
+                     saveField('size', e.target.value);
+                   }}
+                   style={{ fontWeight: 900, fontSize: '13px', marginTop: '10px', width: '100%', border: 'none', background: 'transparent', padding: 0, color: 'var(--accent)' }}
+                 >
+                   {category === "Bague" && Array.from({ length: 27 }, (_, i) => (44 + i).toString()).map(s => <option key={s} value={s}>{s}</option>)}
+                   {(category === "Bracelet") && ["15 CM", "16 CM", "17 CM", "18 CM", "19 CM", "20 CM", "21 CM"].map(s => <option key={s} value={s}>{s}</option>)}
+                   {(category === "Collier" || category === "Pendentif") && ["40 CM", "42 CM", "45 CM", "50 CM", "60 CM"].map(s => <option key={s} value={s}>{s}</option>)}
+                   {["Boucles d'oreilles", "Montre"].includes(category) && <option value="STD">STD</option>}
+                 </select>
+               ) : (
+                 <p style={{ fontWeight: 900, fontSize: '15px', marginTop: '10px', color: 'var(--accent)' }}>{request.size || 'STD'}</p>
+               )}
+            </div>
+
+            {/* WEIGHT */}
+            <div style={{ padding: '24px', borderRadius: '28px', background: '#F9F9F9', border: '1px solid rgba(0,0,0,0.02)' }}>
+               <span className="cyber-label" style={{ fontSize: '7px', opacity: 0.5 }}>WEIGHT / 重量</span>
+               {isEditing ? (
+                 <input 
+                   placeholder="4.85g"
+                   value={weight} 
+                   onChange={(e) => {
+                     setWeight(e.target.value);
+                     saveField('estimatedWeight', e.target.value);
+                   }}
+                   style={{ fontWeight: 900, fontSize: '13px', marginTop: '10px', width: '100%', border: 'none', background: 'transparent', padding: 0 }}
+                 />
+               ) : (
+                 <p style={{ fontWeight: 900, fontSize: '15px', marginTop: '10px' }}>{request.estimatedWeight || '...'}</p>
+               )}
+            </div>
+         </div>
+
+         {/* GOLD COLOR SELECTOR (MIRROR FROM NEW REQUEST) */}
+         <div style={{ marginBottom: '48px' }}>
+            <p className="cyber-label" style={{ fontSize: '7px', opacity: 0.5, marginBottom: '16px', paddingLeft: '8px' }}>METALS / 金属颜色</p>
+            <div style={{ display: 'flex', gap: '8px' }}>
+               {[
+                 { id: "Or Jaune", label: "JAUNE", color: "#F5D061" },
+                 { id: "Or Blanc", label: "BLANC", color: "#E5E5E5" },
+                 { id: "Or Rose", label: "ROSE", color: "#E7A78B" }
+               ].map(g => (
+                  <motion.button 
+                    key={g.id} 
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => isEditing && saveField('goldColor', g.id)}
+                    style={{ 
+                      flex: 1, padding: '16px', borderRadius: '24px', 
+                      background: request.goldColor === g.id ? '#000' : '#F9F9F9',
+                      color: request.goldColor === g.id ? '#fff' : '#000',
+                      border: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px',
+                      opacity: isEditing ? 1 : (request.goldColor === g.id ? 1 : 0.3),
+                      cursor: isEditing ? 'pointer' : 'default',
+                      transition: 'all 0.3s ease'
+                    }}
+                  >
+                     <div style={{ width: '12px', height: '12px', borderRadius: '6px', background: g.color }} />
+                     <span style={{ fontSize: '10px', fontWeight: 900 }}>{g.label}</span>
+                  </motion.button>
+               ))}
+            </div>
+         </div>       </div>
+
+         {/* FINANCE MODULE (TITANE WHITE) */}
+         <div style={{ padding: '32px', background: '#fff', borderRadius: '40px', border: '1px solid rgba(0,0,0,0.04)', marginBottom: '48px', boxShadow: '0 10px 30px rgba(0,0,0,0.02)' }}>
+            <span className="cyber-label" style={{ opacity: 0.5, color: !sellingPrice || sellingPrice === "0" ? '#FF3B30' : 'inherit' }}>
+               PRIX DE VENTE TOTAL (TTC) {!sellingPrice || sellingPrice === "0" ? "⚠️ MANQUANT" : ""}
+            </span>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginTop: '12px' }}>
+               <input 
+                type="number"
+                placeholder="0"
+                value={sellingPrice}
+                onChange={(e) => {
+                   setSellingPrice(e.target.value);
+                   saveField('sellingPrice', parseFloat(e.target.value) || 0);
+                }}
+                style={{ 
+                  fontSize: '48px', 
+                  fontWeight: 900, 
+                  background: !sellingPrice || sellingPrice === "0" ? 'rgba(255,59,48,0.05)' : '#F9F9F9', 
+                  border: !sellingPrice || sellingPrice === "0" ? '1px dashed #FF3B30' : 'none', 
+                  width: '180px', 
+                  padding: '8px 16px', 
+                  borderRadius: '16px', 
+                  letterSpacing: '-0.05em',
+                  color: '#000'
+                }}
+               />
+               <span style={{ fontSize: '24px', fontWeight: 900 }}>€</span>
+            </div>
+
+            {sellingPrice && Number(sellingPrice) > 0 && request.status === 'WAITING_FOR_DEPOSIT' && (
+              <div style={{ marginTop: '16px', padding: '12px 16px', background: 'rgba(52, 199, 89, 0.1)', borderRadius: '12px', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                 <div style={{ width: '6px', height: '6px', borderRadius: '3px', background: '#34C759' }} />
+                 <span style={{ fontSize: '11px', fontWeight: 900, color: '#34C759' }}>
+                    ACOMPTE À ENCAISSER (30%) : {(Number(sellingPrice) * 0.3).toLocaleString()} €
+                 </span>
+              </div>
+            )}
+
+            {totals && (
+               <div style={{ marginTop: '32px', paddingTop: '32px', borderTop: '1px dotted rgba(0,0,0,0.1)', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+                  <div>
+                     <span className="cyber-label">PROFIT ADAM (50%)</span>
+                     <div style={{ fontSize: '24px', fontWeight: 900, marginTop: '4px' }}>{totals.adamPart.toFixed(0)}€</div>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                     <span className="cyber-label">PROFIT MIRZA (50%)</span>
+                     <div style={{ fontSize: '24px', fontWeight: 900, marginTop: '4px' }}>{totals.mirzaPart.toFixed(0)}€</div>
+                  </div>
+               </div>
+            )}
+            {totals && <div style={{ marginTop: '24px', opacity: 0.4, fontSize: '9px', fontWeight: 800 }}>TAUX ESTIMÉ : 1 RMB = {totals.rateUsed} €</div>}
+         </div>
+
+         {/* INCLUSIONS BAR */}
+         <div style={{ marginBottom: '48px', padding: '20px', background: 'var(--accent-glow)', borderRadius: '24px', textAlign: 'center' }}>
+            <p className="cyber-label" style={{ fontSize: '8px', color: 'var(--accent)' }}>PACKAGE INCLUSIONS</p>
+            <p style={{ fontWeight: 800, fontSize: '11px', marginTop: '4px', textTransform: 'uppercase' }}>Box • Travel Pouch • Kit • Maison 7 Cert.</p>
+         </div>
+
+         {/* QUOTES SECTION */}
+         {quotes.length > 0 && (
+           <div style={{ marginBottom: '64px' }}>
+             <span className="cyber-label" style={{ marginBottom: '20px', display: 'block' }}>SUPPLIER OFFERS ({quotes.length})</span>
+             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+               {quotes.map(q => (
+                 <motion.div 
+                    key={q.id} whileTap={{ scale: 0.98 }}
+                    onClick={() => !request.acceptedQuoteId && handleAcceptQuote(q)}
+                    style={{ 
+                      padding: '24px', borderRadius: '32px', 
+                      background: request.acceptedQuoteId === q.id ? 'var(--accent)' : '#fff',
+                      border: '1px solid rgba(0,0,0,0.05)',
+                      color: request.acceptedQuoteId === q.id ? '#fff' : '#000',
+                      display: 'flex', justifyContent: 'space-between', alignItems: 'center'
+                    }}
+                 >
+                    <div>
+                      <div style={{ fontSize: '22px', fontWeight: 900 }}>{q.priceRMB} ¥ <span style={{ fontSize: '14px', opacity: 0.6 }}>(~{(q.priceRMB * liveRate).toFixed(0)}€)</span></div>
+                      <div style={{ fontSize: '10px', opacity: 0.5, fontWeight: 800, marginTop: '6px' }}>LEAD TIME: {q.productionTimeDays + 7} DAYS</div>
+                    </div>
+                    {request.acceptedQuoteId === q.id ? <Check size={20} strokeWidth={3} /> : <Plus size={20} strokeWidth={3} style={{ opacity: 0.2 }} />}
+                 </motion.div>
+               ))}
+             </div>
+           </div>
+         )}
+
+         {/* QC & PAYMENT PROOF GALLERY */}
+         <div style={{ display: 'grid', gridTemplateColumns: request.qcMediaUrl && request.paymentSlipUrl ? '1fr 1fr' : '1fr', gap: '20px', marginBottom: '48px' }}>
+           {request.qcMediaUrl && (
+              <div>
+                 <span className="cyber-label" style={{ display: 'block', marginBottom: '16px' }}>QUALITY CONTROL FEED</span>
+                 <div style={{ position: 'relative', width: '100%', aspectRatio: '1', borderRadius: '32px', overflow: 'hidden', background: '#000' }}>
+                    {request.qcMediaUrl.match(/\.(mp4|mov|webm)$/i) || request.qcMediaUrl.includes('cloudup') ? (
+                      <video src={request.qcMediaUrl} controls autoPlay muted loop style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    ) : (
+                      <img src={request.qcMediaUrl} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="QC" />
+                    )}
+                 </div>
+              </div>
+           )}
+           {request.paymentSlipUrl && (
+              <div>
+                 <span className="cyber-label" style={{ display: 'block', marginBottom: '16px' }}>PAYMENT SLIP (RIA/ALIPAY)</span>
+                 <div style={{ position: 'relative', width: '100%', aspectRatio: '1', borderRadius: '32px', overflow: 'hidden', background: '#000', border: '1px solid rgba(0,0,0,0.05)' }}>
+                    <img src={request.paymentSlipUrl} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="Payment Slip" />
+                 </div>
+              </div>
+           )}
+         </div>
+
+         {/* FEDEX LIVE TERMINAL (REAL DATA) */}
+         {request.status === 'SHIPPED' && request.trackingNumber && (
+           <div style={{ marginBottom: '48px', padding: '32px', background: '#4D148C', borderRadius: '40px', color: '#fff', boxShadow: '0 20px 50px rgba(77,20,140,0.2)', position: 'relative', overflow: 'hidden' }}>
+              <div style={{ position: 'absolute', top: '-10%', right: '-10%', width: '300px', height: '300px', background: 'rgba(255,102,0,0.15)', borderRadius: '150px', filter: 'blur(60px)' }} />
+              
+              <div style={{ position: 'relative', zIndex: 2 }}>
+                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                       <div style={{ background: '#fff', padding: '4px 10px', borderRadius: '8px' }}>
+                          <span style={{ color: '#4D148C', fontWeight: 900, fontSize: '14px' }}>Fed</span>
+                          <span style={{ color: '#FF6600', fontWeight: 900, fontSize: '14px' }}>Ex</span>
+                       </div>
+                       <span style={{ fontSize: '10px', fontWeight: 900, opacity: 0.6 }}>LIVE HUB FEED</span>
+                    </div>
+                    <div style={{ background: 'rgba(255,255,255,0.1)', padding: '6px 14px', borderRadius: '100px', fontSize: '9px', fontWeight: 900 }}>
+                       STATUS: <span style={{ color: '#FF6600' }}>{request.trackingStatus || 'EN ROUTE'}</span>
+                    </div>
+                 </div>
+
+                 <div style={{ padding: '24px', background: 'rgba(255,255,255,0.05)', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                    <div style={{ display: 'flex', gap: '20px', alignItems: 'flex-start' }}>
+                       <div style={{ width: '40px', height: '40px', borderRadius: '20px', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <Plane size={20} />
+                       </div>
+                       <div>
+                          <p style={{ fontSize: '14px', fontWeight: 900 }}>{request.lastLocation || 'Vérification du dernier scan...'}</p>
+                          <p style={{ fontSize: '11px', opacity: 0.6, marginTop: '4px' }}>{request.lastUpdateDate || 'Chargement des données temps réel...'}</p>
+                          {request.lastEvent && (
+                            <div style={{ marginTop: '12px', padding: '6px 12px', background: '#FF6600', borderRadius: '8px', display: 'inline-block' }}>
+                               <span style={{ fontSize: '9px', fontWeight: 900 }}>{request.lastEvent.toUpperCase()}</span>
+                            </div>
+                          )}
+                       </div>
+                    </div>
+                 </div>
+
+                 <div style={{ display: 'flex', gap: '12px', marginTop: '32px' }}>
+                    <button 
+                      onClick={() => toast.info("Synchronisation forcée avec FedEx...")} 
+                      style={{ flex: 1, height: '48px', borderRadius: '16px', background: '#fff', border: 'none', color: '#4D148C', fontSize: '11px', fontWeight: 900, cursor: 'pointer' }}
+                    >
+                       REFRESH DATA
+                    </button>
+                    <a 
+                      href={getTrackingUrl(request.trackingNumber)} 
+                      target="_blank" 
+                      style={{ flex: 1, height: '48px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none', fontSize: '11px', fontWeight: 900 }}
+                    >
+                       FULL TRACKING ↗
+                    </a>
+                 </div>
+              </div>
+              <div style={{ position: 'absolute', right: '-20px', bottom: '-40px', fontSize: '120px', fontWeight: 900, opacity: 0.03, pointerEvents: 'none' }}>Ex</div>
+           </div>
+         )}
+
+         {/* TIMELINE */}
+         <div style={{ marginBottom: '64px', paddingLeft: '8px' }}>
+            <span className="cyber-label" style={{ marginBottom: '24px', display: 'block' }}>LOGISTICS PIPELINE</span>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+               {[
+                 { id: 1, label: "Sourcing", statusMatch: ['DRAFT', 'WAITING_FOR_QUOTE'] },
+                 { id: 2, label: "Review", statusMatch: ['QUOTED', 'MANAGER_REVIEW'] },
+                 { id: 3, label: "Deposit", statusMatch: ['WAITING_FOR_DEPOSIT'] },
+                 { id: 4, label: "Production", statusMatch: ['IN_PRODUCTION'] },
+                 { id: 5, label: "Payment", statusMatch: ['FINAL_PAYMENT'] },
+                 { id: 6, label: "Transit", statusMatch: ['SHIPPED'] },
+                 { id: 7, label: "Delivered", statusMatch: ['DELIVERED'] }
+               ].map((step) => {
+                 const statusOrder = ["DRAFT", "WAITING_FOR_QUOTE", "QUOTED", "MANAGER_REVIEW", "WAITING_FOR_DEPOSIT", "IN_PRODUCTION", "FINAL_PAYMENT", "SHIPPED", "DELIVERED"];
+                 const currentStatusIdx = statusOrder.indexOf(request.status);
+                 const stepMaxIdx = Math.max(...step.statusMatch.map(s => statusOrder.indexOf(s)));
+                 const isCompleted = currentStatusIdx > stepMaxIdx;
+                 const isActive = step.statusMatch.includes(request.status);
+
+                 return (
+                   <div key={step.id} style={{ display: 'flex', alignItems: 'center', gap: '20px', opacity: (isActive || isCompleted) ? 1 : 0.15 }}>
+                     <div style={{ width: '8px', height: '8px', borderRadius: '4px', background: (isActive || isCompleted) ? 'var(--accent)' : '#000' }} />
+                     <span style={{ fontSize: '12px', fontWeight: (isActive || isCompleted) ? 900 : 500, textTransform: 'uppercase', color: isActive ? 'var(--accent)' : '#000', letterSpacing: '0.02em' }}>{step.label}</span>
+                     {isActive && <div style={{ fontSize: '9px', fontWeight: 900, color: 'var(--accent)', marginLeft: '4px' }}>●</div>}
+                   </div>
+                 );
+               })}
+            </div>
+         </div>
+      </div>
+
+      <VisionPill width="380px">
+         {/* NAVIGATION (LEFT) */}
+         <div style={{ display: 'flex', borderRight: '1px solid rgba(255,255,255,0.1)', paddingRight: '8px', marginRight: '4px' }}>
+            <motion.button whileTap={{ scale: 0.85 }} className="vision-action" onClick={() => {
+               const stages = ["DRAFT", "WAITING_FOR_QUOTE", "QUOTED", "MANAGER_REVIEW", "WAITING_FOR_DEPOSIT", "IN_PRODUCTION", "FINAL_PAYMENT", "SHIPPED", "DELIVERED"];
+               const currentIdx = stages.indexOf(request.status);
+               const prevStatus = stages[currentIdx - 1];
+               if (prevStatus && confirm(`Revenir à l'étape : ${prevStatus} ?`)) {
+                 saveField('status', prevStatus);
+               }
+            }} style={{ width: '44px', flex: 'none' }}><ArrowLeft size={20} strokeWidth={2.5} /></motion.button>
+         </div>
+
+         {/* MAIN PROGRESSION (CENTER) */}
+         <div style={{ flex: 1, display: 'flex' }}>
+            {request.status === 'DRAFT' && (
+              <button className="vision-action accent" onClick={() => saveField('status', 'WAITING_FOR_QUOTE')}>SEND TO FACTORY</button>
+            )}
+            {request.status === 'WAITING_FOR_QUOTE' && (
+              <button className="vision-action accent" style={{ background: '#FF9500' }} onClick={() => toast.info("Waiting for supplier...")}>WAITING QUOTE</button>
+            )}
+            {request.status === 'QUOTED' && (
+              <button className="vision-action accent" onClick={() => saveField('status', 'MANAGER_REVIEW')}>REVIEW QUOTE</button>
+            )}
+            {request.status === 'MANAGER_REVIEW' && (
+              <button className="vision-action accent" onClick={() => saveField('status', 'WAITING_FOR_DEPOSIT')}>VALIDATE & DEPOSIT</button>
+            )}
+            {request.status === 'WAITING_FOR_DEPOSIT' && (
+              <button className="vision-action accent" onClick={handleDeposit}>ENCAISSER 30%</button>
+            )}
+            {request.status === 'IN_PRODUCTION' && (
+              <button className="vision-action accent" onClick={() => setShowQCModal(true)}>PROD. FINISHED</button>
+            )}
+            {request.status === 'FINAL_PAYMENT' && (
+              <button className="vision-action accent" onClick={() => setShowPaymentModal(true)}>CONFIRM PAYMENT</button>
+            )}
+            {request.status === 'SHIPPED' && (
+              <button className="vision-action accent" onClick={() => saveField('status', 'DELIVERED')}>MARK AS DELIVERED</button>
+            )}
+            {request.status === 'DELIVERED' && (
+              <button className="vision-action" style={{ background: '#34C759', color: '#fff' }}><Check size={18} /> ORDER COMPLETED</button>
+            )}
+         </div>
+
+         {/* DOCUMENTS (RIGHT) */}
+         <div style={{ display: 'flex', gap: '4px', borderLeft: '1px solid rgba(255,255,255,0.1)', paddingLeft: '8px', marginLeft: '4px' }}>
+            <motion.button whileTap={{ scale: 0.85 }} className="vision-action" onClick={() => generatePDF('QUOTE')} style={{ width: '44px', flex: 'none' }}><FileText size={20} strokeWidth={2.5} /></motion.button>
+            <motion.button whileTap={{ scale: 0.85 }} className="vision-action" onClick={() => generatePDF('INVOICE')} style={{ width: '44px', flex: 'none' }}><Calculator size={20} strokeWidth={2.5} /></motion.button>
+         </div>
+      </VisionPill>
+
+      <AnimatePresence>
+        {showPaymentModal && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'fixed', inset: 0, background: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(30px)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px' }}>
+            <div style={{ textAlign: 'center', maxWidth: '320px', width: '100%' }}>
+              <div style={{ width: '64px', height: '64px', borderRadius: '32px', background: '#34C759', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px auto', color: '#fff' }}>
+                {uploadProgress > 0 ? <Loader2 className="animate-spin" /> : <Calculator size={32} />}
+              </div>
+              <h2 style={{ fontSize: '24px', fontWeight: 900, letterSpacing: '-0.04em' }}>SOLDE FINAL</h2>
+              <p style={{ marginTop: '12px', color: 'var(--faded)', fontWeight: 600, fontSize: '12px' }}>PREUVE DE PAIEMENT (RIA/ALIPAY)</p>
+              
+              <div style={{ marginTop: '32px' }}>
+                <label className="btn-main" style={{ cursor: 'pointer', background: '#34C759', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px' }}>
+                   <UploadCloud size={20} />
+                   {uploadProgress > 0 ? `UPLOAD ${uploadProgress.toFixed(0)}%` : "MONTER LE REÇU"}
+                   <input 
+                     type="file" 
+                     accept="image/*" 
+                     style={{ display: 'none' }} 
+                     onChange={(e) => {
+                       if (e.target.files) {
+                         const file = e.target.files[0];
+                         const fileRef = storageRef(storage, `payments/${params.id}/${Date.now()}_${file.name}`);
+                         const uploadTask = uploadBytesResumable(fileRef, file);
+                         uploadTask.on('state_changed', 
+                            s => setUploadProgress((s.bytesTransferred / s.totalBytes) * 100),
+                            err => toast.error(err.message),
+                            () => getDownloadURL(uploadTask.snapshot.ref).then(url => handlePaymentProof(url))
+                         );
+                       }
+                     }} 
+                     disabled={uploadProgress > 0}
+                   />
+                </label>
+              </div>
+
+              <button onClick={() => handlePaymentProof("")} style={{ background: 'none', border: 'none', marginTop: '24px', fontWeight: 800, color: '#34C759', fontSize: '11px', textDecoration: 'underline', opacity: 0.7 }}>PASSER (MODE DÉVELOPPEMENT)</button>
+              <button onClick={() => setShowPaymentModal(false)} style={{ background: 'none', border: 'none', marginTop: '16px', fontWeight: 800, color: 'var(--faded)', fontSize: '13px' }}>ANNULER</button>
+            </div>
+          </motion.div>
+        )}
+
+        {showQCModal && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'fixed', inset: 0, background: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(30px)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px' }}>
+            <div style={{ textAlign: 'center', maxWidth: '320px', width: '100%' }}>
+              <div style={{ width: '64px', height: '64px', borderRadius: '32px', background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px auto', color: '#fff' }}>
+                {uploadProgress > 0 ? <Loader2 className="animate-spin" /> : <Check size={32} />}
+              </div>
+              <h2 style={{ fontSize: '24px', fontWeight: 900, letterSpacing: '-0.04em' }}>CONTRÔLE QUALITÉ</h2>
+              <p style={{ marginTop: '12px', color: 'var(--faded)', fontWeight: 600, fontSize: '12px' }}>PARTAGER LA VIDÉO DE L'USINE</p>
+              
+              <div style={{ marginTop: '32px' }}>
+                <label className="btn-main" style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px' }}>
+                   <UploadCloud size={20} />
+                   {uploadProgress > 0 ? `CHARGEMENT ${uploadProgress.toFixed(0)}%` : "SÉLECTIONNER FICHIER"}
+                   <input 
+                     type="file" 
+                     accept="video/*,image/*" 
+                     style={{ display: 'none' }} 
+                     onChange={(e) => e.target.files && handleUpload(e.target.files[0])} 
+                     disabled={uploadProgress > 0}
+                   />
+                </label>
+                
+                {uploadProgress > 0 && (
+                  <div style={{ width: '100%', height: '4px', background: 'rgba(0,0,0,0.05)', borderRadius: '2px', marginTop: '16px', overflow: 'hidden' }}>
+                    <motion.div 
+                      initial={{ width: 0 }}
+                      animate={{ width: `${uploadProgress}%` }}
+                      style={{ height: '100%', background: 'var(--accent)' }}
+                    />
+                  </div>
+                )}
+              </div>
+
+              <button onClick={() => handleQC("")} style={{ background: 'none', border: 'none', marginTop: '24px', fontWeight: 800, color: 'var(--accent)', fontSize: '11px', textDecoration: 'underline', opacity: 0.7 }}>PASSER LE QC (MODE DÉVELOPPEMENT)</button>
+              <button onClick={() => setShowQCModal(false)} style={{ background: 'none', border: 'none', marginTop: '16px', fontWeight: 800, color: 'var(--faded)', fontSize: '13px' }}>ANNULER</button>
+            </div>
+          </motion.div>
+        )}
+
+        {showTrackingInput && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'fixed', inset: 0, background: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(30px)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px' }}>
+            <div style={{ textAlign: 'center', maxWidth: '320px', width: '100%' }}>
+              <div style={{ width: '64px', height: '64px', borderRadius: '32px', background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px auto', color: '#fff' }}><Truck /></div>
+              <h2 style={{ fontSize: '24px', fontWeight: 900, letterSpacing: '-0.04em' }}>TRACKING SYNC</h2>
+              <p style={{ marginTop: '12px', color: 'var(--faded)', fontWeight: 600, fontSize: '12px' }}>ENTER FEDEX OR DHL NUMBER</p>
+              
+              <input 
+                autoFocus
+                placeholder="0000 0000 0000"
+                value={trackingNumber}
+                onChange={(e) => setTrackingNumber(e.target.value)}
+                style={{ width: '100%', padding: '20px', background: '#F9F9F9', borderRadius: '20px', fontSize: '18px', fontWeight: 900, textAlign: 'center', marginTop: '32px', border: '1px solid rgba(0,0,0,0.05)' }}
+              />
+
+              <button onClick={() => handleShipment(trackingNumber)} className="btn-main" style={{ marginTop: '24px' }}>ACTIVATE TRACKING</button>
+              <button onClick={() => setShowTrackingInput(false)} style={{ background: 'none', border: 'none', marginTop: '20px', fontWeight: 800, color: 'var(--faded)', fontSize: '13px' }}>CANCEL</button>
+            </div>
+          </motion.div>
+        )}
+
+        {showDeleteModal && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'fixed', inset: 0, background: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(30px)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px' }}>
+            <div style={{ textAlign: 'center', maxWidth: '280px' }}>
+              <div style={{ width: '64px', height: '64px', borderRadius: '32px', background: '#FF3B30', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px auto', color: '#fff', boxShadow: '0 10px 30px rgba(255,59,48,0.3)' }}><Trash2 /></div>
+              <h2 style={{ fontSize: '24px', fontWeight: 900, letterSpacing: '-0.04em' }}>DELETE RECORD?</h2>
+              <p style={{ marginTop: '12px', color: 'var(--faded)', fontWeight: 600, fontSize: '14px' }}>This cannot be undone.</p>
+              <button onClick={() => { remove(rtdbRef(rtdb, `requests/${params.id}`)); router.push('/'); }} className="btn-main" style={{ background: '#FF3B30', marginTop: '40px' }}>CONFIRM</button>
+              <button onClick={() => setShowDeleteModal(false)} style={{ background: 'none', border: 'none', marginTop: '20px', fontWeight: 800, color: 'var(--faded)', fontSize: '13px' }}>CANCEL</button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
     </div>
   );
 }

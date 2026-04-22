@@ -1,18 +1,21 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
 import { motion } from "framer-motion";
-import { ArrowLeft, UploadCloud } from "lucide-react";
-import Link from "next/link";
+import { ArrowLeft, UploadCloud, ChevronRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { rtdb, rtdbRef, push, set } from "@/lib/firebase";
+import { SmartImage } from "@/components/ui/SmartImage";
 
 export default function NewRequest() {
   const router = useRouter();
   const [title, setTitle] = useState("");
+  const [brand, setBrand] = useState("Cartier");
   const [file, setFile] = useState<File | null>(null);
   const [category, setCategory] = useState<"Ring" | "Bracelet" | "Necklace">("Ring");
   const [size, setSize] = useState("52");
+  const [goldColor, setGoldColor] = useState("Or Jaune");
   const [loading, setLoading] = useState(false);
 
   const sizeOptions = {
@@ -24,155 +27,164 @@ export default function NewRequest() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title) return;
-    
     setLoading(true);
-    const timeout = (ms: number) => new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout: Firebase is taking too long to respond. Check your connection or Firebase rules.")), ms));
-
     try {
-      console.log("Starting Realtime DB submission...");
       let imageUrl = "";
-      
       if (file) {
-        // Convert to Base64
-        console.log("📸 Converting image to Base64...");
-        const reader = new FileReader();
-        const base64Promise = new Promise<string>((resolve) => {
-          reader.onload = (e) => resolve(e.target?.result as string);
-          reader.readAsDataURL(file);
-        });
-        imageUrl = await base64Promise;
+        const bitmap = await createImageBitmap(file);
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const MAX_WIDTH = 1200;
+        const scale = Math.min(1, MAX_WIDTH / bitmap.width);
+        canvas.width = bitmap.width * scale;
+        canvas.height = bitmap.height * scale;
+        ctx?.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+        imageUrl = canvas.toDataURL('image/jpeg', 0.7);
       }
-
-      // Save to Realtime Database
       const newRef = push(rtdbRef(rtdb, "requests"));
-      const data = {
-        id: newRef.key,
-        title,
-        size,
-        imageUrl,
-        status: "WAITING_FOR_QUOTE",
-        createdAt: Date.now(),
-        updatedAt: Date.now()
-      };
-      
-      await set(newRef, data);
-      console.log("✅ Saved to Realtime DB with ID:", newRef.key);
-      router.push(`/requests/${newRef.key}`);
+      await set(newRef, { 
+        id: newRef.key, 
+        title, 
+        brand,
+        size, 
+        goldColor,
+        category: category === 'Ring' ? 'Bague' : (category === 'Bracelet' ? 'Bracelet' : 'Collier'),
+        imageUrl, 
+        status: "WAITING_FOR_QUOTE", 
+        createdAt: Date.now(), 
+        updatedAt: Date.now() 
+      });
 
-    } catch (outerError: any) {
-      console.error("CRITICAL ERROR:", outerError);
-      alert(`Error: ${outerError.message}`);
-    } finally {
-      setLoading(false);
-    }
+      router.push(`/requests/${newRef.key}`);
+    } catch (err: any) { 
+      toast.error("ERREUR DE SYNCHRONISATION"); 
+    } finally { setLoading(false); }
   };
 
   return (
-    <div className="layout" style={{ backgroundColor: 'var(--background)', padding: '24px 24px 140px 24px' }}>
+    <div className="layout" style={{ background: '#fff', paddingBottom: '160px' }}>
       
-      {/* HEADER 2030 */}
-      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
-         <button onClick={() => router.back()} style={{ background: 'transparent', border: 'none', color: 'var(--faded)', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
-           <ArrowLeft size={24} /> 
-           <span style={{ fontSize: '13px', fontWeight: 700, letterSpacing: '0.1em' }}>CANCEL</span>
-         </button>
+      <header style={{ padding: '64px 32px 32px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <button onClick={() => router.back()} style={{ width: '44px', height: '44px', borderRadius: '22px', border: 'none', background: '#F9F9F9', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <ArrowLeft size={18} strokeWidth={3} />
+        </button>
+        <span className="cyber-label" style={{ letterSpacing: '0.2em' }}>NEW REQUEST</span>
+        <div style={{ width: '44px' }} />
       </header>
 
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '40px' }}>
-        
-        {/* BIG TITLE INPUT */}
-        <div>
-          <label style={{ fontSize: '13px', fontWeight: 700, color: 'var(--accent)', letterSpacing: '0.1em', marginBottom: '8px', display: 'block' }}>PROJECT IDENTITY</label>
-          <input 
-            className="ghost-input"
-            required
-            type="text" 
-            placeholder="NAME THE ART..." 
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            autoFocus
-          />
-        </div>
+      <div style={{ padding: '0 32px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '56px' }}>
+          
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+             <p className="cyber-label" style={{ marginBottom: '16px' }}>TITLE / 名称</p>
+             <input 
+               autoFocus type="text" placeholder="Design Name..." value={title}
+               onChange={(e) => setTitle(e.target.value)}
+               style={{ width: '100%', fontSize: '32px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '-0.04em', background: 'transparent' }}
+             />
+             <div style={{ height: '3px', background: 'var(--accent)', width: title ? '100%' : '40px', transition: 'width 0.4s ease', marginTop: '12px' }} />
+          </motion.div>
 
-        {/* DIMENSIONS (Glass Widget) */}
-        <div className="widget-glass" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', border: 'none' }}>
-           <div>
-             <label style={{ fontSize: '11px', color: 'var(--faded)', letterSpacing: '0.1em', marginBottom: '8px', display: 'block' }}>CATEGORY</label>
-             <select 
-               value={category}
-               onChange={(e) => {
-                 const cat = e.target.value as any;
-                 setCategory(cat);
-                 setSize(sizeOptions[cat as keyof typeof sizeOptions][0]);
-               }}
-               style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '24px', fontWeight: 800, width: '100%', padding: 0 }}
-             >
-               <option value="Ring" style={{ color: '#000' }}>Ring</option>
-               <option value="Bracelet" style={{ color: '#000' }}>Bracelet</option>
-               <option value="Necklace" style={{ color: '#000' }}>Necklace</option>
-             </select>
-           </div>
-           
-           <div>
-             <label style={{ fontSize: '11px', color: 'var(--faded)', letterSpacing: '0.1em', marginBottom: '8px', display: 'block' }}>SPEC SIZING</label>
-             <select 
-               value={size}
-               onChange={(e) => setSize(e.target.value)}
-               style={{ background: 'transparent', border: 'none', color: 'var(--accent)', fontSize: '24px', fontWeight: 800, width: '100%', padding: 0 }}
-             >
-               {sizeOptions[category as keyof typeof sizeOptions].map(s => (
-                 <option key={s} value={s} style={{ color: '#000' }}>{s}</option>
-               ))}
-             </select>
-           </div>
-        </div>
+          {/* BRAND SELECTION */}
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+             <p className="cyber-label" style={{ marginBottom: '16px' }}>MAISON / 品牌</p>
+             <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '8px' }} className="hide-scrollbar">
+                {["Cartier", "Van Cleef", "Bulgari", "Autre"].map(b => (
+                   <button 
+                     key={b} onClick={() => setBrand(b)}
+                     style={{ 
+                       padding: '14px 24px', borderRadius: '24px', border: 'none',
+                       background: brand === b ? '#000' : '#F9F9F9',
+                       color: brand === b ? '#fff' : '#000',
+                       fontSize: '12px', fontWeight: 900, cursor: 'pointer',
+                       transition: 'all 0.3s ease', flexShrink: 0
+                     }}
+                   >
+                     {b.toUpperCase()}
+                   </button>
+                ))}
+             </div>
+          </motion.div>
 
-        {/* MASSIVE UPLOAD ZONE */}
-        <div>
-           <label style={{ fontSize: '13px', fontWeight: 700, color: 'var(--accent)', letterSpacing: '0.1em', marginBottom: '16px', display: 'block' }}>BLUEPRINT UPLOAD</label>
-           <label style={{ 
-             display: 'block', 
-             width: '100%', 
-             height: file ? '400px' : '200px', 
-             borderRadius: '32px', 
-             background: 'var(--secondary-bg)',
-             border: file ? 'none' : '1px dashed var(--separator)',
-             overflow: 'hidden',
-             position: 'relative',
-             cursor: 'pointer',
-             transition: 'all 0.3s ease'
-           }}>
-             {file ? (
-               <>
-                 <img src={URL.createObjectURL(file)} style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.8 }} />
-                 <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0, transition: 'opacity 0.2s ease' }} onMouseEnter={e => e.currentTarget.style.opacity = '1'} onMouseLeave={e => e.currentTarget.style.opacity = '0'}>
-                    <span style={{ color: '#fff', fontWeight: 700, letterSpacing: '0.1em' }}>TAP TO REPLACE</span>
-                 </div>
-               </>
-             ) : (
-               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--faded)' }}>
-                 <UploadCloud size={48} strokeWidth={1} style={{ marginBottom: '16px' }} />
-                 <span style={{ fontSize: '14px', fontWeight: 700, letterSpacing: '0.1em' }}>INSERT REFERENCE IMAGE</span>
-               </div>
-             )}
-             <input type="file" accept="image/*" onChange={(e) => { if (e.target.files && e.target.files[0]) setFile(e.target.files[0]); }} style={{ display: 'none' }} />
-           </label>
-        </div>
+          {/* GOLD COLOR SELECTION */}
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
+             <p className="cyber-label" style={{ marginBottom: '16px' }}>METALS / 金属颜色</p>
+             <div style={{ display: 'flex', gap: '8px' }}>
+                {[
+                  { id: "Or Jaune", label: "JAUNE", color: "#F5D061" },
+                  { id: "Or Blanc", label: "BLANC", color: "#E5E5E5" },
+                  { id: "Or Rose", label: "ROSE", color: "#E7A78B" }
+                ].map(g => (
+                   <button 
+                     key={g.id} onClick={() => setGoldColor(g.id)}
+                     style={{ 
+                       flex: 1, padding: '16px', borderRadius: '24px', border: '1px solid rgba(0,0,0,0.05)',
+                       background: goldColor === g.id ? '#000' : '#fff',
+                       color: goldColor === g.id ? '#fff' : '#000',
+                       display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px',
+                       transition: 'all 0.3s ease'
+                     }}
+                   >
+                      <div style={{ width: '12px', height: '12px', borderRadius: '6px', background: g.color }} />
+                      <span style={{ fontSize: '10px', fontWeight: 900 }}>{g.label}</span>
+                   </button>
+                ))}
+             </div>
+          </motion.div>
 
-      </form>
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+             <p className="cyber-label" style={{ marginBottom: '20px', paddingLeft: '8px' }}>SPECIFICATIONS / 规格</p>
+             <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '12px' }}>
+                <div style={{ padding: '24px', borderRadius: '28px', background: '#F9F9F9', border: '1px solid rgba(0,0,0,0.02)' }}>
+                   <span className="cyber-label" style={{ fontSize: '7px', opacity: 0.5 }}>CATEGORY</span>
+                   <select 
+                     value={category} 
+                     onChange={(e) => { const t = e.target.value as any; setCategory(t); setSize(sizeOptions[t as keyof typeof sizeOptions][0]); }}
+                     style={{ width: '100%', background: 'transparent', border: 'none', outline: 'none', fontSize: '15px', fontWeight: 900, marginTop: '10px' }}
+                   >
+                     <option value="Ring">Bague</option>
+                     <option value="Bracelet">Bracelet</option>
+                     <option value="Necklace">Collier</option>
+                   </select>
+                </div>
+                <div style={{ padding: '24px', borderRadius: '28px', background: '#F9F9F9', border: '1px solid rgba(0,0,0,0.02)' }}>
+                   <span className="cyber-label" style={{ fontSize: '7px', opacity: 0.5 }}>SIZE / 规格</span>
+                   <select 
+                     value={size} onChange={(e) => setSize(e.target.value)}
+                     style={{ width: '100%', background: 'transparent', border: 'none', outline: 'none', fontSize: '15px', fontWeight: 900, marginTop: '10px', color: 'var(--accent)' }}
+                   >
+                     {sizeOptions[category as keyof typeof sizeOptions].map(s => <option key={s} value={s}>{s}</option>)}
+                   </select>
+                </div>
+             </div>
+          </motion.div>
 
-      {/* DYNAMIC ISLAND : Submit Action */}
-      <div className="floating-pill-container" style={{ bottom: '32px' }}>
-        <div style={{ width: '100%' }}>
-          <button 
-             className="btn-cyber accent"
-             onClick={handleSubmit} 
-             disabled={loading || !title} 
-             style={{ height: '64px', borderRadius: '32px', fontSize: '18px', boxShadow: '0 20px 40px rgba(224, 255, 0, 0.2)' }}
-          >
-             {loading ? 'INITIALIZING MATRIX...' : 'CONFIRM PROTOCOL'}
-          </button>
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+             <p className="cyber-label" style={{ marginBottom: '20px' }}>VISUAL REFERENCE / 参考图片</p>
+             <label style={{ display: 'block', width: '100%', minHeight: '300px', borderRadius: '32px', background: '#F9F9F9', overflow: 'hidden', position: 'relative', cursor: 'pointer', transition: 'all 0.4s ease' }}>
+                {file ? (
+                  <SmartImage src={URL.createObjectURL(file)} style={{ width: '100%', height: '300px' }} />
+                ) : (
+                  <div style={{ height: '300px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'rgba(0,0,0,0.1)', gap: '16px' }}>
+                    <UploadCloud size={48} strokeWidth={1.5} />
+                    <span style={{ fontSize: '10px', fontWeight: 900, letterSpacing: '0.1em' }}>UPLOAD IMAGE</span>
+                  </div>
+                )}
+                <input type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => e.target.files && setFile(e.target.files[0])} />
+             </label>
+          </motion.div>
+
         </div>
+      </div>
+
+      {/* VISION NAVIGATION PILL */}
+      <div className="vision-pill-container">
+         <div className="vision-pill" style={{ width: '200px' }}>
+            <button className="vision-action accent" disabled={loading || !title} onClick={handleSubmit} style={{ width: '100%' }}>
+               {loading ? 'CREATING...' : 'CREATE'}
+               {!loading && <ChevronRight size={18} strokeWidth={3} />}
+            </button>
+         </div>
       </div>
 
     </div>
