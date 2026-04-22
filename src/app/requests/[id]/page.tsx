@@ -173,163 +173,177 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
   };
 
   return (
-    <div className="layout" style={{ paddingTop: '24px', paddingBottom: '140px' }}>
-      {/* NATIVE HEADER */}
-      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 16px', marginBottom: '24px' }}>
-        <button onClick={() => router.back()} style={{ background: 'transparent', border: 'none', color: 'var(--accent)', fontSize: '17px', display: 'flex', alignItems: 'center', gap: '4px', padding: 0 }}>
-          <ArrowLeft size={22} /> Retour
-        </button>
-        <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--faded)', textTransform: 'uppercase' }}>
-          {request.status.replace(/_/g, ' ')}
-        </div>
-      </header>
-
-      {/* CORE INFO */}
-      <div style={{ padding: '0 16px', marginBottom: '32px' }}>
-        {request.imageUrl && (
+    <div className="layout" style={{ paddingBottom: '140px', backgroundColor: 'var(--background)' }}>
+      {/* 2030: HERO HEADER (Immersive Image) */}
+      <div style={{ position: 'relative', height: '400px', width: '100%', marginBottom: '24px' }}>
+        {request.imageUrl ? (
           <img 
             src={request.imageUrl} 
             alt={request.title} 
-            style={{ width: '100%', aspectRatio: '1/1', objectFit: 'contain', borderRadius: '12px', background: 'var(--secondary-bg)', marginBottom: '16px' }} 
+            style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.7 }} 
           />
+        ) : (
+          <div style={{ width: '100%', height: '100%', background: 'linear-gradient(45deg, #111, #333)' }} />
         )}
-        <h1 className="title">{request.title}</h1>
-        <p className="subtitle">ID: {params.id.slice(0, 8).toUpperCase()} • Taille {request.size || 'STD'}</p>
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'linear-gradient(to bottom, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 40%, rgba(0,0,0,1) 100%)' }} />
+        
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, padding: '24px', display: 'flex', justifyContent: 'space-between' }}>
+          <button onClick={() => router.back()} style={{ background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(10px)', border: 'none', color: '#fff', width: '48px', height: '48px', borderRadius: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+            <ArrowLeft size={20} />
+          </button>
+          <div style={{ background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(10px)', color: '#fff', padding: '0 16px', height: '48px', borderRadius: '24px', display: 'flex', alignItems: 'center', fontSize: '12px', fontWeight: 700, letterSpacing: '0.1em' }}>
+            {request.status.replace(/_/g, ' ')}
+          </div>
+        </div>
+
+        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '24px' }}>
+          <h1 className="title" style={{ fontSize: 'clamp(32px, 8vw, 48px)' }}>{request.title}</h1>
+          <p className="subtitle">ID: {params.id.slice(0, 8).toUpperCase()} • SIZE {request.size || 'STD'}</p>
+        </div>
       </div>
 
-      {/* FINANCE (AUTO-SAVE) */}
-      <div className="list-group">
-        <div className="row-item" style={{ padding: '16px' }}>
-          <label>Prix de Vente Client (€)</label>
+      <div style={{ padding: '0 24px' }}>
+        {/* FINANCE WIDGET (Glass) */}
+        <div className="widget-glass" style={{ marginBottom: '40px' }}>
+          <label style={{ color: 'var(--accent)', fontWeight: 700 }}>SELLING PRICE (EUR)</label>
           <input 
+            className="ghost-input"
             type="number" 
             value={sellingPrice} 
             onChange={e => setSellingPrice(e.target.value)} 
             onBlur={updateSellingPrice}
-            placeholder="0.00" 
-            style={{ fontSize: '34px', fontWeight: 700, padding: 0, marginTop: '4px', color: sellingPrice ? 'var(--foreground)' : 'var(--faded)' }} 
+            placeholder="0.00"
+            style={{ color: sellingPrice ? '#fff' : 'var(--faded)' }}
           />
+          {getFinancialTotals() && (
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginTop: '24px' }}>
+               <div>
+                  <span style={{ fontSize: '11px', color: 'var(--faded)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Net Profit</span>
+                  <div style={{ fontSize: '24px', fontWeight: 800, color: 'var(--success)', marginTop: '4px' }}>{getFinancialTotals()?.profit.toFixed(0)} €</div>
+               </div>
+               <div>
+                  <span style={{ fontSize: '11px', color: 'var(--faded)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Split 50/50</span>
+                  <div style={{ fontSize: '24px', fontWeight: 800, color: '#fff', marginTop: '4px' }}>{(getFinancialTotals()?.profit! / 2).toFixed(0)} €</div>
+               </div>
+            </div>
+          )}
         </div>
 
-        {getFinancialTotals() && (
-          <div className="row-item" style={{ background: 'var(--background)' }}>
-             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                <span style={{ fontSize: '15px' }}>Bénéfice Net</span>
-                <span style={{ fontSize: '17px', fontWeight: 600, color: 'var(--success)' }}>{getFinancialTotals()?.profit.toFixed(0)} €</span>
-             </div>
-             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: '15px' }}>Part par pers.</span>
-                <span style={{ fontSize: '17px', fontWeight: 600 }}>{(getFinancialTotals()?.profit! / 2).toFixed(0)} €</span>
-             </div>
+        {/* QUOTES WIDGET */}
+        <div className="widget-glass" style={{ border: 'none' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '24px' }}>
+             <div style={{ width: '8px', height: '8px', background: 'var(--accent)', borderRadius: '50%' }} />
+             <span style={{ fontSize: '14px', fontWeight: 700, color: '#fff', letterSpacing: '0.1em' }}>FACTORY QUOTES</span>
           </div>
-        )}
-      </div>
 
-      {/* QUOTES */}
-      <div className="list-group">
-        {quotes.map(q => (
-          <div key={q.id} className="row-item">
-             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                <h4 style={{ margin: 0, fontSize: '17px', fontWeight: 600 }}>{q.supplierName}</h4>
-                <p style={{ margin: 0, fontSize: '17px', fontWeight: 600 }}>¥{q.priceRMB}</p>
-             </div>
-             <p style={{ fontSize: '13px', color: 'var(--faded)', margin: '0 0 12px 0' }}>Or {q.goldWeight}g • Diam: {q.diamondCount} ({q.totalCarat}ct) • {q.productionTimeDays}j</p>
-             {request.acceptedQuoteId === q.id ? (
-               <span style={{ fontSize: '14px', color: 'var(--success)', fontWeight: 600 }}>Accepté ✓</span>
-             ) : (
-               <button 
-                 style={{ width: 'auto', alignSelf: 'flex-start', background: 'transparent', color: 'var(--accent)', border: 'none', fontSize: '15px', fontWeight: 600, padding: 0 }}
-                 onClick={() => acceptQuote(q)}
-                 disabled={request.status !== 'QUOTED'}
-               >
-                  Accepter ce devis
-               </button>
-             )}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {quotes.map(q => (
+              <div key={q.id} className="widget" style={{ marginBottom: 0, border: request.acceptedQuoteId === q.id ? '1px solid var(--accent)' : '1px solid var(--separator)' }}>
+                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                    <div>
+                      <h4 style={{ margin: '0 0 4px 0', fontSize: '18px', fontWeight: 800 }}>{q.supplierName}</h4>
+                      <p style={{ fontSize: '12px', color: 'var(--faded)', margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Au {q.goldWeight}g • {q.totalCarat}ct • {q.productionTimeDays} Days</p>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <p style={{ margin: 0, fontSize: '24px', fontWeight: 800, color: 'var(--accent)' }}>¥{q.priceRMB}</p>
+                    </div>
+                 </div>
+                 
+                 <div style={{ marginTop: '24px' }}>
+                   {request.acceptedQuoteId === q.id ? (
+                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--accent)', fontSize: '14px', fontWeight: 700 }}>
+                        <CheckCircle size={18} /> QUOTE ACCEPTED
+                     </div>
+                   ) : (
+                     <button 
+                       className="btn-cyber" 
+                       style={{ background: 'transparent', border: '1px solid var(--separator)', padding: '12px', fontSize: '14px' }}
+                       onClick={() => acceptQuote(q)}
+                       disabled={request.status !== 'QUOTED'}
+                     >
+                        SELECT QUOTE
+                     </button>
+                   )}
+                 </div>
+              </div>
+            ))}
+            {quotes.length === 0 && (
+              <div style={{ padding: '32px', textAlign: 'center', color: 'var(--faded)', fontSize: '14px', letterSpacing: '0.05em', border: '1px dashed var(--separator)', borderRadius: '24px' }}>
+                AWAITING TRANSMISSION...
+              </div>
+            )}
           </div>
-        ))}
-        {quotes.length === 0 && (
-          <div className="row-item" style={{ textAlign: 'center', color: 'var(--faded)', fontSize: '15px', border: 'none' }}>
-            Aucun devis reçu pour l'instant.
-          </div>
-        )}
-      </div>
+        </div>
 
-      {/* TIMELINE */}
-      {request.deliveryEstimation && (
-        <div className="list-group">
-           <div className="row-item">
-             <label>Calendrier Estimé</label>
-             <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '8px' }}>
+        {/* TIMELINE NEON */}
+        {request.deliveryEstimation && (
+          <div className="widget-glass" style={{ border: 'none', marginTop: '32px' }}>
+             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '24px' }}>
+               <Clock size={16} color="var(--accent)" />
+               <span style={{ fontSize: '14px', fontWeight: 700, color: '#fff', letterSpacing: '0.1em' }}>TIMELINE</span>
+             </div>
+             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--secondary-bg)', padding: '16px 24px', borderRadius: '16px' }}>
                 <div>
-                   <p style={{ fontSize: '13px', color: 'var(--faded)', margin: 0 }}>Prod. Usine</p>
-                   <p style={{ fontSize: '15px', fontWeight: 600, margin: 0 }}>{new Date(request.productionDeadline).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}</p>
+                   <p style={{ fontSize: '11px', color: 'var(--faded)', margin: '0 0 4px 0', textTransform: 'uppercase' }}>Factory Done</p>
+                   <p style={{ fontSize: '16px', fontWeight: 800, margin: 0 }}>{new Date(request.productionDeadline).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })}</p>
                 </div>
+                <div style={{ flex: 1, borderTop: '2px dashed var(--separator)', margin: '0 16px' }} />
                 <div style={{ textAlign: 'right' }}>
-                   <p style={{ fontSize: '13px', color: 'var(--faded)', margin: 0 }}>Arrivée France</p>
-                   <p style={{ fontSize: '15px', fontWeight: 600, color: 'var(--success)', margin: 0 }}>{new Date(request.deliveryEstimation).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}</p>
+                   <p style={{ fontSize: '11px', color: 'var(--accent)', margin: '0 0 4px 0', textTransform: 'uppercase' }}>Arrival (Paris)</p>
+                   <p style={{ fontSize: '16px', fontWeight: 800, color: '#fff', margin: 0 }}>{new Date(request.deliveryEstimation).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })}</p>
                 </div>
              </div>
-           </div>
-        </div>
+          </div>
+        )}
+      </div>
+
+      {/* DYNAMIC ISLAND TOOLBAR : Floating Action Pill */}
+      <div className="floating-pill-container">
+         <div className="floating-pill" style={{ padding: '8px', justifyContent: 'center' }}>
+           {request.status === 'WAITING_FOR_QUOTE' && (
+             <button className="btn-cyber accent" onClick={generateSupplierLink} disabled={generatingLink}>
+               <Share size={20} /> {generatingLink ? 'LINKING...' : 'SHARE TO FACTORY'}
+             </button>
+           )}
+           {request.status === 'QUOTED' && quotes.length > 0 && (
+             <div style={{ color: 'var(--faded)', fontSize: '12px', fontWeight: 700, letterSpacing: '0.1em', padding: '16px 0' }}>
+               SELECT FACTORY QUOTE ABOVE
+             </div>
+           )}
+           {request.status === 'MANAGER_REVIEW' && (
+             <a href={`https://wa.me/33607808501?text=${encodeURIComponent(`Validation. T${request.size}\n${window.location.origin}/review/${params.id}`)}`} target="_blank" rel="noopener noreferrer" className="btn-cyber" style={{ background: '#00FF66', color: '#000' }}>
+               <ShieldCheck size={20} /> ASK REVIEW (MIRZA)
+             </a>
+           )}
+           {request.status === 'WAITING_FOR_DEPOSIT' && (
+             <button className="btn-cyber accent" onClick={() => moveNextStep('IN_PRODUCTION')}>
+               DEPOSIT RECEIVED (START)
+             </button>
+           )}
+           {request.status === 'IN_PRODUCTION' && (
+             <button className="btn-cyber" style={{ background: 'transparent', border: '1px solid var(--accent)', color: 'var(--accent)' }} onClick={() => moveNextStep('SHIPPED')}>
+               <Truck size={20} /> MARK EXPEDITED
+             </button>
+           )}
+           {request.status === 'SHIPPED' && (
+             <button className="btn-cyber accent" onClick={() => moveNextStep('DELIVERED')}>
+               <Package size={20} /> VERIFY DELIVERY
+             </button>
+           )}
+           {request.status === 'DELIVERED' && (
+             <div style={{ display: 'flex', gap: '8px', width: '100%' }}>
+               <button className="btn-cyber" style={{ flex: 1, padding: '16px 0', fontSize: '13px' }} onClick={() => generatePDF('QUOTE')}>PDF Devis</button>
+               <button className="btn-cyber" style={{ flex: 1, background: 'rgba(255,255,255,0.1)', padding: '16px 0', fontSize: '13px' }} onClick={() => generatePDF('INVOICE')}>PDF Facture</button>
+             </div>
+           )}
+         </div>
+      </div>
+
+      {copiedLink && (
+        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} style={{ position: 'fixed', top: '24px', left: '50%', transform: 'translateX(-50%)', background: 'var(--accent)', color: '#000', padding: '12px 24px', borderRadius: '100px', fontWeight: 800, fontSize: '12px', letterSpacing: '0.1em', zIndex: 9999 }}>
+          LINK COPIED TO CLIPBOARD
+        </motion.div>
       )}
-
-      {/* ADVANCED OVERRIDE (HIDDEN) */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0 16px', opacity: 0.5 }}>
-         <select value={request.status} onChange={(e) => moveNextStep(e.target.value)} style={{ width: 'auto', fontSize: '13px', color: 'var(--faded)', padding: 0, fontWeight: 500 }}>
-             <option value="WAITING_FOR_QUOTE">Override: Attente Devis</option>
-             <option value="QUOTED">Override: Devis Reçus</option>
-             <option value="MANAGER_REVIEW">Override: Review Mirza</option>
-             <option value="WAITING_FOR_DEPOSIT">Override: Attente Acompte</option>
-             <option value="IN_PRODUCTION">Override: En Production</option>
-             <option value="SHIPPED">Override: Expédié</option>
-             <option value="DELIVERED">Override: Terminé</option>
-         </select>
-         <button style={{ border: 'none', background: 'transparent', color: 'var(--danger)', fontSize: '13px' }} onClick={async () => { if (confirm("Supprimer ce projet ?")) { await set(rtdbRef(rtdb, `requests/${params.id}`), null); router.push("/"); }}}>
-            Supprimer
-         </button>
-      </div>
-
-      {/* NATIVE APPLE TOOLBAR (Contextual Actions) */}
-      <div className="tool-bar">
-         {request.status === 'WAITING_FOR_QUOTE' && (
-           <button className="btn" style={{ width: '100%' }} onClick={generateSupplierLink} disabled={generatingLink}>
-             {generatingLink ? 'Création...' : 'Partager Lien Usine'}
-           </button>
-         )}
-         {request.status === 'QUOTED' && quotes.length > 0 && (
-           <div style={{ textAlign: 'center', fontWeight: 600, color: 'var(--faded)', fontSize: '15px' }}>
-             Analysez et acceptez un devis ci-dessus
-           </div>
-         )}
-         {request.status === 'MANAGER_REVIEW' && (
-           <a href={`https://wa.me/33607808501?text=${encodeURIComponent(`Validation. Taille ${request.size}\n${window.location.origin}/review/${params.id}`)}`} target="_blank" rel="noopener noreferrer" className="btn" style={{ width: '100%', background: '#34C759' }}>
-             Demander Validation (Mirza)
-           </a>
-         )}
-         {request.status === 'WAITING_FOR_DEPOSIT' && (
-           <button className="btn" style={{ width: '100%' }} onClick={() => moveNextStep('IN_PRODUCTION')}>
-             Acompte Reçu (Lancer Prod.)
-           </button>
-         )}
-         {request.status === 'IN_PRODUCTION' && (
-           <button className="btn btn-ghost" style={{ width: '100%', border: '1.5px solid var(--accent)' }} onClick={() => moveNextStep('SHIPPED')}>
-             Marquer comme Expédié
-           </button>
-         )}
-         {request.status === 'SHIPPED' && (
-           <button className="btn" style={{ width: '100%' }} onClick={() => moveNextStep('DELIVERED')}>
-             Marquer comme Livré
-           </button>
-         )}
-         {request.status === 'DELIVERED' && (
-           <div style={{ display: 'flex', gap: '12px', width: '100%' }}>
-             <button className="btn btn-ghost" style={{ flex: 1, background: 'rgba(0,122,255,0.1)' }} onClick={() => generatePDF('QUOTE')}>Devis PDF</button>
-             <button className="btn btn-ghost" style={{ flex: 1, background: 'rgba(0,122,255,0.1)' }} onClick={() => generatePDF('INVOICE')}>Facture PDF</button>
-           </div>
-         )}
-      </div>
-
-      {copiedLink && <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} style={{ position: 'fixed', top: '20px', left: '50%', transform: 'translateX(-50%)', background: 'var(--foreground)', color: 'var(--background)', padding: '12px 24px', borderRadius: '24px', textAlign: 'center', fontWeight: 600, fontSize: '14px', zIndex: 110, boxShadow: '0 10px 20px rgba(0,0,0,0.2)' }}>Lien Copié</motion.div>}
     </div>
   );
 }

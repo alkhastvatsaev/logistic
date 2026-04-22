@@ -68,118 +68,113 @@ export default function NewRequest() {
   };
 
   return (
-    <div style={{ padding: '20px 0' }}>
-      <header style={{ marginBottom: '32px', padding: '0 4px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '8px' }}>
-           <button onClick={() => router.back()} style={{ background: 'transparent', border: 'none', color: 'var(--accent)', fontSize: '17px', padding: 0 }}>
-             Cancel
-           </button>
-           <h2 style={{ fontSize: '17px', fontWeight: 600, color: 'var(--foreground)' }}>New Order</h2>
-           <button 
-             onClick={handleSubmit} 
-             disabled={loading || !title} 
-             style={{ background: 'transparent', border: 'none', color: title ? 'var(--accent)' : 'var(--faded)', fontSize: '17px', fontWeight: 600, padding: 0 }}
-           >
-             {loading ? '...' : 'Done'}
-           </button>
-        </div>
+    <div className="layout" style={{ backgroundColor: 'var(--background)', padding: '24px 24px 140px 24px' }}>
+      
+      {/* HEADER 2030 */}
+      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
+         <button onClick={() => router.back()} style={{ background: 'transparent', border: 'none', color: 'var(--faded)', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
+           <ArrowLeft size={24} /> 
+           <span style={{ fontSize: '13px', fontWeight: 700, letterSpacing: '0.1em' }}>CANCEL</span>
+         </button>
       </header>
 
-      <form onSubmit={handleSubmit} style={{ maxWidth: '100%' }}>
-        <div className="list-group">
-          <div className="row-item">
-            <label>Name</label>
-            <input 
-              required
-              type="text" 
-              placeholder="Clash Ring, etc." 
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              autoFocus
-            />
-          </div>
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '40px' }}>
+        
+        {/* BIG TITLE INPUT */}
+        <div>
+          <label style={{ fontSize: '13px', fontWeight: 700, color: 'var(--accent)', letterSpacing: '0.1em', marginBottom: '8px', display: 'block' }}>PROJECT IDENTITY</label>
+          <input 
+            className="ghost-input"
+            required
+            type="text" 
+            placeholder="NAME THE ART..." 
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            autoFocus
+          />
         </div>
 
-        <div className="list-group">
-          <div className="row-item">
-            <label>Category</label>
-            <select 
-              value={category}
-              onChange={(e) => {
-                const cat = e.target.value as any;
-                setCategory(cat);
-                setSize(sizeOptions[cat as keyof typeof sizeOptions][0]);
-              }}
-            >
-              <option value="Ring">Ring</option>
-              <option value="Bracelet">Bracelet</option>
-              <option value="Necklace">Necklace</option>
-            </select>
-          </div>
-          <div className="row-item">
-            <label>Size</label>
-            <select 
-              value={size}
-              onChange={(e) => setSize(e.target.value)}
-            >
-              {sizeOptions[category as keyof typeof sizeOptions].map(s => (
-                <option key={s} value={s}>{s}</option>
-              ))}
-            </select>
-          </div>
+        {/* DIMENSIONS (Glass Widget) */}
+        <div className="widget-glass" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', border: 'none' }}>
+           <div>
+             <label style={{ fontSize: '11px', color: 'var(--faded)', letterSpacing: '0.1em', marginBottom: '8px', display: 'block' }}>CATEGORY</label>
+             <select 
+               value={category}
+               onChange={(e) => {
+                 const cat = e.target.value as any;
+                 setCategory(cat);
+                 setSize(sizeOptions[cat as keyof typeof sizeOptions][0]);
+               }}
+               style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '24px', fontWeight: 800, width: '100%', padding: 0 }}
+             >
+               <option value="Ring" style={{ color: '#000' }}>Ring</option>
+               <option value="Bracelet" style={{ color: '#000' }}>Bracelet</option>
+               <option value="Necklace" style={{ color: '#000' }}>Necklace</option>
+             </select>
+           </div>
+           
+           <div>
+             <label style={{ fontSize: '11px', color: 'var(--faded)', letterSpacing: '0.1em', marginBottom: '8px', display: 'block' }}>SPEC SIZING</label>
+             <select 
+               value={size}
+               onChange={(e) => setSize(e.target.value)}
+               style={{ background: 'transparent', border: 'none', color: 'var(--accent)', fontSize: '24px', fontWeight: 800, width: '100%', padding: 0 }}
+             >
+               {sizeOptions[category as keyof typeof sizeOptions].map(s => (
+                 <option key={s} value={s} style={{ color: '#000' }}>{s}</option>
+               ))}
+             </select>
+           </div>
         </div>
 
-        <div className="list-group">
-          <div className="row-item" style={{ padding: 0 }}>
-            <label style={{ padding: '12px 16px 4px 16px' }}>Photo Evidence</label>
-            <label style={{ 
-              display: 'flex', 
-              flexDirection: 'column', 
-              alignItems: 'center', 
-              justifyContent: 'center',
-              padding: file ? '12px' : '32px',
-              cursor: 'pointer',
-              background: 'var(--secondary-bg)',
-            }}>
-              {file ? (
-                <div style={{ width: '100%', textAlign: 'center' }}>
-                  <img 
-                    src={URL.createObjectURL(file)} 
-                    alt="Preview" 
-                    style={{ 
-                      width: '100%', 
-                      maxHeight: '200px', 
-                      objectFit: 'contain', 
-                      borderRadius: '8px'
-                    }} 
-                  />
-                  <div style={{ marginTop: '8px', fontSize: '13px', color: 'var(--accent)' }}>
-                    Tap to change
-                  </div>
-                </div>
-              ) : (
-                <div style={{ color: 'var(--accent)', fontSize: '17px', fontWeight: 500 }}>
-                  Add Reference Photo
-                </div>
-              )}
-              <input 
-                type="file" 
-                accept="image/*" 
-                onChange={(e) => {
-                  if (e.target.files && e.target.files[0]) {
-                    setFile(e.target.files[0]);
-                  }
-                }}
-                style={{ display: 'none' }}
-              />
-            </label>
-          </div>
+        {/* MASSIVE UPLOAD ZONE */}
+        <div>
+           <label style={{ fontSize: '13px', fontWeight: 700, color: 'var(--accent)', letterSpacing: '0.1em', marginBottom: '16px', display: 'block' }}>BLUEPRINT UPLOAD</label>
+           <label style={{ 
+             display: 'block', 
+             width: '100%', 
+             height: file ? '400px' : '200px', 
+             borderRadius: '32px', 
+             background: 'var(--secondary-bg)',
+             border: file ? 'none' : '1px dashed var(--separator)',
+             overflow: 'hidden',
+             position: 'relative',
+             cursor: 'pointer',
+             transition: 'all 0.3s ease'
+           }}>
+             {file ? (
+               <>
+                 <img src={URL.createObjectURL(file)} style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.8 }} />
+                 <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0, transition: 'opacity 0.2s ease' }} onMouseEnter={e => e.currentTarget.style.opacity = '1'} onMouseLeave={e => e.currentTarget.style.opacity = '0'}>
+                    <span style={{ color: '#fff', fontWeight: 700, letterSpacing: '0.1em' }}>TAP TO REPLACE</span>
+                 </div>
+               </>
+             ) : (
+               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--faded)' }}>
+                 <UploadCloud size={48} strokeWidth={1} style={{ marginBottom: '16px' }} />
+                 <span style={{ fontSize: '14px', fontWeight: 700, letterSpacing: '0.1em' }}>INSERT REFERENCE IMAGE</span>
+               </div>
+             )}
+             <input type="file" accept="image/*" onChange={(e) => { if (e.target.files && e.target.files[0]) setFile(e.target.files[0]); }} style={{ display: 'none' }} />
+           </label>
         </div>
 
-        <p style={{ margin: '32px 0', fontSize: '13px', color: 'var(--faded)', textAlign: 'center', padding: '0 20px' }}>
-          This data will be synchronized with our supplier matrix for immediate manufacturing review.
-        </p>
       </form>
+
+      {/* DYNAMIC ISLAND : Submit Action */}
+      <div className="floating-pill-container" style={{ bottom: '32px' }}>
+        <div style={{ width: '100%' }}>
+          <button 
+             className="btn-cyber accent"
+             onClick={handleSubmit} 
+             disabled={loading || !title} 
+             style={{ height: '64px', borderRadius: '32px', fontSize: '18px', boxShadow: '0 20px 40px rgba(224, 255, 0, 0.2)' }}
+          >
+             {loading ? 'INITIALIZING MATRIX...' : 'CONFIRM PROTOCOL'}
+          </button>
+        </div>
+      </div>
+
     </div>
   );
 }

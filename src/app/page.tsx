@@ -79,132 +79,114 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="layout" style={{ paddingTop: '24px', paddingBottom: '140px' }}>
-      <header style={{ marginBottom: '16px', padding: '0 16px' }}>
-        <h1 className="title">Logistique</h1>
-      </header>
+    <div className="layout" style={{ backgroundColor: 'var(--background)' }}>
+      {/* HEADER 2030 */}
+      <motion.div 
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        style={{ padding: '64px 24px 32px 24px', position: 'sticky', top: 0, zIndex: 10, background: 'linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 100%)' }}
+      >
+        <h1 className="title">LOGIS<br/><span style={{ color: 'var(--accent)' }}>TIQUE</span></h1>
+      </motion.div>
 
-      {loading ? (
-        <div style={{ padding: '0 16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          {[1, 2, 3].map(i => (
-            <div key={i} className="list-group animate-pulse" style={{ height: '70px', opacity: 0.3, margin: 0 }}></div>
-          ))}
-        </div>
-      ) : requests.filter(r => filter === 'ALL' || r.status === filter).length === 0 ? (
-        <div style={{ padding: '40px 20px', textAlign: 'center', color: 'var(--faded)' }}>
-          <Package size={32} style={{ margin: '0 auto 12px auto', opacity: 0.5 }} />
-          <p style={{ fontSize: '15px' }}>Aucun projet en cours.</p>
-        </div>
-      ) : (
-        <div className="list-group">
-          {requests
-            .filter(r => filter === 'ALL' || r.status === filter)
-            .map((req, i) => (
-              <motion.div 
-                key={req.id}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.2 }}
-              >
-                <Link 
-                  href={`/requests/${req.id}`} 
-                  className="row-item"
-                  style={{ 
-                    textDecoration: 'none',
-                    display: 'flex',
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    padding: '12px 16px',
-                    gap: '12px',
-                  }}
-                >
-                  <div style={{ position: 'relative' }}>
-                    {req.imageUrl ? (
-                      <img 
-                        src={req.imageUrl} 
-                        alt={req.title} 
-                        style={{ width: '48px', height: '48px', borderRadius: '8px', objectFit: 'cover' }} 
-                      />
-                    ) : (
-                      <div style={{ width: '48px', height: '48px', borderRadius: '8px', background: 'rgba(120, 120, 128, 0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <Package size={20} color="var(--faded)" />
-                      </div>
-                    )}
-                  </div>
-
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                       <h3 style={{ fontWeight: 600, fontSize: '17px', margin: 0, color: 'var(--foreground)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                         {req.title}
-                       </h3>
-                       <div style={{ fontSize: '13px', color: 'var(--faded)', whiteSpace: 'nowrap', marginLeft: '8px' }}>
-                          {renderTimeline(req)}
-                       </div>
+      {/* FEED INFINI */}
+      <div style={{ padding: '0 24px 140px 24px', display: 'flex', flexDirection: 'column', gap: '40px' }}>
+        {loading ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+             {[1, 2].map(i => <div key={i} className="animate-pulse" style={{ height: '300px', borderRadius: '24px', background: 'var(--secondary-bg)' }} />)}
+          </div>
+        ) : requests.filter(r => filter === 'ALL' || r.status === filter).length === 0 ? (
+          <div style={{ padding: '100px 0', textAlign: 'center', color: 'var(--faded)' }}>
+            <h2 style={{ fontSize: '24px', fontWeight: 300, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
+              <Package size={48} strokeWidth={1} style={{ opacity: 0.5 }} />
+              Vide Absolute.
+            </h2>
+          </div>
+        ) : (
+          requests.filter(r => filter === 'ALL' || r.status === filter).map((req, i) => (
+            <motion.div 
+              key={req.id}
+              initial={{ opacity: 0, y: 50, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ duration: 0.5, delay: i * 0.1, type: "spring", bounce: 0.4 }}
+            >
+              <Link href={`/requests/${req.id}`} style={{ textDecoration: 'none' }}>
+                <div style={{ 
+                  position: 'relative', 
+                  height: '350px', 
+                  borderRadius: '32px', 
+                  overflow: 'hidden',
+                  background: 'var(--secondary-bg)',
+                  boxShadow: '0 30px 60px rgba(0,0,0,0.8)'
+                }}>
+                  {req.imageUrl && (
+                    <img 
+                      src={req.imageUrl} 
+                      alt={req.title} 
+                      style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.8 }} 
+                    />
+                  )}
+                  {/* Gradient Overlay pour lisibilité */}
+                  <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0) 100%)' }} />
+                  
+                  {/* Contenu Superposé */}
+                  <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '32px 24px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                      <h3 style={{ fontSize: '32px', fontWeight: 800, margin: 0, color: '#fff', letterSpacing: '-0.03em', lineHeight: 1 }}>{req.title}</h3>
+                      <span style={{ color: 'var(--accent)', fontSize: '14px', fontWeight: 700, letterSpacing: '0.1em' }}>{req.size ? `T.${req.size}` : 'STD'}</span>
                     </div>
                     
-                    <div style={{ marginTop: '2px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                       <p style={{ fontSize: '14px', margin: 0, color: 'var(--faded)' }}>{req.size ? `Taille ${req.size}` : 'Standard'}</p>
-                       <p style={{ fontSize: '13px', margin: 0, color: 'var(--faded)' }}>{req.status.replace(/_/g, ' ')}</p>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '16px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.1)', padding: '8px 16px', borderRadius: '100px', backdropFilter: 'blur(10px)' }}>
+                        <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--accent)', boxShadow: '0 0 10px var(--accent)' }} />
+                        <span style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.05em', color: '#fff', textTransform: 'uppercase' }}>
+                          {req.status === 'WAITING_FOR_QUOTE' ? 'DEVIS REQUIS' : req.status.replace(/_/g, ' ')}
+                        </span>
+                      </div>
+                      <span style={{ fontSize: '13px', color: 'var(--faded)', fontWeight: 500 }}>
+                        {renderTimeline(req)}
+                      </span>
                     </div>
                   </div>
-                </Link>
-              </motion.div>
-            ))}
-        </div>
-      )}
+                </div>
+              </Link>
+            </motion.div>
+          ))
+        )}
+      </div>
 
-      {/* NATIVE APPLE TAB BAR */}
-      <nav className="tab-bar">
-        <button 
-          onClick={() => { setFilter('ALL'); }}
-          className={`tab-item ${filter === 'ALL' ? 'active' : ''}`}
-          style={{ background: 'transparent', border: 'none' }}
-        >
-          <Clock size={24} />
-          <span>Projets</span>
-        </button>
-        
-        <Link href="/requests/new" className="tab-item">
-          <Plus size={24} />
-          <span>Nouveau</span>
-        </Link>
-
-        {/* This effectively replaces the generic filters with a cleaner interaction */}
-        <div style={{ position: 'relative', flex: 1, display: 'flex', justifyContent: 'center' }}>
-          <select 
-            value={filter} 
-            onChange={(e) => setFilter(e.target.value as any)}
-            className="tab-item"
-            style={{ 
-              background: 'transparent', 
-              border: 'none', 
-              appearance: 'none',
-              textAlign: 'center',
-              width: '100%',
-              padding: 0,
-              margin: 0,
-              color: filter !== 'ALL' ? 'var(--accent)' : 'var(--faded)'
-            }}
+      {/* DYNAMIC ISLAND NAVIGATION */}
+      <div className="floating-pill-container">
+        <div className="floating-pill">
+          <button 
+            onClick={() => setFilter('ALL')}
+            className={`pill-item ${filter === 'ALL' ? 'active' : ''}`}
           >
-            <option value="ALL">Filtres</option>
-            {filterOptions.filter(o => o.value !== 'ALL').map(opt => (
-              <option key={opt.value} value={opt.value}>{opt.label}</option>
-            ))}
-          </select>
-          <div style={{ position: 'absolute', pointerEvents: 'none', top: '8px' }}>
-             <Package size={24} color={filter !== 'ALL' ? 'var(--accent)' : 'var(--faded)'} />
+            <Clock size={20} />
+            {filter === 'ALL' && <span>ALL</span>}
+          </button>
+          
+          <div style={{ position: 'relative' }}>
+             <select 
+               value={filter} 
+               onChange={(e) => setFilter(e.target.value as any)}
+               className={`pill-item ${filter !== 'ALL' ? 'active' : ''}`}
+               style={{ appearance: 'none', paddingLeft: '40px', background: filter !== 'ALL' ? 'var(--accent)' : 'transparent' }}
+             >
+               <option value="ALL">FILTER</option>
+               {filterOptions.filter(o => o.value !== 'ALL').map(opt => (
+                 <option key={opt.value} value={opt.value}>{opt.label}</option>
+               ))}
+             </select>
+             <Package size={20} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: filter !== 'ALL' ? '#000' : 'var(--faded)' }} />
           </div>
-          <span style={{ 
-            position: 'absolute', 
-            bottom: '0px', 
-            fontSize: '10px', 
-            fontWeight: 500, 
-            color: filter !== 'ALL' ? 'var(--accent)' : 'var(--faded)' 
-          }}>
-            {filter === 'ALL' ? 'Catégories' : filter.replace(/_/g, ' ')}
-          </span>
+
+          <Link href="/requests/new" className="pill-item" style={{ background: 'var(--foreground)', color: 'var(--background)' }}>
+            <Plus size={20} />
+            <span>NEW</span>
+          </Link>
         </div>
-      </nav>
+      </div>
     </div>
   );
 }
