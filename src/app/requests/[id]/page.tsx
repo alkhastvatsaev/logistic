@@ -3,8 +3,9 @@
 import { useEffect, useState } from "react";
 import { rtdb, rtdbRef, onValue, set, push, update } from "@/lib/firebase";
 import { motion } from "framer-motion";
+import { calculateFinancialTotals, calculateDeliveryDates } from "@/lib/logic";
 export const dynamic = "force-dynamic";
-import { ArrowLeft, Share, Copy, CheckCircle, Trash2, Edit3, Save } from "lucide-react";
+import { ArrowLeft, Share, Copy, CheckCircle, Trash2, Edit3, Save, Package, Clock, Truck, ShieldCheck } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 interface Quote {
@@ -37,8 +38,6 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
   const [payments, setPayments] = useState<any[]>([]);
   const [isUploadingReceipt, setIsUploadingReceipt] = useState(false);
   const [sellingPrice, setSellingPrice] = useState("");
-
-  const EUR_RMB_RATE = 0.13;
 
   const sizeOptions = Array.from({ length: 15 }, (_, i) => (49 + i).toString())
     .concat(Array.from({ length: 9 }, (_, i) => (14 + i).toString() + " cm"))
@@ -90,16 +89,7 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
 
   const getFinancialTotals = () => {
     const acceptedQuote = quotes.find(q => q.id === request?.acceptedQuoteId);
-    if (!acceptedQuote) return null;
-
-    const costRMB = (parseFloat(acceptedQuote.priceRMB.toString()) || 0) + (parseFloat(acceptedQuote.shippingCostRMB.toString()) || 0);
-    const costEUR = costRMB * EUR_RMB_RATE;
-    const sPrice = parseFloat(sellingPrice) || 0;
-    const profit = sPrice - costEUR;
-    const paid = payments.reduce((acc, p) => acc + (parseFloat(p.amount) || 0), 0);
-    const balance = sPrice - paid;
-
-    return { costEUR, sPrice, profit, paid, balance };
+    return calculateFinancialTotals(acceptedQuote, sellingPrice, payments);
   };
 
   const generateSupplierLink = async () => {
@@ -121,12 +111,7 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
   const acceptQuote = async (quote: Quote) => {
     if (!confirm("Accepter ce devis et lancer la production ?")) return;
     try {
-      const prodDays = Number(quote.productionTimeDays) || 7;
-      const shippingDays = 7; // Shenzhen -> France Fixed
-      const totalDays = prodDays + shippingDays;
-      
-      const productionDeadline = Date.now() + (prodDays * 24 * 60 * 60 * 1000);
-      const deliveryEstimation = Date.now() + (totalDays * 24 * 60 * 60 * 1000);
+      const { productionDeadline, deliveryEstimation } = calculateDeliveryDates(quote.productionTimeDays);
 
       const updates: any = {};
       updates[`requests/${params.id}/status`] = "IN_PRODUCTION";
