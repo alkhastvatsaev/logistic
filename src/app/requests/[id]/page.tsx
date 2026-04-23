@@ -149,6 +149,8 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
     }
   };
 
+  const [isEditingTracking, setIsEditingTracking] = useState(false);
+  const [manualTracking, setManualTracking] = useState({ location: "", event: "", status: "" });
   const [isSyncing, setIsSyncing] = useState(false);
   const [trackingNumber, setTrackingNumber] = useState("");
   const [trackingData, setTrackingData] = useState<any>(null);
@@ -198,6 +200,21 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
       toast.error("Erreur de connexion au hub FedEx.");
     } finally {
       setIsSyncing(false);
+    }
+  };
+
+  const handleManualTrackingSave = async () => {
+    try {
+      await update(rtdbRef(rtdb, `requests/${params.id}`), {
+        trackingStatus: manualTracking.status || request.trackingStatus || 'EN ROUTE',
+        lastLocation: manualTracking.location || request.lastLocation,
+        lastEvent: manualTracking.event || request.lastEvent,
+        lastSyncAt: Date.now()
+      });
+      setIsEditingTracking(false);
+      toast.success("Statut mis à jour manuellement.");
+    } catch (e) {
+      toast.error("Erreur de sauvegarde.");
     }
   };
 
@@ -553,20 +570,49 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
                  </div>
 
                  <div style={{ padding: '24px', background: 'rgba(255,255,255,0.05)', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.1)' }}>
-                    <div style={{ display: 'flex', gap: '20px', alignItems: 'flex-start' }}>
-                       <div style={{ width: '40px', height: '40px', borderRadius: '20px', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                          <Plane size={20} />
+                     {isEditingTracking ? (
+                       <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                          <input 
+                            placeholder="LIEU (ex: STRASBOURG, FR)"
+                            value={manualTracking.location}
+                            onChange={(e) => setManualTracking({ ...manualTracking, location: e.target.value })}
+                            style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', padding: '12px', borderRadius: '12px', color: '#fff', fontSize: '13px', fontWeight: 600 }}
+                          />
+                          <input 
+                            placeholder="ÉVÉNEMENT (ex: EN DOUANE)"
+                            value={manualTracking.event}
+                            onChange={(e) => setManualTracking({ ...manualTracking, event: e.target.value })}
+                            style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', padding: '12px', borderRadius: '12px', color: '#fff', fontSize: '13px', fontWeight: 600 }}
+                          />
+                          <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+                             <button onClick={handleManualTrackingSave} style={{ flex: 1, height: '40px', background: '#FF6600', border: 'none', borderRadius: '10px', color: '#fff', fontWeight: 900, fontSize: '11px' }}>SAUVEGARDER</button>
+                             <button onClick={() => setIsEditingTracking(false)} style={{ flex: 1, background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '10px', color: '#fff', fontWeight: 900, fontSize: '11px' }}>ANNULER</button>
+                          </div>
                        </div>
-                       <div>
-                          <p style={{ fontSize: '14px', fontWeight: 900 }}>{isSyncing ? 'Mise à jour...' : (request.lastLocation || 'Vérification du dernier scan...')}</p>
-                          <p style={{ fontSize: '11px', opacity: 0.6, marginTop: '4px' }}>{isSyncing ? 'Synchronisation avec les serveurs FedEx' : (request.lastUpdateDate || 'Chargement des données temps réel...')}</p>
-                          {request.lastEvent && (
-                            <div style={{ marginTop: '12px', padding: '6px 12px', background: '#FF6600', borderRadius: '8px', display: 'inline-block' }}>
-                               <span style={{ fontSize: '9px', fontWeight: 900 }}>{request.lastEvent.toUpperCase()}</span>
-                            </div>
-                          )}
-                        </div>
-                     </div>
+                     ) : (
+                       <div style={{ display: 'flex', gap: '20px', alignItems: 'flex-start' }} onClick={() => {
+                          setManualTracking({ location: request.lastLocation || "", event: request.lastEvent || "", status: request.trackingStatus || "" });
+                          setIsEditingTracking(true);
+                       }}>
+                          <div style={{ width: '40px', height: '40px', borderRadius: '20px', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                             <Plane size={20} />
+                          </div>
+                          <div style={{ flex: 1 }}>
+                             <p style={{ fontSize: '14px', fontWeight: 900 }}>
+                               {isSyncing ? 'Mise à jour...' : (request.lastLocation || 'Vérification du dernier scan...')}
+                             </p>
+                             <p style={{ fontSize: '11px', opacity: 0.6, marginTop: '4px' }}>
+                               {isSyncing ? 'Synchronisation avec les serveurs FedEx' : (request.lastUpdateDate || 'Chargement des données temps réel...')}
+                             </p>
+                             {request.lastEvent && (
+                               <div style={{ marginTop: '12px', padding: '6px 12px', background: '#FF6600', borderRadius: '8px', display: 'inline-block' }}>
+                                  <span style={{ fontSize: '9px', fontWeight: 900 }}>{request.lastEvent.toUpperCase()}</span>
+                               </div>
+                             )}
+                          </div>
+                          <div style={{ opacity: 0.3 }}><Plus size={16} /></div>
+                       </div>
+                     )}
                   </div>
                  <div style={{ display: 'flex', gap: '12px', marginTop: '32px' }}>
                     <button 
