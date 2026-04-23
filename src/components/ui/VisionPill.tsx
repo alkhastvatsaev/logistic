@@ -10,7 +10,7 @@ interface VisionPillProps {
 
 export const VisionPill = ({ children, width = "auto" }: VisionPillProps) => {
   return (
-    <div className="vision-pill-container" style={{ position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)', width: '100%', padding: 'calc(40px + env(safe-area-inset-bottom)) 24px', pointerEvents: 'none', display: 'flex', justifyContent: 'center', zIndex: 1000 }}>
+    <div className="vision-pill-container" style={{ position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)', width: '100%', maxWidth: '430px', padding: 'calc(40px + env(safe-area-inset-bottom)) 24px', pointerEvents: 'none', display: 'flex', justifyContent: 'center', zIndex: 1000 }}>
        <motion.div 
          initial={{ y: 100, opacity: 0 }} 
          animate={{ y: 0, opacity: 1 }} 
