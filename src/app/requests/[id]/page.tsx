@@ -149,7 +149,7 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
     }
   };
 
-  const [showTrackingInput, setShowTrackingInput] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
   const [trackingNumber, setTrackingNumber] = useState("");
   const [trackingData, setTrackingData] = useState<any>(null);
 
@@ -167,12 +167,16 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
     setTrackingNumber(num);
     setShowTrackingInput(false);
     toast.success("Expédition activée. Flux temps réel connecté.");
+    
+    // Explicit sync after shipment
+    syncTracking(num);
   };
 
   const syncTracking = async (num?: string) => {
     const trk = num || request?.trackingNumber;
     if (!trk) return;
 
+    setIsSyncing(true);
     try {
       const res = await fetch(`/api/track?num=${trk}`);
       const data = await res.json();
@@ -185,9 +189,15 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
           lastEvent: data.event,
           lastSyncAt: Date.now()
         });
+        toast.success("Suivi synchronisé.");
+      } else {
+        toast.error("Données FedEx indisponibles pour le moment.");
       }
     } catch (e) {
       console.error("Sync Error:", e);
+      toast.error("Erreur de connexion au hub FedEx.");
+    } finally {
+      setIsSyncing(false);
     }
   };
 
@@ -548,8 +558,8 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
                           <Plane size={20} />
                        </div>
                        <div>
-                          <p style={{ fontSize: '14px', fontWeight: 900 }}>{request.lastLocation || 'Vérification du dernier scan...'}</p>
-                          <p style={{ fontSize: '11px', opacity: 0.6, marginTop: '4px' }}>{request.lastUpdateDate || 'Chargement des données temps réel...'}</p>
+                          <p style={{ fontSize: '14px', fontWeight: 900 }}>{isSyncing ? 'Mise à jour...' : (request.lastLocation || 'Vérification du dernier scan...')}</p>
+                          <p style={{ fontSize: '11px', opacity: 0.6, marginTop: '4px' }}>{isSyncing ? 'Synchronisation avec les serveurs FedEx' : (request.lastUpdateDate || 'Chargement des données temps réel...')}</p>
                           {request.lastEvent && (
                             <div style={{ marginTop: '12px', padding: '6px 12px', background: '#FF6600', borderRadius: '8px', display: 'inline-block' }}>
                                <span style={{ fontSize: '9px', fontWeight: 900 }}>{request.lastEvent.toUpperCase()}</span>
@@ -561,9 +571,10 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
                  <div style={{ display: 'flex', gap: '12px', marginTop: '32px' }}>
                     <button 
                       onClick={() => syncTracking()} 
+                       disabled={isSyncing} 
                       style={{ flex: 1, height: '48px', borderRadius: '16px', background: '#fff', border: 'none', color: '#4D148C', fontSize: '11px', fontWeight: 900, cursor: 'pointer' }}
                     >
-                       REFRESH DATA
+                       {isSyncing ? 'SYNCING...' : 'REFRESH DATA'}
                     </button>
                     <a 
                       href={`https://www.fedex.com/fedextrack/?trknbr=${request.trackingNumber}`} 
