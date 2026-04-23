@@ -4,8 +4,13 @@ import { PageTransition } from "@/components/ui/PageTransition";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Logistics Hub",
+  title: "LOGIS. 2030",
   description: "Minimalist order and supplier quote management",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "LOGIS."
+  },
 };
 
 export const viewport: Viewport = {
@@ -17,6 +22,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
+  viewportFit: 'cover',
 };
 
 export default function RootLayout({

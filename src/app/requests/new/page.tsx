@@ -7,6 +7,7 @@ import { ArrowLeft, UploadCloud, ChevronRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { rtdb, rtdbRef, push, set } from "@/lib/firebase";
 import { SmartImage } from "@/components/ui/SmartImage";
+import { VisionPill } from "@/components/ui/VisionPill";
 
 export default function NewRequest() {
   const router = useRouter();
@@ -178,14 +179,12 @@ export default function NewRequest() {
       </div>
 
       {/* VISION NAVIGATION PILL */}
-      <div className="vision-pill-container">
-         <div className="vision-pill" style={{ width: '200px' }}>
-            <button className="vision-action accent" disabled={loading || !title} onClick={handleSubmit} style={{ width: '100%' }}>
-               {loading ? 'CREATING...' : 'CREATE'}
-               {!loading && <ChevronRight size={18} strokeWidth={3} />}
-            </button>
-         </div>
-      </div>
+      <VisionPill width="calc(100% - 64px)">
+        <button className="vision-action accent" disabled={loading || !title} onClick={handleSubmit} style={{ width: '100%' }}>
+           {loading ? 'CREATING...' : 'CONFIRMER LA CRÉATION'}
+           {!loading && <ChevronRight size={18} strokeWidth={3} />}
+        </button>
+      </VisionPill>
 
     </div>
   );

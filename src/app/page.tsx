@@ -1,7 +1,9 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Plus, ChevronRight, Package } from "lucide-react";
+import { Plus, ChevronRight, Package, AlertCircle } from "lucide-react";
+import { useEffect, useRef } from "react";
+import { toast } from "sonner";
 import Link from "next/link";
 import { useAllRequests } from "@/hooks/useFirebase";
 import { getRelativeTime } from "@/lib/logic";
@@ -13,6 +15,25 @@ export type RequestStatus = "DRAFT" | "WAITING_FOR_QUOTE" | "QUOTED" | "MANAGER_
 
 export default function Dashboard() {
   const { requests, loading } = useAllRequests();
+  const prevStatuses = useRef<Record<string, string>>({});
+
+  useEffect(() => {
+    if (!loading && requests.length > 0) {
+      requests.forEach(r => {
+        const prev = prevStatuses.current[r.id];
+        if (prev && prev !== 'QUOTED' && r.status === 'QUOTED') {
+          toast.success(`DEVIS REÇU : ${r.title}`, {
+            description: "Un fournisseur a soumis un prix. En attente de revue.",
+            icon: <AlertCircle />,
+            duration: 5000
+          });
+          // Play a subtle sound if possible or vibrate
+          if (navigator.vibrate) navigator.vibrate(200);
+        }
+        prevStatuses.current[r.id] = r.status;
+      });
+    }
+  }, [requests, loading]);
 
   if (loading) return <TitaneLoader />;
 
@@ -68,17 +89,26 @@ export default function Dashboard() {
                             <h3 style={{ fontSize: '18px', fontWeight: 900, color: '#000', margin: 0, letterSpacing: '-0.05em', textTransform: 'uppercase' }}>
                               {r.title}
                             </h3>
+                            {['QUOTED', 'FINAL_PAYMENT'].includes(r.status) && (
+                                <motion.div 
+                                    animate={{ opacity: [0.4, 1, 0.4] }} 
+                                    transition={{ repeat: Infinity, duration: 2 }}
+                                    style={{ marginLeft: 'auto', background: 'var(--accent)', color: '#fff', padding: '4px 8px', borderRadius: '8px', fontSize: '8px', fontWeight: 900, letterSpacing: '0.05em' }}
+                                >
+                                    ACTION REQUIRED
+                                </motion.div>
+                            )}
                         </div>
                         
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px' }}>
-                            <span style={{ fontSize: '10px', fontWeight: 900, color: 'var(--accent)', background: 'var(--accent-glow)', padding: '4px 10px', borderRadius: '100px' }}>{r.category?.toUpperCase() || 'INFO'}</span>
+                            <span style={{ fontSize: '10px', fontWeight: 900, color: 'var(--accent)', background: 'var(--accent-glow)', padding: '4px 10px', borderRadius: '100px', boxShadow: ['QUOTED', 'FINAL_PAYMENT'].includes(r.status) ? '0 0 15px var(--accent)' : 'none' }}>{r.category?.toUpperCase() || 'INFO'}</span>
                             <span style={{ fontSize: '10px', fontWeight: 800, color: 'var(--faded)' }}>{r.size || 'STD'}</span>
                             {r.estimatedWeight && <span style={{ fontSize: '10px', fontWeight: 800, color: 'var(--faded)' }}>• {r.estimatedWeight}</span>}
                         </div>
 
                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '12px' }}>
-                            <div style={{ width: '6px', height: '6px', borderRadius: '3px', background: r.status === 'WAITING_FOR_QUOTE' ? '#FF9500' : 'var(--accent)', opacity: 0.5 }} />
-                            <span style={{ fontSize: '9px', fontWeight: 900, color: 'var(--faded)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{r.status.replace(/_/g, ' ')}</span>
+                            <div style={{ width: '6px', height: '6px', borderRadius: '3px', background: r.status === 'WAITING_FOR_QUOTE' ? '#FF9500' : (['QUOTED', 'FINAL_PAYMENT'].includes(r.status) ? 'var(--accent)' : 'var(--faded)'), opacity: 1 }} />
+                            <span style={{ fontSize: '9px', fontWeight: 900, color: ['QUOTED', 'FINAL_PAYMENT'].includes(r.status) ? 'var(--accent)' : 'var(--faded)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{r.status.replace(/_/g, ' ')}</span>
                             <span style={{ fontSize: '9px', fontWeight: 800, color: 'rgba(0,0,0,0.1)', marginLeft: 'auto' }}>{getRelativeTime(r.createdAt)}</span>
                         </div>
                     </div>
@@ -123,12 +153,12 @@ export default function Dashboard() {
          </div>
       )}
 
-      <VisionPill width="240px">
+      <VisionPill width="calc(100% - 64px)">
          <Link href="/radar" className="vision-action" style={{ textDecoration: 'none' }}>CALENDAR</Link>
          <Link href="/requests/new" className="vision-action accent" style={{ textDecoration: 'none' }}>
             <Plus size={18} strokeWidth={3} /> NEW
          </Link>
-      </VisionPill>>
+      </VisionPill>
 
     </div>
   );

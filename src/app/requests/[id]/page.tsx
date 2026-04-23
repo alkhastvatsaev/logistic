@@ -28,6 +28,9 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [liveRate, setLiveRate] = useState(0.135);
 
+  const acceptedQuote = quotes.find(q => q.id === request?.acceptedQuoteId);
+  const totals = calculateFinancialTotals(acceptedQuote, sellingPrice, payments, liveRate);
+
   useEffect(() => {
     import("@/lib/logic").then(logic => logic.fetchLiveRate().then(setLiveRate));
   }, []);
@@ -126,6 +129,26 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
     }
   };
 
+  const generateSupplierLink = async () => {
+    try {
+      const token = Math.random().toString(36).substring(2, 15);
+      await update(rtdbRef(rtdb, `shareTokens/${token}`), {
+        requestId: params.id,
+        used: false,
+        createdAt: Date.now()
+      });
+      const url = `${window.location.origin}/q/${token}`;
+      navigator.clipboard.writeText(url);
+      toast.success("LIEN FOURNISSEUR COPIÉ !");
+      
+      if (request?.status === 'DRAFT') {
+        await update(rtdbRef(rtdb, `requests/${params.id}`), { status: 'WAITING_FOR_QUOTE' });
+      }
+    } catch (e) {
+      toast.error("Erreur génération lien.");
+    }
+  };
+
   const [showTrackingInput, setShowTrackingInput] = useState(false);
   const [trackingNumber, setTrackingNumber] = useState("");
   const [trackingData, setTrackingData] = useState<any>(null);
@@ -146,20 +169,39 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
     toast.success("Expédition activée. Flux temps réel connecté.");
   };
 
-  const getTrackingUrl = (num: string) => {
-    if (num.startsWith('7') || num.length === 12) return `https://www.fedex.com/fedextrack/?trknbr=${num}`;
-    return `https://www.dhl.com/en/express/tracking.html?AWB=${num}`;
+  const syncTracking = async (num?: string) => {
+    const trk = num || request?.trackingNumber;
+    if (!trk) return;
+
+    try {
+      const res = await fetch(`/api/track?num=${trk}`);
+      const data = await res.json();
+      
+      if (!data.error) {
+        await update(rtdbRef(rtdb, `requests/${params.id}`), {
+          trackingStatus: data.status,
+          lastLocation: data.location,
+          lastUpdateDate: data.date,
+          lastEvent: data.event,
+          lastSyncAt: Date.now()
+        });
+      }
+    } catch (e) {
+      console.error("Sync Error:", e);
+    }
   };
 
-  const totals = calculateFinancialTotals(quotes.find(q => q.id === request?.acceptedQuoteId), sellingPrice, payments, liveRate);
+  useEffect(() => {
+    if (request?.status === 'SHIPPED' && request?.trackingNumber) {
+      syncTracking();
+    }
+  }, [request?.status, request?.trackingNumber]);
 
   const handleDeposit = async () => {
     const sPrice = parseFloat(sellingPrice);
     if (!sPrice || sPrice <= 0) return toast.error("Veuillez définir un prix de vente.");
     
-    // Calculate 30%
     const amount = sPrice * 0.3;
-    
     await set(push(rtdbRef(rtdb, `payments/${params.id}`)), { 
       amount, 
       note: "Acompte 30%", 
@@ -168,6 +210,40 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
     
     await update(rtdbRef(rtdb, `requests/${params.id}`), { status: 'IN_PRODUCTION' });
     toast.success(`Acompte de ${amount.toFixed(0)}€ encaissé. En production !`);
+  };
+
+  const handleBalancePayment = async (url?: string) => {
+    const sPrice = parseFloat(sellingPrice);
+    if (!sPrice || sPrice <= 0) return;
+    
+    // Calculate total already paid
+    const totalPaid = payments.reduce((acc, p) => acc + (Number(p.amount) || 0), 0);
+    const amount = sPrice - totalPaid;
+    
+    if (amount <= 0) {
+        toast.info("Déjà payé en totalité.");
+    } else {
+        await set(push(rtdbRef(rtdb, `payments/${params.id}`)), { 
+          amount, 
+          note: "Solde Final (Automatique)", 
+          createdAt: Date.now() 
+        });
+    }
+    
+    await update(rtdbRef(rtdb, `requests/${params.id}`), { 
+      status: 'SHIPPED',
+      paymentSlipUrl: url || request?.paymentSlipUrl || null,
+      paidAt: Date.now()
+    });
+    
+    setShowPaymentModal(false);
+    setShowTrackingInput(true);
+    toast.success(`Solde encaissé. Prêt pour expédition !`, {
+      action: {
+        label: "TÉLÉCHARGER AUDIT",
+        onClick: () => generatePDF('INVOICE')
+      }
+    });
   };
 
   const handleAcceptQuote = async (quote: any) => {
@@ -354,7 +430,8 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
                   fontWeight: 900, 
                   background: !sellingPrice || sellingPrice === "0" ? 'rgba(255,59,48,0.05)' : '#F9F9F9', 
                   border: !sellingPrice || sellingPrice === "0" ? '1px dashed #FF3B30' : 'none', 
-                  width: '180px', 
+                  width: '100%',
+                  maxWidth: '220px', 
                   padding: '8px 16px', 
                   borderRadius: '16px', 
                   letterSpacing: '-0.05em',
@@ -478,19 +555,18 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
                                <span style={{ fontSize: '9px', fontWeight: 900 }}>{request.lastEvent.toUpperCase()}</span>
                             </div>
                           )}
-                       </div>
-                    </div>
-                 </div>
-
+                        </div>
+                     </div>
+                  </div>
                  <div style={{ display: 'flex', gap: '12px', marginTop: '32px' }}>
                     <button 
-                      onClick={() => toast.info("Synchronisation forcée avec FedEx...")} 
+                      onClick={() => syncTracking()} 
                       style={{ flex: 1, height: '48px', borderRadius: '16px', background: '#fff', border: 'none', color: '#4D148C', fontSize: '11px', fontWeight: 900, cursor: 'pointer' }}
                     >
                        REFRESH DATA
                     </button>
                     <a 
-                      href={getTrackingUrl(request.trackingNumber)} 
+                      href={`https://www.fedex.com/fedextrack/?trknbr=${request.trackingNumber}`} 
                       target="_blank" 
                       style={{ flex: 1, height: '48px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none', fontSize: '11px', fontWeight: 900 }}
                     >
@@ -533,7 +609,7 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
          </div>
       </div>
 
-      <VisionPill width="380px">
+      <VisionPill width="calc(100% - 64px)">
          {/* NAVIGATION (LEFT) */}
          <div style={{ display: 'flex', borderRight: '1px solid rgba(255,255,255,0.1)', paddingRight: '8px', marginRight: '4px' }}>
             <motion.button whileTap={{ scale: 0.85 }} className="vision-action" onClick={() => {
@@ -549,10 +625,10 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
          {/* MAIN PROGRESSION (CENTER) */}
          <div style={{ flex: 1, display: 'flex' }}>
             {request.status === 'DRAFT' && (
-              <button className="vision-action accent" onClick={() => saveField('status', 'WAITING_FOR_QUOTE')}>SEND TO FACTORY</button>
+              <button className="vision-action accent" onClick={generateSupplierLink}>GENERATE LINK</button>
             )}
             {request.status === 'WAITING_FOR_QUOTE' && (
-              <button className="vision-action accent" style={{ background: '#FF9500' }} onClick={() => toast.info("Waiting for supplier...")}>WAITING QUOTE</button>
+              <button className="vision-action accent" style={{ background: '#FF9500' }} onClick={generateSupplierLink}>COPY QUOTE LINK</button>
             )}
             {request.status === 'QUOTED' && (
               <button className="vision-action accent" onClick={() => saveField('status', 'MANAGER_REVIEW')}>REVIEW QUOTE</button>
@@ -586,8 +662,8 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
 
       <AnimatePresence>
         {showPaymentModal && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'fixed', inset: 0, background: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(30px)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px' }}>
-            <div style={{ textAlign: 'center', maxWidth: '320px', width: '100%' }}>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'fixed', inset: 0, background: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(30px)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
+            <div style={{ textAlign: 'center', maxWidth: '400px', width: '100%' }}>
               <div style={{ width: '64px', height: '64px', borderRadius: '32px', background: '#34C759', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px auto', color: '#fff' }}>
                 {uploadProgress > 0 ? <Loader2 className="animate-spin" /> : <Calculator size={32} />}
               </div>
@@ -610,7 +686,7 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
                          uploadTask.on('state_changed', 
                             s => setUploadProgress((s.bytesTransferred / s.totalBytes) * 100),
                             err => toast.error(err.message),
-                            () => getDownloadURL(uploadTask.snapshot.ref).then(url => handlePaymentProof(url))
+                            () => getDownloadURL(uploadTask.snapshot.ref).then(url => handleBalancePayment(url))
                          );
                        }
                      }} 
@@ -619,15 +695,15 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
                 </label>
               </div>
 
-              <button onClick={() => handlePaymentProof("")} style={{ background: 'none', border: 'none', marginTop: '24px', fontWeight: 800, color: '#34C759', fontSize: '11px', textDecoration: 'underline', opacity: 0.7 }}>PASSER (MODE DÉVELOPPEMENT)</button>
+              <button onClick={() => handleBalancePayment("")} style={{ background: 'none', border: 'none', marginTop: '24px', fontWeight: 800, color: '#34C759', fontSize: '11px', textDecoration: 'underline', opacity: 0.7 }}>PASSER (MODE DÉVELOPPEMENT)</button>
               <button onClick={() => setShowPaymentModal(false)} style={{ background: 'none', border: 'none', marginTop: '16px', fontWeight: 800, color: 'var(--faded)', fontSize: '13px' }}>ANNULER</button>
             </div>
           </motion.div>
         )}
 
         {showQCModal && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'fixed', inset: 0, background: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(30px)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px' }}>
-            <div style={{ textAlign: 'center', maxWidth: '320px', width: '100%' }}>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'fixed', inset: 0, background: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(30px)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
+            <div style={{ textAlign: 'center', maxWidth: '400px', width: '100%' }}>
               <div style={{ width: '64px', height: '64px', borderRadius: '32px', background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px auto', color: '#fff' }}>
                 {uploadProgress > 0 ? <Loader2 className="animate-spin" /> : <Check size={32} />}
               </div>
@@ -665,8 +741,8 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
         )}
 
         {showTrackingInput && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'fixed', inset: 0, background: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(30px)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px' }}>
-            <div style={{ textAlign: 'center', maxWidth: '320px', width: '100%' }}>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'fixed', inset: 0, background: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(30px)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
+            <div style={{ textAlign: 'center', maxWidth: '400px', width: '100%' }}>
               <div style={{ width: '64px', height: '64px', borderRadius: '32px', background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px auto', color: '#fff' }}><Truck /></div>
               <h2 style={{ fontSize: '24px', fontWeight: 900, letterSpacing: '-0.04em' }}>TRACKING SYNC</h2>
               <p style={{ marginTop: '12px', color: 'var(--faded)', fontWeight: 600, fontSize: '12px' }}>ENTER FEDEX OR DHL NUMBER</p>
@@ -686,8 +762,8 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
         )}
 
         {showDeleteModal && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'fixed', inset: 0, background: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(30px)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px' }}>
-            <div style={{ textAlign: 'center', maxWidth: '280px' }}>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'fixed', inset: 0, background: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(30px)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
+            <div style={{ textAlign: 'center', maxWidth: '400px' }}>
               <div style={{ width: '64px', height: '64px', borderRadius: '32px', background: '#FF3B30', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px auto', color: '#fff', boxShadow: '0 10px 30px rgba(255,59,48,0.3)' }}><Trash2 /></div>
               <h2 style={{ fontSize: '24px', fontWeight: 900, letterSpacing: '-0.04em' }}>DELETE RECORD?</h2>
               <p style={{ marginTop: '12px', color: 'var(--faded)', fontWeight: 600, fontSize: '14px' }}>This cannot be undone.</p>

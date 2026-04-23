@@ -1,37 +1,31 @@
-# 📓 RAPPORT D'AVANCEMENT : VISION 2030 (MAISON 7)
-*Date : 22 Avril 2026*
+# 📓 RAPPORT D'AVANCEMENT : LOGIS. (SESSION 22-23 AVRIL 2026)
+*Statut : Harmonisation Titane 2030 Terminée*
 
-Ce document récapitule les transformations majeures effectuées pour élever l'application au standard "Titane" de Haute Joaillerie.
-
----
-
-## 💎 1. DESIGN SYSTEM "TITANE APPLE"
-L'interface a été entièrement réécrite pour s'aligner sur les standards esthétiques d'Apple 2030 :
-- **Pure White Aesthetics** : Suppression de tous les éléments sombres/web au profit d'un environnement blanc épuré et borderless.
-- **Vision Pill & Actions** : Centralisation de la navigation dans une "Pilule" en verre dépoli (Glassmorphism) avec une physique de mouvement fluide.
-- **Interconnectivité** : Ajout de transitions de pages fluides (Framer Motion) créant un écosystème logiciel unique.
-- **Logo Signature** : Intégration du logo **LOGIS.** comme signature globale sur toutes les interfaces (Admin, Fournisseur, PDF).
-
-## 📊 2. MOTEUR FINANCIER & LOGIQUE MÉTIER
-Le pipeline financier a été stabilisé pour garantir la rentabilité et la transparence :
-- **Taux de Change Sécurisé** : Implémentation d'un taux fixe à **0.135** (incluant un buffer de sécurité contre la fluctuation RMB/EUR).
-- **Split Profit 50/50** : Calcul automatique des commissions (Adam/Mirza) après déduction des coûts d'acquisition et de transport.
-- **Moteur de Devis** : Génération de prix de vente incluant l'acompte de 30% et le solde restant.
-
-## 📄 3. GÉNÉRATION DE DOCUMENTS (PDF LUXE)
-Le moteur PDF de `MAISON 7` a été upgradé pour maximiser la conversion client :
-- **Propositions Certifiées** : Les devis ne sont plus des factures mais des fiches d'authenticité incluant les spécifications techniques (Or 18K, Qualité DEF-VVS1).
-- **Inclusions Luxe** : Mention automatique du "Full Set" (Écrin, Kit d'entretien, Certificat).
-- **Identité Visuelle** : Les PDF héritent du design de l'app (Couleur Bleu Électrique, Pill-Design pour le prix).
-
-## 🏭 4. ÉCOSYSTÈME FOURNISSEUR (SHENZHEN)
-Le portail externe pour les usines a été rationalisé :
-- **Interface Bilingue** : Saisie des prix de revient (RMB) et délais de production en Anglais/Chinois.
-- **Neutralité de Marque** : Les fournisseurs n'ont accès qu'aux informations techniques essentielles, préservant la confidentialité client.
-
-## 🛠️ 5. INFRASTRUCTURE TECHNIQUE
-- **Composants Réutilisables** : Création de `VisionPill`, `TitaneLoader` et `SmartImage`.
-- **Zéro Défaut Esthétique** : Correction des collisions de calques et polissage des typographies (kerning resserré).
+Ce soir, nous avons passé l'application d'un prototype fonctionnel à un **écosystème de luxe unifié**.
 
 ---
-**STATUT FINAL : L'application est esthétiquement et techniquement prête pour le déploiement opérationnel.** 🚀💍
+
+## 💎 1. HARMONISATION GLOBALE "TITANE 2030"
+Le design system a été appliqué uniformément sur tous les écrans :
+- **Dashboard Segmenté** : Séparation nette entre le Flux Actif et les Archives (Zone Verte). Les cartes affichent désormais les spécifications techniques (Poids, Taille, Couleur de l'Or).
+- **Fiche Article (Cockpit)** : Navigation repensée en mode "Cockpit" (Retour | Action | Documents).
+- **Sélecteurs Visuels** : Remplacement des menus déroulants par des pastilles de couleur interactives (Jaune, Blanc, Rose) sur tous les écrans de saisie.
+
+## ⚖️ 2. PRÉCISION TECHNIQUE (SOURCING)
+L'application gère désormais les données réelles du fournisseur :
+- **Gestion du Poids** : Nouveau champ "WEIGHT" ajouté à la création et à l'édition des articles.
+- **Identité Métal** : Distinction systématique entre les variantes d'Or 18K.
+- **Transparence Financière** : Affichage clair du profit net et de la répartition Adam/Mirza.
+
+## 📄 3. GÉNÉRATION DE DEVIS "NO BULLSHIT"
+Le moteur PDF a été épuré pour plus d'efficacité commerciale :
+- **Design Interface** : Le PDF ressemble désormais à une interface d'OS (Design Vision, coins ultra-arrondis à 18mm).
+- **Contenu Clarifié** : Suppression des mentions "Investissement" et mentions légales lourdes. Utilisation du terme direct : **PRIX TOTAL TTC LIVRÉ**.
+- **Correction Typo** : Fix du bug d'affichage du prix (suppression du slash parasite dans les milliers).
+
+## 🚀 4. DÉPLOIEMENT & SÉCURITÉ
+- **Synchronisation GitHub** : Code source 100% à jour sur le dépôt.
+- **Vercel** : Déploiement automatique déclenché sur la branche `main`.
+
+---
+**STATUT : PRÊT POUR L'OPÉRATIONNEL.** 🚀💍✅
