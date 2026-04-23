@@ -10,7 +10,6 @@ import { ArrowLeft, Trash2, ChevronRight, FileText, Copy, Check, Pencil, Save, P
 import { useRouter } from "next/navigation";
 import { generateQuotePDF, generateInternalInvoicePDF } from "@/lib/pdf";
 import { toast } from "sonner";
-import { RequestStatus } from "../../page";
 import { SmartImage } from "@/components/ui/SmartImage";
 import { VisionPill } from "@/components/ui/VisionPill";
 import { TitaneLoader } from "@/components/ui/TitaneLoader";
@@ -149,6 +148,7 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
     }
   };
 
+  const [showTrackingInput, setShowTrackingInput] = useState(false);
   const [isEditingTracking, setIsEditingTracking] = useState(false);
   const [manualTracking, setManualTracking] = useState({ location: "", event: "", status: "" });
   const [isSyncing, setIsSyncing] = useState(false);
@@ -765,7 +765,7 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
                 {uploadProgress > 0 ? <Loader2 className="animate-spin" /> : <Check size={32} />}
               </div>
               <h2 style={{ fontSize: '24px', fontWeight: 900, letterSpacing: '-0.04em' }}>CONTRÔLE QUALITÉ</h2>
-              <p style={{ marginTop: '12px', color: 'var(--faded)', fontWeight: 600, fontSize: '12px' }}>PARTAGER LA VIDÉO DE L'USINE</p>
+              <p style={{ marginTop: '12px', color: 'var(--faded)', fontWeight: 600, fontSize: '12px' }}>PARTAGER LA VIDÉO DE L&apos;USINE</p>
               
               <div style={{ marginTop: '32px' }}>
                 <label className="btn-main" style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px' }}>

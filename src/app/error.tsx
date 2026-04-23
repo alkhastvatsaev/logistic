@@ -27,7 +27,7 @@ export default function Error({
             RÉESSAYER
           </button>
           <Link href="/" className="btn-main" style={{ background: 'transparent', color: '#000', border: '1px solid var(--glass-border)' }}>
-            RETOUR À L'ACCUEIL
+            RETOUR À L&apos;ACCUEIL
           </Link>
         </div>
       </GlassPanel>
