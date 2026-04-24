@@ -490,7 +490,7 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
             </div>
 
           {/* STONES SELECTOR */}
-          <div style={{ marginBottom: '48px' }}>
+          <div style={{ marginBottom: '48px', marginTop: '32px' }}>
              <p className="cyber-label" style={{ fontSize: '7px', opacity: 0.5, marginBottom: '16px', paddingLeft: '8px' }}>PIERRES / 宝石类型</p>
              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
                 {[
@@ -539,9 +539,10 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
                      </motion.button>
                    );
                 })}
+             </div>
           </div>
-       </div>
-    </div>
+        </div>
+     </div>
 
          {/* FINANCE MODULE (TITANE WHITE) */}
          <div style={{ padding: '32px', background: '#fff', borderRadius: '40px', border: '1px solid rgba(0,0,0,0.04)', marginBottom: '48px', boxShadow: '0 10px 30px rgba(0,0,0,0.02)' }}>
@@ -608,25 +609,43 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
            <div style={{ marginBottom: '64px' }}>
              <span className="cyber-label" style={{ marginBottom: '20px', display: 'block' }}>SUPPLIER OFFERS ({quotes.length})</span>
              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-               {quotes.map(q => (
-                 <motion.div 
-                    key={q.id} whileTap={{ scale: 0.98 }}
-                    onClick={() => !request.acceptedQuoteId && handleAcceptQuote(q)}
-                    style={{ 
-                      padding: '24px', borderRadius: '32px', 
-                      background: request.acceptedQuoteId === q.id ? 'var(--accent)' : '#fff',
-                      border: '1px solid rgba(0,0,0,0.05)',
-                      color: request.acceptedQuoteId === q.id ? '#fff' : '#000',
-                      display: 'flex', justifyContent: 'space-between', alignItems: 'center'
-                    }}
-                 >
-                    <div>
-                      <div style={{ fontSize: '22px', fontWeight: 900 }}>{q.priceRMB} ¥ <span style={{ fontSize: '14px', opacity: 0.6 }}>(~{(q.priceRMB * liveRate).toFixed(0)}€)</span></div>
-                      <div style={{ fontSize: '10px', opacity: 0.5, fontWeight: 800, marginTop: '6px' }}>LEAD TIME: {q.productionTimeDays + 7} DAYS</div>
+                {quotes.map(q => (
+                  <motion.div 
+                     key={q.id} whileTap={{ scale: 0.98 }}
+                     onClick={() => !request.acceptedQuoteId && handleAcceptQuote(q)}
+                     style={{ 
+                       padding: '24px', borderRadius: '32px', 
+                       background: request.acceptedQuoteId === q.id ? 'var(--accent)' : '#fff',
+                       border: '1px solid rgba(0,0,0,0.05)',
+                       color: request.acceptedQuoteId === q.id ? '#fff' : '#000',
+                       display: 'flex', justifyContent: 'space-between', alignItems: 'center'
+                     }}
+                  >
+                    <div style={{ flex: 1 }}>
+                       <p className="cyber-label" style={{ fontSize: '7px', marginBottom: '8px', opacity: 0.6, color: request.acceptedQuoteId === q.id ? '#fff' : 'inherit' }}>{q.supplierName || 'FACTORY'}</p>
+                       <div style={{ fontSize: '22px', fontWeight: 900 }}>{q.priceRMB} ¥ <span style={{ fontSize: '14px', opacity: 0.6 }}>(~{(q.priceRMB * liveRate).toFixed(0)}€)</span></div>
+                       <div style={{ fontSize: '10px', opacity: 0.5, fontWeight: 800, marginTop: '6px' }}>LEAD TIME: {q.productionTimeDays + 7} DAYS</div>
+                       
+                       <div style={{ marginTop: '16px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', borderTop: `1px solid ${request.acceptedQuoteId === q.id ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)'}`, paddingTop: '16px' }}>
+                          <div>
+                             <p className="cyber-label" style={{ fontSize: '6px', opacity: 0.4, color: request.acceptedQuoteId === q.id ? '#fff' : 'inherit' }}>WEIGHTS</p>
+                             <p style={{ fontSize: '10px', fontWeight: 800 }}>OR: {q.goldWeight}g / TOT: {q.totalWeight}g</p>
+                          </div>
+                          <div>
+                             <p className="cyber-label" style={{ fontSize: '6px', opacity: 0.4, color: request.acceptedQuoteId === q.id ? '#fff' : 'inherit' }}>STONES</p>
+                             <p style={{ fontSize: '10px', fontWeight: 800 }}>{q.diamondCount}pcs ({q.totalCarat}ct)</p>
+                          </div>
+                       </div>
+                       
+                       {q.estimatedDeliveryDate && (
+                          <div style={{ marginTop: '12px', fontSize: '9px', fontWeight: 900, background: 'rgba(255,255,255,0.1)', color: request.acceptedQuoteId === q.id ? '#fff' : '#000', padding: '6px 12px', borderRadius: '8px', display: 'inline-block' }}>
+                             EST. ARRIVAL: {new Date(q.estimatedDeliveryDate).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }).toUpperCase()}
+                          </div>
+                       )}
                     </div>
                     {request.acceptedQuoteId === q.id ? <Check size={20} strokeWidth={3} /> : <Plus size={20} strokeWidth={3} style={{ opacity: 0.2 }} />}
-                 </motion.div>
-               ))}
+                  </motion.div>
+                ))}
              </div>
            </div>
          )}
@@ -704,15 +723,15 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
                           </div>
                           <div style={{ flex: 1 }}>
                              <p style={{ fontSize: '14px', fontWeight: 900 }}>
-                               {isSyncing ? 'Mise à jour...' : (request.lastLocation || 'Vérification du dernier scan...')}
+                                {isSyncing ? 'Mise à jour...' : (request.lastLocation || 'Vérification du dernier scan...')}
                              </p>
                              <p style={{ fontSize: '11px', opacity: 0.6, marginTop: '4px' }}>
-                               {isSyncing ? 'Synchronisation avec les serveurs FedEx' : (request.lastUpdateDate || 'Chargement des données temps réel...')}
+                                {isSyncing ? 'Synchronisation avec les serveurs FedEx' : (request.lastUpdateDate || 'Chargement des données temps réel...')}
                              </p>
                              {request.lastEvent && (
-                               <div style={{ marginTop: '12px', padding: '6px 12px', background: '#FF6600', borderRadius: '8px', display: 'inline-block' }}>
-                                  <span style={{ fontSize: '9px', fontWeight: 900 }}>{request.lastEvent.toUpperCase()}</span>
-                               </div>
+                                <div style={{ marginTop: '12px', padding: '6px 12px', background: '#FF6600', borderRadius: '8px', display: 'inline-block' }}>
+                                   <span style={{ fontSize: '9px', fontWeight: 900 }}>{request.lastEvent.toUpperCase()}</span>
+                                </div>
                              )}
                           </div>
                           <div style={{ opacity: 0.3 }}><Plus size={16} /></div>
@@ -734,9 +753,9 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
                         {isSyncing ? 'SYNCING...' : 'REFRESH DATA'}
                      </button>
                     <a 
-                      href={`https://www.fedex.com/fedextrack/?trknbr=${request.trackingNumber}`} 
-                      target="_blank" 
-                      style={{ flex: 1, height: '48px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none', fontSize: '11px', fontWeight: 900 }}
+                       href={`https://www.fedex.com/fedextrack/?trknbr=${request.trackingNumber}`} 
+                       target="_blank" 
+                       style={{ flex: 1, height: '48px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none', fontSize: '11px', fontWeight: 900 }}
                     >
                        FULL TRACKING ↗
                     </a>
@@ -798,210 +817,206 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
             }} style={{ width: '44px', flex: 'none' }}><ArrowLeft size={20} strokeWidth={2.5} /></motion.button>
          </div>
 
-         {/* MAIN PROGRESSION (CENTER) */}
-         <div style={{ flex: 1, display: 'flex' }}>
+         {/* MAIN ACTIONS (CENTER) */}
+         <div style={{ flex: 1, display: 'flex', gap: '4px', overflowX: 'auto', paddingRight: '8px' }} className="hide-scrollbar">
             {request.status === 'DRAFT' && (
-              <button className="vision-action accent" onClick={generateSupplierLink}>GENERATE LINK</button>
+               <motion.button whileTap={{ scale: 0.95 }} className="vision-action active primary" onClick={generateSupplierLink} style={{ whiteSpace: 'nowrap', padding: '0 24px' }}>
+                  <Plus size={18} /> GENERATE LINK
+               </motion.button>
             )}
+            
             {request.status === 'WAITING_FOR_QUOTE' && (
-              <button className="vision-action accent" style={{ background: '#FF9500' }} onClick={generateSupplierLink}>COPY QUOTE LINK</button>
+               <motion.button whileTap={{ scale: 0.95 }} className="vision-action active" onClick={generateSupplierLink} style={{ whiteSpace: 'nowrap', padding: '0 24px' }}>
+                  <Copy size={18} /> COPY SUPPLIER LINK
+               </motion.button>
             )}
-            {request.status === 'QUOTED' && (
-              <button className="vision-action accent" onClick={() => saveField('status', 'MANAGER_REVIEW')}>REVIEW QUOTE</button>
-            )}
+
             {request.status === 'MANAGER_REVIEW' && (
-              <button className="vision-action accent" onClick={() => saveField('status', 'WAITING_FOR_DEPOSIT')}>VALIDATE & DEPOSIT</button>
+               <motion.button whileTap={{ scale: 0.95 }} className="vision-action active primary" onClick={() => update(rtdbRef(rtdb, `requests/${params.id}`), { status: 'WAITING_FOR_DEPOSIT' })} style={{ whiteSpace: 'nowrap', padding: '0 24px' }}>
+                  <Check size={18} /> VALIDATE QUOTE
+               </motion.button>
             )}
+
             {request.status === 'WAITING_FOR_DEPOSIT' && (
-              <button className="vision-action accent" onClick={handleDeposit}>ENCAISSER 30%</button>
+               <motion.button whileTap={{ scale: 0.95 }} className="vision-action active primary" onClick={handleDeposit} style={{ whiteSpace: 'nowrap', padding: '0 24px' }}>
+                  <Calculator size={18} /> ENCAISSER ACOMPTE
+               </motion.button>
             )}
+
             {request.status === 'IN_PRODUCTION' && (
-              <button className="vision-action accent" onClick={() => setShowQCModal(true)}>PROD. FINISHED</button>
+               <motion.button whileTap={{ scale: 0.95 }} className="vision-action active primary" onClick={() => setShowQCModal(true)} style={{ whiteSpace: 'nowrap', padding: '0 24px' }}>
+                  <Package size={18} /> SHIPMENT READY (QC)
+               </motion.button>
             )}
+
             {request.status === 'FINAL_PAYMENT' && (
-              <button className="vision-action accent" onClick={() => setShowPaymentModal(true)}>CONFIRM PAYMENT</button>
+               <motion.button whileTap={{ scale: 0.95 }} className="vision-action active primary" onClick={() => setShowPaymentModal(true)} style={{ whiteSpace: 'nowrap', padding: '0 24px' }}>
+                  <Calculator size={18} /> ENCAISSER SOLDE
+               </motion.button>
             )}
+
             {request.status === 'SHIPPED' && (
-              <button className="vision-action accent" onClick={() => saveField('status', 'DELIVERED')}>MARK AS DELIVERED</button>
-            )}
-            {request.status === 'DELIVERED' && (
-              <button className="vision-action" style={{ background: '#34C759', color: '#fff' }}><Check size={18} /> ORDER COMPLETED</button>
+               <motion.button whileTap={{ scale: 0.95 }} className="vision-action active primary" onClick={() => update(rtdbRef(rtdb, `requests/${params.id}`), { status: 'DELIVERED' })} style={{ whiteSpace: 'nowrap', padding: '0 24px' }}>
+                  <Check size={18} /> CONFIRM DELIVERY
+               </motion.button>
             )}
          </div>
 
-         {/* DOCUMENTS (RIGHT) */}
-         <div style={{ display: 'flex', gap: '4px', borderLeft: '1px solid rgba(255,255,255,0.1)', paddingLeft: '8px', marginLeft: '4px' }}>
+         {/* EXPORT (RIGHT) */}
+         <div style={{ display: 'flex', borderLeft: '1px solid rgba(255,255,255,0.1)', paddingLeft: '8px', marginLeft: '4px' }}>
             <motion.button whileTap={{ scale: 0.85 }} className="vision-action" onClick={() => generatePDF('QUOTE')} style={{ width: '44px', flex: 'none' }}><FileText size={20} strokeWidth={2.5} /></motion.button>
-            <motion.button whileTap={{ scale: 0.85 }} className="vision-action" onClick={() => generatePDF('INVOICE')} style={{ width: '44px', flex: 'none' }}><Calculator size={20} strokeWidth={2.5} /></motion.button>
          </div>
       </VisionPill>
 
+      {/* MODALS (QC, PAYMENT, DELETE, BACK, LINK) */}
       <AnimatePresence>
-        {showPaymentModal && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'fixed', inset: 0, background: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(30px)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
-            <div style={{ textAlign: 'center', maxWidth: '400px', width: '100%' }}>
-              <div style={{ width: '64px', height: '64px', borderRadius: '32px', background: '#34C759', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px auto', color: '#fff' }}>
-                {uploadProgress > 0 ? <Loader2 className="animate-spin" /> : <Calculator size={32} />}
-              </div>
-              <h2 style={{ fontSize: '24px', fontWeight: 900, letterSpacing: '-0.04em' }}>SOLDE FINAL</h2>
-              <p style={{ marginTop: '12px', color: 'var(--faded)', fontWeight: 600, fontSize: '12px' }}>PREUVE DE PAIEMENT (RIA/ALIPAY)</p>
-              
-              <div style={{ marginTop: '32px' }}>
-                <label className="btn-main" style={{ cursor: 'pointer', background: '#34C759', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px' }}>
-                   <UploadCloud size={20} />
-                   {uploadProgress > 0 ? `UPLOAD ${uploadProgress.toFixed(0)}%` : "MONTER LE REÇU"}
-                   <input 
-                     type="file" 
-                     accept="image/*" 
-                     style={{ display: 'none' }} 
-                     onChange={(e) => {
-                       if (e.target.files) {
-                         const file = e.target.files[0];
-                         const fileRef = storageRef(storage, `payments/${params.id}/${Date.now()}_${file.name}`);
-                         const uploadTask = uploadBytesResumable(fileRef, file);
-                         uploadTask.on('state_changed', 
-                            s => setUploadProgress((s.bytesTransferred / s.totalBytes) * 100),
-                            err => toast.error(err.message),
-                            () => getDownloadURL(uploadTask.snapshot.ref).then(url => handleBalancePayment(url))
-                         );
-                       }
-                     }} 
-                     disabled={uploadProgress > 0}
-                   />
-                </label>
-              </div>
-
-              <button onClick={() => handleBalancePayment("")} style={{ background: 'none', border: 'none', marginTop: '24px', fontWeight: 800, color: '#34C759', fontSize: '11px', textDecoration: 'underline', opacity: 0.7 }}>PASSER (MODE DÉVELOPPEMENT)</button>
-              <button onClick={() => setShowPaymentModal(false)} style={{ background: 'none', border: 'none', marginTop: '16px', fontWeight: 800, color: 'var(--faded)', fontSize: '13px' }}>ANNULER</button>
-            </div>
-          </motion.div>
-        )}
-
         {showQCModal && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'fixed', inset: 0, background: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(30px)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
-            <div style={{ textAlign: 'center', maxWidth: '400px', width: '100%' }}>
-              <div style={{ width: '64px', height: '64px', borderRadius: '32px', background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px auto', color: '#fff' }}>
-                {uploadProgress > 0 ? <Loader2 className="animate-spin" /> : <Check size={32} />}
-              </div>
-              <h2 style={{ fontSize: '24px', fontWeight: 900, letterSpacing: '-0.04em' }}>CONTRÔLE QUALITÉ</h2>
-              <p style={{ marginTop: '12px', color: 'var(--faded)', fontWeight: 600, fontSize: '12px' }}>PARTAGER LA VIDÉO DE L&apos;USINE</p>
-              
-              <div style={{ marginTop: '32px' }}>
-                <label className="btn-main" style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px' }}>
-                   <UploadCloud size={20} />
-                   {uploadProgress > 0 ? `CHARGEMENT ${uploadProgress.toFixed(0)}%` : "SÉLECTIONNER FICHIER"}
-                   <input 
-                     type="file" 
-                     accept="video/*,image/*" 
-                     style={{ display: 'none' }} 
-                     onChange={(e) => e.target.files && handleUpload(e.target.files[0])} 
-                     disabled={uploadProgress > 0}
-                   />
-                </label>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'fixed', inset: 0, background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(40px)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '32px' }}>
+             <motion.div initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} style={{ width: '100%', maxWidth: '400px', background: '#fff', borderRadius: '40px', padding: '40px', boxShadow: '0 30px 100px rgba(0,0,0,0.1)', border: '1px solid rgba(0,0,0,0.05)' }}>
+                <h2 style={{ fontSize: '24px', fontWeight: 900, marginBottom: '12px' }}>QUALITY CONTROL</h2>
+                <p style={{ fontSize: '13px', opacity: 0.5, marginBottom: '32px', fontWeight: 600 }}>Uploadez la vidéo ou photo du produit fini pour passer à l'étape du solde.</p>
                 
-                {uploadProgress > 0 && (
-                  <div style={{ width: '100%', height: '4px', background: 'rgba(0,0,0,0.05)', borderRadius: '2px', marginTop: '16px', overflow: 'hidden' }}>
-                    <motion.div 
-                      initial={{ width: 0 }}
-                      animate={{ width: `${uploadProgress}%` }}
-                      style={{ height: '100%', background: 'var(--accent)' }}
-                    />
-                  </div>
-                )}
-              </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                   <label style={{ width: '100%', height: '120px', borderRadius: '24px', border: '2px dashed rgba(0,0,0,0.1)', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', gap: '8px' }}>
+                      <input type="file" hidden accept="image/*,video/*" onChange={(e) => e.target.files?.[0] && handleUpload(e.target.files[0])} />
+                      {uploadProgress > 0 ? (
+                        <div style={{ textAlign: 'center' }}>
+                          <Loader2 size={32} className="animate-spin" />
+                          <p style={{ fontSize: '10px', fontWeight: 900, marginTop: '8px' }}>{uploadProgress.toFixed(0)}%</p>
+                        </div>
+                      ) : (
+                        <>
+                          <UploadCloud size={24} opacity={0.3} />
+                          <span style={{ fontSize: '12px', fontWeight: 900, opacity: 0.5 }}>CHOISIR MEDIA</span>
+                        </>
+                      )}
+                   </label>
+                   
+                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '12px 0' }}>
+                      <div style={{ flex: 1, height: '1px', background: 'rgba(0,0,0,0.05)' }} />
+                      <span style={{ fontSize: '10px', fontWeight: 900, opacity: 0.2 }}>OU</span>
+                      <div style={{ flex: 1, height: '1px', background: 'rgba(0,0,0,0.05)' }} />
+                   </div>
 
-              <button onClick={() => handleQC("")} style={{ background: 'none', border: 'none', marginTop: '24px', fontWeight: 800, color: 'var(--accent)', fontSize: '11px', textDecoration: 'underline', opacity: 0.7 }}>PASSER LE QC (MODE DÉVELOPPEMENT)</button>
-             <button onClick={() => setShowQCModal(false)} style={{ background: 'none', border: 'none', marginTop: '16px', fontWeight: 800, color: 'var(--faded)', fontSize: '13px' }}>ANNULER</button>
-            </div>
+                   <button 
+                     onClick={() => handleQC("")}
+                     style={{ width: '100%', height: '56px', borderRadius: '18px', background: '#F9F9F9', border: 'none', color: '#000', fontSize: '12px', fontWeight: 900 }}
+                   >
+                     PASSER SANS MEDIA
+                   </button>
+                   <button onClick={() => setShowQCModal(false)} style={{ width: '100%', height: '56px', borderRadius: '18px', background: 'transparent', border: 'none', color: 'rgba(0,0,0,0.3)', fontSize: '12px', fontWeight: 900 }}>ANNULER</button>
+                </div>
+             </motion.div>
           </motion.div>
         )}
 
-        {showBackModal && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'fixed', inset: 0, background: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(40px)', zIndex: 3000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
-            <div style={{ textAlign: 'center', maxWidth: '320px', width: '100%' }}>
-              <div style={{ width: '64px', height: '64px', borderRadius: '32px', background: 'rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px auto' }}>
-                <ArrowLeft size={32} />
-              </div>
-              <h2 style={{ fontSize: '20px', fontWeight: 900, letterSpacing: '-0.04em' }}>RETOUR EN ARRIÈRE</h2>
-              <p style={{ marginTop: '12px', color: 'var(--faded)', fontWeight: 600, fontSize: '12px', lineHeight: 1.5 }}>Voulez-vous vraiment revenir à l&apos;étape précédente : <span style={{ color: '#000' }}>{prevStageName.replace(/_/g, ' ')}</span> ?</p>
-              
-              <div style={{ marginTop: '32px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                 <button onClick={() => { saveField('status', prevStageName); setShowBackModal(false); }} className="btn-main" style={{ background: '#000', color: '#fff' }}>CONFIRMER LE RETOUR</button>
-                 <button onClick={() => setShowBackModal(false)} style={{ background: 'none', border: 'none', marginTop: '8px', fontWeight: 800, color: 'var(--faded)', fontSize: '13px' }}>ANNULER</button>
-              </div>
-            </div>
-          </motion.div>
-        )}
-
-        {showTrackingInput && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'fixed', inset: 0, background: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(30px)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
-            <div style={{ textAlign: 'center', maxWidth: '400px', width: '100%' }}>
-              <div style={{ width: '64px', height: '64px', borderRadius: '32px', background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px auto', color: '#fff' }}><Truck /></div>
-              <h2 style={{ fontSize: '24px', fontWeight: 900, letterSpacing: '-0.04em' }}>TRACKING SYNC</h2>
-              <p style={{ marginTop: '12px', color: 'var(--faded)', fontWeight: 600, fontSize: '12px' }}>ENTER FEDEX OR DHL NUMBER</p>
-              
-              <input 
-                autoFocus
-                placeholder="0000 0000 0000"
-                value={trackingNumber}
-                onChange={(e) => setTrackingNumber(e.target.value)}
-                style={{ width: '100%', padding: '20px', background: '#F9F9F9', borderRadius: '20px', fontSize: '18px', fontWeight: 900, textAlign: 'center', marginTop: '32px', border: '1px solid rgba(0,0,0,0.05)' }}
-              />
-
-              <button onClick={() => handleShipment(trackingNumber)} className="btn-main" style={{ marginTop: '24px' }}>ACTIVATE TRACKING</button>
-              <button onClick={() => setShowTrackingInput(false)} style={{ background: 'none', border: 'none', marginTop: '20px', fontWeight: 800, color: 'var(--faded)', fontSize: '13px' }}>CANCEL</button>
-            </div>
+        {showPaymentModal && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'fixed', inset: 0, background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(40px)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '32px' }}>
+             <motion.div initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} style={{ width: '100%', maxWidth: '400px', background: '#fff', borderRadius: '40px', padding: '40px', boxShadow: '0 30px 100px rgba(0,0,0,0.1)', border: '1px solid rgba(0,0,0,0.05)' }}>
+                <h2 style={{ fontSize: '24px', fontWeight: 900, marginBottom: '12px' }}>VALIDATION SOLDE</h2>
+                <p style={{ fontSize: '13px', opacity: 0.5, marginBottom: '32px', fontWeight: 600 }}>Le client a payé le solde ? Validez pour activer le tracking FedEx.</p>
+                
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                   <button 
+                     onClick={() => handleBalancePayment()}
+                     style={{ width: '100%', height: '56px', borderRadius: '18px', background: 'var(--accent)', color: '#fff', fontSize: '12px', fontWeight: 900, border: 'none' }}
+                   >
+                     ENCAISSER & EXPÉDIER
+                   </button>
+                   <button onClick={() => setShowPaymentModal(false)} style={{ width: '100%', height: '56px', borderRadius: '18px', background: 'transparent', border: 'none', color: 'rgba(0,0,0,0.3)', fontSize: '12px', fontWeight: 900 }}>ANNULER</button>
+                </div>
+             </motion.div>
           </motion.div>
         )}
 
         {showDeleteModal && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'fixed', inset: 0, background: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(30px)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
-            <div style={{ textAlign: 'center', maxWidth: '400px' }}>
-              <div style={{ width: '64px', height: '64px', borderRadius: '32px', background: '#FF3B30', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px auto', color: '#fff', boxShadow: '0 10px 30px rgba(255,59,48,0.3)' }}><Trash2 /></div>
-              <h2 style={{ fontSize: '24px', fontWeight: 900, letterSpacing: '-0.04em' }}>DELETE RECORD?</h2>
-              <p style={{ marginTop: '12px', color: 'var(--faded)', fontWeight: 600, fontSize: '14px' }}>This cannot be undone.</p>
-              <button onClick={() => { remove(rtdbRef(rtdb, `requests/${params.id}`)); router.push('/'); }} className="btn-main" style={{ background: '#FF3B30', marginTop: '40px' }}>CONFIRM</button>
-              <button onClick={() => setShowDeleteModal(false)} style={{ background: 'none', border: 'none', marginTop: '20px', fontWeight: 800, color: 'var(--faded)', fontSize: '13px' }}>CANCEL</button>
-            </div>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(20px)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '32px' }}>
+            <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} style={{ background: '#fff', borderRadius: '32px', padding: '32px', maxWidth: '340px', width: '100%', textAlign: 'center' }}>
+               <h3 style={{ fontSize: '20px', fontWeight: 900 }}>SUPPRIMER ?</h3>
+               <p style={{ fontSize: '14px', opacity: 0.5, marginTop: '8px', fontWeight: 600 }}>Cette action est irréversible.</p>
+               <div style={{ display: 'flex', gap: '12px', marginTop: '32px' }}>
+                  <button onClick={() => setShowDeleteModal(false)} style={{ flex: 1, padding: '16px', borderRadius: '14px', background: '#F9F9F9', border: 'none', fontWeight: 900 }}>ANNULER</button>
+                  <button onClick={async () => {
+                     await remove(rtdbRef(rtdb, `requests/${params.id}`));
+                     router.push('/');
+                  }} style={{ flex: 1, padding: '16px', borderRadius: '14px', background: '#FF3B30', color: '#fff', border: 'none', fontWeight: 900 }}>SUPPRIMER</button>
+               </div>
+            </motion.div>
           </motion.div>
         )}
-        {showEmailImport && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'fixed', inset: 0, background: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(30px)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
-            <div style={{ textAlign: 'center', maxWidth: '400px', width: '100%' }}>
-              <div style={{ width: '64px', height: '64px', borderRadius: '32px', background: '#4D148C', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px auto', color: '#fff' }}><FileText /></div>
-              <h2 style={{ fontSize: '24px', fontWeight: 900, letterSpacing: '-0.04em' }}>IMPORT EMAIL</h2>
-              <p style={{ marginTop: '12px', color: 'var(--faded)', fontWeight: 600, fontSize: '12px' }}>COLLEZ LE TEXTE DU MAIL FEDEX</p>
-              
-              <textarea 
-                placeholder="Copiez tout le mail ici..."
-                value={emailText}
-                onChange={(e) => setEmailText(e.target.value)}
-                style={{ width: '100%', height: '200px', padding: '20px', background: '#F9F9F9', borderRadius: '20px', fontSize: '13px', fontWeight: 500, marginTop: '32px', border: '1px solid rgba(0,0,0,0.05)', resize: 'none' }}
-              />
 
-              <button onClick={handleEmailImport} className="btn-main" style={{ background: '#4D148C', marginTop: '24px' }}>EXTRAIRE INFO</button>
-              <button onClick={() => setShowEmailImport(false)} style={{ background: 'none', border: 'none', marginTop: '20px', fontWeight: 800, color: 'var(--faded)', fontSize: '13px' }}>ANNULER</button>
-            </div>
+        {showBackModal && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(20px)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '32px' }}>
+            <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} style={{ background: '#fff', borderRadius: '32px', padding: '32px', maxWidth: '340px', width: '100%', textAlign: 'center' }}>
+               <h3 style={{ fontSize: '20px', fontWeight: 900 }}>RETOUR ÉTAPE ?</h3>
+               <p style={{ fontSize: '14px', opacity: 0.5, marginTop: '8px', fontWeight: 600 }}>Retourner à l'étape : <br/><strong>{prevStageName.replace(/_/g, ' ')}</strong></p>
+               <div style={{ display: 'flex', gap: '12px', marginTop: '32px' }}>
+                  <button onClick={() => setShowBackModal(false)} style={{ flex: 1, padding: '16px', borderRadius: '14px', background: '#F9F9F9', border: 'none', fontWeight: 900 }}>ANNULER</button>
+                  <button onClick={async () => {
+                     await update(rtdbRef(rtdb, `requests/${params.id}`), { status: prevStageName });
+                     setShowBackModal(false);
+                     toast.success("Étape retrogradée.");
+                  }} style={{ flex: 1, padding: '16px', borderRadius: '14px', background: '#000', color: '#fff', border: 'none', fontWeight: 900 }}>CONFIRMER</button>
+               </div>
+            </motion.div>
           </motion.div>
         )}
 
         {showLinkModal && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'fixed', inset: 0, background: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(40px)', zIndex: 3000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
-            <div style={{ textAlign: 'center', maxWidth: '360px', width: '100%' }}>
-              <div style={{ width: '64px', height: '64px', borderRadius: '32px', background: '#FF9500', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px auto', color: '#fff' }}>
-                <Check size={32} />
-              </div>
-              <h2 style={{ fontSize: '20px', fontWeight: 900, letterSpacing: '-0.04em' }}>LIEN GÉNÉRÉ</h2>
-              <p style={{ marginTop: '12px', color: 'var(--faded)', fontWeight: 600, fontSize: '12px', lineHeight: 1.5 }}>Le lien a été généré avec succès. Copiez-le manuellement si besoin :</p>
-              
-              <div style={{ marginTop: '24px', padding: '16px', background: '#F9F9F9', borderRadius: '16px', wordBreak: 'break-all', fontSize: '11px', fontWeight: 800, color: 'var(--accent)' }}>
-                {generatedLink}
-              </div>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(20px)', zIndex:3000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '32px' }}>
+            <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} style={{ background: '#fff', borderRadius: '32px', padding: '32px', maxWidth: '400px', width: '100%' }}>
+               <h3 style={{ fontSize: '20px', fontWeight: 900, marginBottom: '20px', textAlign: 'center' }}>LIEN FOURNISSEUR</h3>
+               <div style={{ background: '#F9F9F9', padding: '20px', borderRadius: '16px', wordBreak: 'break-all', fontSize: '12px', fontWeight: 600, color: 'var(--accent)', marginBottom: '24px' }}>
+                  {generatedLink}
+               </div>
+               <button onClick={() => {
+                  navigator.clipboard.writeText(generatedLink);
+                  toast.success("Copié !");
+                  setShowLinkModal(false);
+               }} style={{ width: '100%', padding: '18px', borderRadius: '16px', background: 'var(--accent)', color: '#fff', fontWeight: 900, border: 'none' }}>COPIER LE LIEN</button>
+               <button onClick={() => setShowLinkModal(false)} style={{ width: '100%', marginTop: '12px', background: 'transparent', border: 'none', fontSize: '12px', fontWeight: 900, opacity: 0.3 }}>FERMER</button>
+            </motion.div>
+          </motion.div>
+        )}
 
-              <div style={{ marginTop: '32px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                 <button onClick={() => { navigator.clipboard.writeText(generatedLink); setShowLinkModal(false); }} className="btn-main" style={{ background: '#000', color: '#fff' }}>OK, JE L&apos;AI</button>
-              </div>
-            </div>
+        {showTrackingInput && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'fixed', inset: 0, background: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(40px)', zIndex: 2000, padding: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+             <motion.div initial={{ y: 20 }} animate={{ y: 0 }} style={{ width: '100%', maxWidth: '400px', background: '#fff', borderRadius: '40px', padding: '40px', border: '1px solid rgba(0,0,0,0.05)', boxShadow: '0 30px 100px rgba(0,0,0,0.1)' }}>
+                <div style={{ width: '64px', height: '64px', background: 'var(--accent-glow)', borderRadius: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '24px', color: 'var(--accent)' }}>
+                   <Truck size={32} />
+                </div>
+                <h2 style={{ fontSize: '24px', fontWeight: 900, marginBottom: '12px' }}>TRACKING FEDEX</h2>
+                <p style={{ fontSize: '13px', opacity: 0.5, marginBottom: '32px', fontWeight: 600 }}>Entrez le numéro de suivi pour activer le tracking temps réel.</p>
+                <input 
+                  autoFocus
+                  placeholder="12 chiffres (ex: 1234...)"
+                  className="cyber-input"
+                  style={{ fontSize: '24px', fontWeight: 900, textAlign: 'center', letterSpacing: '0.1em' }}
+                  onChange={(e) => {
+                     if (e.target.value.length >= 12) handleShipment(e.target.value);
+                  }}
+                />
+                <button onClick={() => setShowTrackingInput(false)} style={{ width: '100%', marginTop: '32px', background: 'transparent', border: 'none', fontSize: '13px', fontWeight: 900, opacity: 0.3 }}>PLUS TARD</button>
+             </motion.div>
+          </motion.div>
+        )}
+
+        {showEmailImport && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(20px)', zIndex: 3000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '32px' }}>
+            <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} style={{ background: '#fff', borderRadius: '32px', padding: '32px', maxWidth: '500px', width: '100%' }}>
+               <h3 style={{ fontSize: '20px', fontWeight: 900, marginBottom: '12px' }}>IMPORT MAIL FEDEX</h3>
+               <p style={{ fontSize: '12px', opacity: 0.5, marginBottom: '24px', fontWeight: 600 }}>Copiez-collez tout le contenu du mail FedEx pour synchroniser le statut.</p>
+               <textarea 
+                  value={emailText}
+                  onChange={(e) => setEmailText(e.target.value)}
+                  placeholder="Collez ici..."
+                  style={{ width: '100%', height: '200px', background: '#F9F9F9', border: '1px solid rgba(0,0,0,0.05)', borderRadius: '16px', padding: '16px', fontSize: '12px', fontWeight: 500, fontFamily: 'monospace' }}
+               />
+               <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
+                  <button onClick={() => setShowEmailImport(false)} style={{ flex: 1, padding: '16px', borderRadius: '14px', background: '#F9F9F9', border: 'none', fontWeight: 900 }}>ANNULER</button>
+                  <button onClick={handleEmailImport} style={{ flex: 1, padding: '16px', borderRadius: '14px', background: '#4D148C', color: '#fff', border: 'none', fontWeight: 900 }}>EXTRAIRE DATA</button>
+               </div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
