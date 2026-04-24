@@ -30,6 +30,7 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
   const [showBackModal, setShowBackModal] = useState(false);
   const [prevStageName, setPrevStageName] = useState("");
   const [engraving, setEngraving] = useState("");
+  const [carats, setCarats] = useState("");
   const [generatedLink, setGeneratedLink] = useState("");
   const [showLinkModal, setShowLinkModal] = useState(false);
 
@@ -50,6 +51,7 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
       if (request.category) setCategory(request.category);
       if (request.estimatedWeight) setWeight(request.estimatedWeight.toString());
       if (request.engraving) setEngraving(request.engraving);
+      if (request.mainStoneCarat) setCarats(request.mainStoneCarat.toString());
     }
   }, [request]);
 
@@ -281,7 +283,7 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
       id: request.id, title: title || request.title, size: size || request.size, 
       sellingPrice: totals.sPrice, totals, status: request.status,
       imageUrl: request.imageUrl, goldColor: request.goldColor,
-      stoneType: request.stoneType, mainStoneCarat: request.mainStoneCarat, weight: weight || request.estimatedWeight,
+      stoneType: request.stoneType, mainStoneCarat: carats || request.mainStoneCarat, weight: weight || request.estimatedWeight,
       goldPurity: acceptedQuote?.goldPurity,
       goldWeight: acceptedQuote?.goldWeight,
       diamondCount: acceptedQuote?.diamondCount,
@@ -362,15 +364,30 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px', margin: '48px 0 16px 0' }}>
             <div style={{ padding: '20px 8px', borderRadius: '24px', background: '#F9F9F9', border: '1px solid rgba(0,0,0,0.02)', textAlign: 'center' }}>
                <span className="cyber-label" style={{ fontSize: '7px', opacity: 0.5 }}>HOUSE</span>
-               <p style={{ fontWeight: 900, fontSize: '11px', marginTop: '8px', letterSpacing: '0.05em' }}>{request.brand?.toUpperCase() || '...'}</p>
+               {isEditing ? (
+                 <input value={brand} onChange={(e) => { setBrand(e.target.value); saveField('brand', e.target.value); }} style={{ width: '100%', background: 'transparent', border: 'none', textAlign: 'center', fontSize: '11px', fontWeight: 900, outline: 'none', color: 'var(--accent)' }} />
+               ) : (
+                 <p style={{ fontWeight: 900, fontSize: '11px', marginTop: '8px', letterSpacing: '0.05em' }}>{request.brand?.toUpperCase() || '...'}</p>
+               )}
             </div>
             <div style={{ padding: '20px 8px', borderRadius: '24px', background: '#FDF7F9', border: '1px solid rgba(224,17,95,0.05)', textAlign: 'center' }}>
                <span className="cyber-label" style={{ fontSize: '7px', color: '#E0115F' }}>SIZE</span>
-               <p style={{ fontWeight: 900, fontSize: '13px', marginTop: '8px', color: '#E0115F' }}>{request.size || 'STD'}</p>
+               {isEditing ? (
+                 <input value={size} onChange={(e) => { setSize(e.target.value); saveField('size', e.target.value); }} style={{ width: '100%', background: 'transparent', border: 'none', textAlign: 'center', fontSize: '13px', fontWeight: 900, outline: 'none', color: '#E0115F' }} />
+               ) : (
+                 <p style={{ fontWeight: 900, fontSize: '13px', marginTop: '8px', color: '#E0115F' }}>{request.size || 'STD'}</p>
+               )}
             </div>
             <div style={{ padding: '20px 8px', borderRadius: '24px', background: '#F9F9F9', border: '1px solid rgba(0,0,0,0.02)', textAlign: 'center' }}>
                <span className="cyber-label" style={{ fontSize: '7px', opacity: 0.5 }}>WEIGHT</span>
-               <p style={{ fontWeight: 900, fontSize: '11px', marginTop: '8px' }}>{request.estimatedWeight || '...'}G</p>
+               {isEditing ? (
+                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                   <input type="number" step="0.1" value={weight} onChange={(e) => { setWeight(e.target.value); saveField('estimatedWeight', parseFloat(e.target.value) || 0); }} style={{ width: '40px', background: 'transparent', border: 'none', textAlign: 'right', fontSize: '11px', fontWeight: 900, outline: 'none', color: 'var(--accent)' }} />
+                   <span style={{ fontSize: '8px', fontWeight: 900, opacity: 0.3 }}>G</span>
+                 </div>
+               ) : (
+                 <p style={{ fontWeight: 900, fontSize: '11px', marginTop: '8px' }}>{request.estimatedWeight || '...'}G</p>
+               )}
             </div>
          </div>
 
@@ -378,7 +395,11 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: '12px', marginBottom: '64px' }}>
             <div style={{ padding: '20px 16px', borderRadius: '24px', background: '#F9F9F9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                <span className="cyber-label" style={{ fontSize: '7px' }}>CARATS</span>
-               <p style={{ fontWeight: 900, fontSize: '12px', margin: 0 }}>{request.mainStoneCarat ? `${request.mainStoneCarat} ct` : '-'}</p>
+               {isEditing ? (
+                 <input type="number" step="0.01" value={carats} onChange={(e) => { setCarats(e.target.value); saveField('mainStoneCarat', parseFloat(e.target.value) || 0); }} style={{ width: '80px', background: 'transparent', border: 'none', textAlign: 'right', fontSize: '12px', fontWeight: 900, outline: 'none', color: 'var(--accent)' }} />
+               ) : (
+                 <p style={{ fontWeight: 900, fontSize: '12px', margin: 0 }}>{request.mainStoneCarat ? `${request.mainStoneCarat} ct` : '-'}</p>
+               )}
             </div>
             <div style={{ padding: '20px 24px', borderRadius: '24px', background: '#000', color: '#fff', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                <span className="cyber-label" style={{ fontSize: '7px', color: 'rgba(255,255,255,0.4)' }}>GRAVURE</span>
