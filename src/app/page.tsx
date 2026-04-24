@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Plus, ChevronRight, Package, AlertCircle, Quote } from "lucide-react";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import Link from "next/link";
 import { useAllRequests, useAllQuotes } from "@/hooks/useFirebase";
