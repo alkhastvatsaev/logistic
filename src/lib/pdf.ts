@@ -46,48 +46,47 @@ export const generateQuotePDF = async (data: PDFData) => {
   if (data.imageUrl) {
     try {
       const imgProps = doc.getImageProperties(data.imageUrl);
-      const maxWidth = 120;
-      const maxHeight = 75;
-      let imgWidth = imgProps.width;
-      let imgHeight = imgProps.height;
-      const ratio = Math.min(maxWidth / imgWidth, maxHeight / imgHeight);
-      imgWidth = imgWidth * ratio;
-      imgHeight = imgHeight * ratio;
+      const maxWidth = 140;
+      const maxHeight = 80;
+      let ratio = Math.min(maxWidth / imgProps.width, maxHeight / imgProps.height);
+      const imgW = imgProps.width * ratio;
+      const imgH = imgProps.height * ratio;
       
-      doc.setFillColor(252, 252, 252);
-      doc.roundedRect(25, 45, 160, 85, 12, 12, "F"); 
+      doc.setFillColor(254, 254, 254);
+      doc.roundedRect(25, 45, 160, 90, 8, 8, "F"); 
       
-      const xPos = (210 - imgWidth) / 2;
-      doc.addImage(data.imageUrl, 'JPEG', xPos, 50, imgWidth, imgHeight, undefined, 'FAST');
+      const xPos = (210 - imgW) / 2;
+      const yPos = 45 + (90 - imgH) / 2;
+      doc.addImage(data.imageUrl, 'JPEG', xPos, yPos, imgW, imgH, undefined, 'FAST');
     } catch (e) {}
   }
 
   // 3. TECHNICAL ARCHITECTURE
-  let y = 145;
+  let y = 150;
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(24);
+  doc.setFontSize(22);
   doc.setTextColor(0);
   doc.text(data.title.toUpperCase(), 25, y, { charSpace: -0.5 });
   
   y += 10;
   doc.setFontSize(7.5);
   doc.setTextColor(blueAccent[0], blueAccent[1], blueAccent[2]);
-  doc.text("SPÉCIFICATIONS TECHNIQUES", 25, y, { charSpace: 2 });
+  doc.text("SPÉCIFICATIONS TECHNIQUES", 25, y, { charSpace: 1.5 });
   
   y += 4;
-  doc.setDrawColor(245);
+  doc.setDrawColor(240);
   doc.line(25, y, 185, y);
   
   y += 12;
   const drawRow = (label: string, value: string, xPos: number, currentY: number) => {
     doc.setFont("helvetica", "bold");
     doc.setFontSize(6.5);
-    doc.setTextColor(200);
+    doc.setTextColor(160);
     doc.text(label, xPos, currentY, { charSpace: 0.5 });
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(11);
+    doc.setFontSize(10.5);
     doc.setTextColor(0);
-    doc.text(String(value || "N/A").toUpperCase(), xPos, currentY + 7, { charSpace: -0.3 });
+    doc.text(String(value || "N/A").toUpperCase(), xPos, currentY + 7);
   };
 
   drawRow("MÉTAL & PURETÉ", `${data.goldPurity || 'OR 18K'} - ${data.goldColor || 'JAUNE'}`, 25, y);
@@ -95,30 +94,25 @@ export const generateQuotePDF = async (data: PDFData) => {
   
   y += 18;
   drawRow("POIDS MÉTAL (G)", data.goldWeight ? `${data.goldWeight}g` : (data.weight || "N/A"), 25, y);
-  drawRow("TOTAL CARATS (CT)", data.totalCarat ? `${data.totalCarat}ct (${data.diamondCount || 0} pcs)` : "SUR DEVIS", 110, y);
+  drawRow("TOTAL CARATS", data.totalCarat ? `${data.totalCarat}ct (${data.diamondCount || 0} pces)` : "SUR DEVIS", 110, y);
 
-  // 4. INCLUSIONS PILL
-  y += 24;
+  // 4. INCLUSIONS
+  y += 26;
   doc.setFillColor(250, 250, 250);
   doc.roundedRect(25, y, 160, 12, 6, 6, "F");
-  
   doc.setFontSize(7);
-  doc.setFont("helvetica", "bold");
   doc.setTextColor(180);
-  doc.text("LIVRÉ AVEC : ÉCRIN LUXE ET CERTIFICAT D'AUTHENTICITÉ LOGIS.", 105, y + 7.5, { align: "center", charSpace: 0.5 });
+  doc.text("LIVRÉ AVEC : ÉCRIN LUXE ET CERTIFICAT D'AUTHENTICITÉ LOGIS.", 105, y + 7.5, { align: "center", charSpace: 0.2 });
 
-  // 5. TOTAL PILL
-  y += 26;
+  // 5. TOTAL
+  y += 25;
   doc.setFillColor(0, 0, 0);
-  doc.roundedRect(25, y, 160, 36, 18, 18, "F"); 
-  
-  doc.setFontSize(7.5);
+  doc.roundedRect(25, y, 160, 36, 12, 12, "F"); 
+  doc.setFontSize(8);
   doc.setTextColor(255, 255, 255);
-  doc.text("PRIX TOTAL TTC LIVRÉ", 45, y + 12, { charSpace: 1.5 });
-  
+  doc.text("PRIX TOTAL TTC LIVRÉ", 45, y + 12, { charSpace: 1 });
   doc.setFontSize(28);
-  doc.setFont("helvetica", "bold");
-  const priceStr = data.sellingPrice.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ") + " €";
+  const priceStr = Math.round(data.sellingPrice).toLocaleString('fr-FR') + " €";
   doc.text(priceStr, 45, y + 26);
 
   // 6. MINIMAL FOOTER
@@ -149,23 +143,30 @@ export const generateInternalInvoicePDF = async (data: PDFData) => {
   doc.text(`SYSTÈME LOGIS 2030 • GÉNÉRÉ LE ${new Date().toLocaleDateString('fr-FR')}`, 185, 30, { align: "right" });
 
   // 2. ASSET CORE
-  doc.setFillColor(252, 252, 252);
-  doc.roundedRect(25, 45, 160, 45, 10, 10, "F");
+  doc.setFillColor(248, 248, 248);
+  doc.roundedRect(25, 45, 160, 45, 8, 8, "F");
   
   if (data.imageUrl) {
     try {
-      doc.addImage(data.imageUrl, 'JPEG', 32, 50, 45, 35, undefined, 'FAST');
-    } catch (e) {}
+      const imgProps = doc.getImageProperties(data.imageUrl);
+      const targetH = 35;
+      const targetW = (imgProps.width * targetH) / imgProps.height;
+      const finalW = Math.min(targetW, 45); // Max 45mm width
+      doc.addImage(data.imageUrl, 'JPEG', 32, 50, finalW, targetH, undefined, 'FAST');
+    } catch (e) {
+      console.error("PDF Image Error", e);
+    }
   }
 
+  doc.setFont("helvetica", "bold");
   doc.setFontSize(14);
   doc.setTextColor(0);
   doc.text(data.title.toUpperCase(), 85, 60, { charSpace: -0.5 });
   
   doc.setFontSize(8);
-  doc.setTextColor(150);
-  const techSpecs = `OR: ${data.goldWeight || '?'}g (${data.goldPurity || '18K'}) • STONES: ${data.totalCarat || '?'}ct (${data.diamondCount || '0'} pces) • ${data.stoneQuality || 'VVS'}`;
-  doc.text(techSpecs, 85, 68, { charSpace: 0.5 });
+  doc.setTextColor(100, 100, 100);
+  const techSpecs = `OR: ${data.goldWeight || '?'}G (${data.goldPurity || '18K'}) • PIERRES: ${data.totalCarat || '?'}CT (${data.diamondCount || '0'} PCS) • ${data.stoneQuality || 'VVS'}`;
+  doc.text(techSpecs, 85, 68, { charSpace: 0.1 });
 
   // 3. PERFORMANCE DATA
   let y = 110;
@@ -175,42 +176,44 @@ export const generateInternalInvoicePDF = async (data: PDFData) => {
   doc.text("STRUCTURE DE MARGE", 25, y, { charSpace: 1 });
   
   y += 5;
-  doc.setDrawColor(245);
+  doc.setDrawColor(240, 240, 240);
   doc.line(25, y, 185, y);
-  y += 10;
+  y += 12;
 
   const addDataRow = (label: string, value: string, isBold = false, color = [0, 0, 0]) => {
     doc.setFont("helvetica", isBold ? "bold" : "normal");
     doc.setFontSize(10);
     doc.setTextColor(color[0], color[1], color[2]);
-    doc.text(label, 25, y, { charSpace: isBold ? -0.2 : 0 });
+    doc.text(label.toUpperCase(), 25, y);
     doc.text(value, 185, y, { align: "right" });
-    y += 10;
+    y += 12;
   };
 
-  addDataRow("Prix de Vente Total", `${data.sellingPrice.toLocaleString()} €`, true);
-  addDataRow("Acquisition Usine", `-${data.totals.costEUR.toLocaleString()} €`, false, [150, 150, 150]);
-  addDataRow("Services Logistiques", `-${data.totals.shippingEUR.toLocaleString()} €`, false, [150, 150, 150]);
+  const formatPrice = (n: number) => Math.round(n).toLocaleString('fr-FR') + " €";
 
-  y += 5;
+  addDataRow("Prix de Vente Client", formatPrice(data.sellingPrice), true);
+  addDataRow("Coût Acquisition Usine", `-${formatPrice(data.totals.itemCostEUR)}`, false, [120, 120, 120]);
+  addDataRow("Logistique & Transit", `-${formatPrice(data.totals.shippingEUR)}`, false, [120, 120, 120]);
+
+  y += 4;
   doc.setFillColor(242, 248, 255);
-  doc.roundedRect(25, y, 160, 14, 7, 7, "F");
+  doc.roundedRect(25, y, 160, 16, 8, 8, "F");
   doc.setTextColor(blueAccent[0], blueAccent[1], blueAccent[2]);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(11);
-  doc.text("RENTABILITÉ NETTE", 35, y + 9, { charSpace: 0.5 });
-  doc.text(`${data.totals.profit.toLocaleString()} €`, 175, y + 9, { align: "right" });
+  doc.text("RENTABILITÉ NETTE", 35, y + 10, { charSpace: 0.5 });
+  doc.text(formatPrice(data.totals.profit), 175, y + 10, { align: "right" });
 
   // 4. THE SPLIT (50/50 PARTNERS)
-  y += 30;
+  y += 32;
   doc.setFontSize(10);
   doc.setTextColor(0);
   doc.setFont("helvetica", "bold");
-  doc.text("RÉPARTITION PARTENAIRES", 25, y, { charSpace: 1 });
+  doc.text("RÉPARTITION DES BÉNÉFICES", 25, y, { charSpace: 1 });
   y += 12;
   
-  addDataRow("ADAM (Gestion & Ops)", `${data.totals.adamPart.toLocaleString()} €`, true);
-  addDataRow("MIRZA (Client & Apport)", `${data.totals.mirzaPart.toLocaleString()} €`, true);
+  addDataRow("ADAM (Gestion Ops)", formatPrice(data.totals.adamPart), true, blueAccent);
+  addDataRow("MIRZA (Marketing)", formatPrice(data.totals.mirzaPart), true, blueAccent);
 
   // 5. INTERNAL FOOTER
   doc.setFontSize(6.5);

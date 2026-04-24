@@ -397,6 +397,13 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
          <div style={{ padding: '32px', background: '#fff', borderRadius: '40px', border: '1px solid rgba(0,0,0,0.04)', marginBottom: '48px', boxShadow: '0 10px 30px rgba(0,0,0,0.02)' }}>
              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <h2 style={{ fontSize: '11px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.1em' }}>FINANCE AUDIT / {new Date().getFullYear()}</h2>
+                {liveRate && (
+                  <div style={{ fontSize: '8px', fontWeight: 900, opacity: 0.3, letterSpacing: '0.05em' }}>
+                    LIVE RATE: 1¥ = {liveRate.toFixed(4)}€
+                  </div>
+                )}
+             </div>
+             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '8px' }}>
                 {acceptedQuote && (
                   <div style={{ fontSize: '9px', fontWeight: 900, opacity: 0.4, color: 'var(--accent)' }}>
                     {acceptedQuote.goldWeight}G ({acceptedQuote.goldPurity}) • {acceptedQuote.totalCarat}CT ({acceptedQuote.stoneQuality})
