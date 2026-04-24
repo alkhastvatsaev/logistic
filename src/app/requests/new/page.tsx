@@ -19,6 +19,7 @@ export default function NewRequest() {
   const [goldColor, setGoldColor] = useState("Or Jaune");
   const [stoneType, setStoneType] = useState("Sans Pierre");
   const [mainStoneCarat, setMainStoneCarat] = useState("");
+  const [engraving, setEngraving] = useState("");
   const [loading, setLoading] = useState(false);
 
   const stones = [
@@ -63,6 +64,7 @@ export default function NewRequest() {
         stoneType,
         mainStoneCarat: stoneType !== "Sans Pierre" ? mainStoneCarat : null,
         category: category === 'Ring' ? 'Bague' : (category === 'Bracelet' ? 'Bracelet' : 'Collier'),
+        engraving: engraving || null,
         imageUrl, 
         status: "WAITING_FOR_QUOTE", 
         createdAt: Date.now(), 
@@ -215,7 +217,16 @@ export default function NewRequest() {
              </div>
           </motion.div>
 
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
+             <p className="cyber-label" style={{ marginBottom: '16px' }}>GRAVURE / 刻印</p>
+             <div style={{ padding: '24px', borderRadius: '28px', background: '#F9F9F9', border: '1px solid rgba(0,0,0,0.02)' }}>
+                <input 
+                  type="text" value={engraving} onChange={(e) => setEngraving(e.target.value)} 
+                  placeholder="Texte à graver (Vierge si aucun)..."
+                  style={{ width: '100%', background: 'transparent', fontSize: '15px', fontWeight: 900, textTransform: 'uppercase' }}
+                />
+             </div>
+          </motion.div>
              <p className="cyber-label" style={{ marginBottom: '20px' }}>VISUAL REFERENCE / 参考图片</p>
              <label style={{ display: 'block', width: '100%', minHeight: '300px', borderRadius: '32px', background: '#F9F9F9', overflow: 'hidden', position: 'relative', cursor: 'pointer', transition: 'all 0.4s ease' }}>
                 {file ? (

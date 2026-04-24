@@ -177,6 +177,7 @@ export default function SupplierPortal({ params }: { params: { token: string } }
             <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
                <div style={{ padding: '6px 12px', background: '#F9F9F9', borderRadius: '8px', fontSize: '10px', fontWeight: 900 }}>{request.size || 'STD'}</div>
                <div style={{ padding: '6px 12px', background: 'var(--accent-glow)', borderRadius: '8px', fontSize: '10px', fontWeight: 900, color: 'var(--accent)' }}>{request.goldColor?.toUpperCase()}</div>
+               {request.engraving && <div style={{ padding: '6px 12px', background: '#FFF5F5', borderRadius: '8px', fontSize: '10px', fontWeight: 900, color: '#E0115F' }}>GRAVURE: {request.engraving}</div>}
             </div>
          </motion.div>
 

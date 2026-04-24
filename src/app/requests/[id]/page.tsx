@@ -28,6 +28,7 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
   const [liveRate, setLiveRate] = useState(0.135);
   const [showBackModal, setShowBackModal] = useState(false);
   const [prevStageName, setPrevStageName] = useState("");
+  const [engraving, setEngraving] = useState("");
   const [generatedLink, setGeneratedLink] = useState("");
   const [showLinkModal, setShowLinkModal] = useState(false);
 
@@ -47,6 +48,7 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
       if (request.size) setSize(request.size);
       if (request.category) setCategory(request.category);
       if (request.estimatedWeight) setWeight(request.estimatedWeight.toString());
+      if (request.engraving) setEngraving(request.engraving);
     }
   }, [request]);
 
@@ -350,22 +352,30 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
             <h1 style={{ fontSize: '36px', fontWeight: 900, letterSpacing: '-0.06em', margin: 0 }}>{request.title?.toUpperCase()}</h1>
          </div>
             
-         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', margin: '32px 0' }}>
-            <div style={{ padding: '16px 8px', borderRadius: '20px', background: '#F9F9F9', border: '1px solid rgba(0,0,0,0.02)', textAlign: 'center' }}>
-               <span className="cyber-label">HOUSE</span>
-               <p style={{ fontWeight: 900, fontSize: '12px', marginTop: '8px' }}>{request.brand?.toUpperCase() || '...'}</p>
+         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '6px', margin: '32px 0' }}>
+            <div style={{ padding: '12px 4px', borderRadius: '16px', background: '#F9F9F9', border: '1px solid rgba(0,0,0,0.02)', textAlign: 'center' }}>
+               <span className="cyber-label" style={{ fontSize: '7px' }}>HOUSE</span>
+               <p style={{ fontWeight: 900, fontSize: '10px', marginTop: '6px' }}>{request.brand?.toUpperCase() || '...'}</p>
             </div>
-            <div style={{ padding: '16px 8px', borderRadius: '20px', background: '#F9F9F9', border: '1px solid rgba(0,0,0,0.02)', textAlign: 'center' }}>
-               <span className="cyber-label">SIZE</span>
-               <p style={{ fontWeight: 900, fontSize: '12px', marginTop: '8px', color: 'var(--accent)' }}>{request.size || 'STD'}</p>
+            <div style={{ padding: '12px 4px', borderRadius: '16px', background: '#F9F9F9', border: '1px solid rgba(0,0,0,0.02)', textAlign: 'center' }}>
+               <span className="cyber-label" style={{ fontSize: '7px' }}>SIZE</span>
+               <p style={{ fontWeight: 900, fontSize: '10px', marginTop: '6px', color: 'var(--accent)' }}>{request.size || 'STD'}</p>
             </div>
-            <div style={{ padding: '16px 8px', borderRadius: '20px', background: '#F9F9F9', border: '1px solid rgba(0,0,0,0.02)', textAlign: 'center' }}>
-               <span className="cyber-label">WEIGHT</span>
-               <p style={{ fontWeight: 900, fontSize: '12px', marginTop: '8px' }}>{request.estimatedWeight || '...'}</p>
+            <div style={{ padding: '12px 4px', borderRadius: '16px', background: '#F9F9F9', border: '1px solid rgba(0,0,0,0.02)', textAlign: 'center' }}>
+               <span className="cyber-label" style={{ fontSize: '7px' }}>WEIGHT</span>
+               <p style={{ fontWeight: 900, fontSize: '10px', marginTop: '6px' }}>{request.estimatedWeight || '...'}</p>
             </div>
-            <div style={{ padding: '16px 8px', borderRadius: '20px', background: '#F9F9F9', border: '1px solid rgba(0,0,0,0.02)', textAlign: 'center', opacity: request.stoneType === "Sans Pierre" ? 0.3 : 1 }}>
-               <span className="cyber-label">CARATS</span>
-               <p style={{ fontWeight: 900, fontSize: '12px', marginTop: '8px' }}>{request.mainStoneCarat ? `${request.mainStoneCarat} ct` : '-'}</p>
+            <div style={{ padding: '12px 4px', borderRadius: '16px', background: '#F9F9F9', border: '1px solid rgba(0,0,0,0.02)', textAlign: 'center', opacity: request.stoneType === "Sans Pierre" ? 0.3 : 1 }}>
+               <span className="cyber-label" style={{ fontSize: '7px' }}>CARATS</span>
+               <p style={{ fontWeight: 900, fontSize: '10px', marginTop: '6px' }}>{request.mainStoneCarat ? `${request.mainStoneCarat} ct` : '-'}</p>
+            </div>
+            <div style={{ padding: '12px 4px', borderRadius: '16px', background: '#F9F9F9', border: '1px solid rgba(0,0,0,0.02)', textAlign: 'center' }}>
+               <span className="cyber-label" style={{ fontSize: '7px' }}>GRAVURE</span>
+               {isEditing ? (
+                 <input value={engraving} onChange={(e) => { setEngraving(e.target.value); saveField('engraving', e.target.value); }} style={{ width: '100%', background: 'transparent', border: 'none', fontSize: '10px', fontWeight: 900, textAlign: 'center', marginTop: '6px', color: 'var(--accent)' }} placeholder="..." />
+               ) : (
+                 <p style={{ fontWeight: 900, fontSize: '10px', marginTop: '6px', color: 'var(--accent)' }}>{request.engraving || '-'}</p>
+               )}
             </div>
          </div>
 

@@ -17,6 +17,7 @@ export interface PDFData {
   diamondCount?: string;
   totalCarat?: string;
   stoneQuality?: string;
+  engraving?: string;
 }
 
 /**
@@ -97,12 +98,12 @@ export const generateQuotePDF = async (data: PDFData) => {
   drawRow("TOTAL CARATS", data.totalCarat ? `${data.totalCarat}ct (${data.diamondCount || 0} pces)` : "SUR DEVIS", 110, y);
 
   // 4. INCLUSIONS
-  y += 26;
+  y += 24;
   doc.setFillColor(250, 250, 250);
-  doc.roundedRect(25, y, 160, 12, 6, 6, "F");
+  doc.roundedRect(25, y, 160, 15, 7.5, 7.5, "F");
   doc.setFontSize(7);
   doc.setTextColor(180);
-  doc.text("LIVRÉ AVEC : ÉCRIN LUXE ET CERTIFICAT D'AUTHENTICITÉ LOGIS.", 105, y + 7.5, { align: "center", charSpace: 0.2 });
+  doc.text(`LIVRÉ AVEC : ÉCRIN LUXE ET CERTIFICAT LOGIS. • GRAVURE : ${data.engraving || 'AUCUNE'}`, 105, y + 8.5, { align: "center", charSpace: 0.1 });
 
   // 5. TOTAL
   y += 25;
@@ -167,6 +168,8 @@ export const generateInternalInvoicePDF = async (data: PDFData) => {
   doc.setTextColor(100, 100, 100);
   const techSpecs = `OR: ${data.goldWeight || '?'}G (${data.goldPurity || '18K'}) • PIERRES: ${data.totalCarat || '?'}CT (${data.diamondCount || '0'} PCS) • ${data.stoneQuality || 'VVS'}`;
   doc.text(techSpecs, 85, 68, { charSpace: 0.1 });
+  doc.setFontSize(7);
+  doc.text(`GRAVURE : ${data.engraving || 'AUCUNE'}`, 85, 73, { charSpace: 0.2 });
 
   // 3. PERFORMANCE DATA
   let y = 110;
