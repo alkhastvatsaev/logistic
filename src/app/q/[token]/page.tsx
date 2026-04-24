@@ -26,6 +26,7 @@ export default function SupplierPortal({ params }: { params: { token: string } }
   const [productionTimeDays, setProductionTimeDays] = useState("");
   const [estimatedDeliveryDate, setEstimatedDeliveryDate] = useState("");
   const [triedToSubmit, setTriedToSubmit] = useState(false);
+  const [showCalendar, setShowCalendar] = useState(false);
 
   // Tracking Form State
   const [trackingNumber, setTrackingNumber] = useState("");
@@ -260,25 +261,23 @@ export default function SupplierPortal({ params }: { params: { token: string } }
                  </div>
                  <div className={triedToSubmit && !estimatedDeliveryDate ? 'shake' : ''} style={{ padding: '24px', background: triedToSubmit && !estimatedDeliveryDate ? 'rgba(255,59,48,0.05)' : '#F9F9F9', borderRadius: '28px', border: triedToSubmit && !estimatedDeliveryDate ? '1px dashed #FF3B30' : '1px solid transparent' }}>
                     <p className="cyber-label" style={{ fontSize: '7px', marginBottom: '8px', opacity: 0.5, color: triedToSubmit && !estimatedDeliveryDate ? '#FF3B30' : 'inherit' }}>DELIVERY / 预计送达</p>
-                    <input 
-                      type="date" 
-                      value={estimatedDeliveryDate} 
-                      onChange={e => setEstimatedDeliveryDate(e.target.value)} 
-                      onClick={(e) => (e.target as any).showPicker?.()}
+                    <div 
+                      onClick={() => setShowCalendar(true)}
                       style={{ 
                         width: '100%', 
                         background: 'transparent', 
                         fontSize: '13px', 
                         fontWeight: 900, 
-                        color: triedToSubmit && !estimatedDeliveryDate ? '#FF3B30' : 'inherit', 
-                        border: 'none', 
+                        color: (triedToSubmit && !estimatedDeliveryDate) ? '#FF3B30' : (estimatedDeliveryDate ? '#000' : 'rgba(0,0,0,0.2)'), 
                         padding: '4px 0',
                         minHeight: '24px',
                         cursor: 'pointer',
-                        appearance: 'none',
-                        WebkitAppearance: 'none'
+                        display: 'flex',
+                        alignItems: 'center'
                       }} 
-                    />
+                    >
+                       {estimatedDeliveryDate ? new Date(estimatedDeliveryDate).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }).toUpperCase() : 'SELECT DATE / 选择日期'}
+                    </div>
                  </div>
               </div>
 
@@ -289,6 +288,42 @@ export default function SupplierPortal({ params }: { params: { token: string } }
            </form>
          )}
       </div>
+
+      <AnimatePresence>
+        {showCalendar && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'fixed', inset: 0, background: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(40px)', zIndex: 3000, display: 'flex', alignItems: 'flex-end' }}>
+            <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} style={{ width: '100%', background: '#fff', borderRadius: '40px 40px 0 0', padding: '40px 32px', boxShadow: '0 -20px 60px rgba(0,0,0,0.1)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
+                <h2 style={{ fontSize: '18px', fontWeight: 900 }}>SELECT DELIVERY DATE</h2>
+                <button onClick={() => setShowCalendar(false)} style={{ background: '#000', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: '100px', fontSize: '11px', fontWeight: 900 }}>CLOSE</button>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '12px' }}>
+                {['M','T','W','T','F','S','S'].map((d, i) => <div key={i} style={{ textAlign: 'center', fontSize: '9px', fontWeight: 900, opacity: 0.3 }}>{d}</div>)}
+                {Array.from({ length: 42 }, (_, i) => {
+                  const date = new Date();
+                  date.setDate(date.getDate() + i);
+                  const dateStr = date.toISOString().split('T')[0];
+                  const isSelected = estimatedDeliveryDate === dateStr;
+                  return (
+                    <button 
+                      key={i} 
+                      onClick={() => { setEstimatedDeliveryDate(dateStr); setShowCalendar(false); }}
+                      style={{ 
+                        aspectRatio: '1', borderRadius: '16px', border: 'none', background: isSelected ? 'var(--accent)' : '#F9F9F9', 
+                        color: isSelected ? '#fff' : '#000', fontSize: '11px', fontWeight: 900,
+                        transition: 'all 0.2s ease'
+                      }}
+                    >
+                      {date.getDate()}
+                    </button>
+                  );
+                })}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
     </div>
   );
