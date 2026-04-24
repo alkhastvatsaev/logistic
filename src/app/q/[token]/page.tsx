@@ -24,6 +24,7 @@ export default function SupplierPortal({ params }: { params: { token: string } }
   const [totalCarat, setTotalCarat] = useState("");
   const [shippingCostRMB, setShippingCostRMB] = useState("");
   const [productionTimeDays, setProductionTimeDays] = useState("");
+  const [estimatedDeliveryDate, setEstimatedDeliveryDate] = useState("");
   const [triedToSubmit, setTriedToSubmit] = useState(false);
 
   // Tracking Form State
@@ -65,8 +66,8 @@ export default function SupplierPortal({ params }: { params: { token: string } }
   const handleSubmitQuote = async (e: React.FormEvent) => {
     e.preventDefault();
     setTriedToSubmit(true);
-    if (!supplierName || !priceRMB || !totalWeight || !goldWeight || !diamondCount || !totalCarat || !productionTimeDays || !shippingCostRMB) {
-       toast.error("VEUILLEZ REMPLIR TOUS LES CHAMPS OBLIGATOIRES");
+    if (!supplierName || !priceRMB || !totalWeight || !goldWeight || !diamondCount || !totalCarat || !productionTimeDays || !shippingCostRMB || !estimatedDeliveryDate) {
+       toast.error("VEUILLEZ REMPLIR TOUS LES CHAMPS OBLIGATOIRES / 请填写所有必填字段");
        return;
     }
     setLoading(true);
@@ -84,6 +85,7 @@ export default function SupplierPortal({ params }: { params: { token: string } }
         totalCarat: Number(totalCarat),
         shippingCostRMB: Number(shippingCostRMB),
         productionTimeDays: Number(productionTimeDays),
+        estimatedDeliveryDate,
         createdAt: Date.now()
       });
 
@@ -133,17 +135,17 @@ export default function SupplierPortal({ params }: { params: { token: string } }
         </div>
         <h1 style={{ fontSize: '28px', fontWeight: 900, letterSpacing: '-0.05em', marginBottom: '12px' }}>{title.toUpperCase()}</h1>
         <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--faded)', lineHeight: 1.6 }}>{sub}</p>
-        <button onClick={() => window.location.reload()} style={{ marginTop: '40px', background: 'transparent', border: 'none', color: 'var(--accent)', fontWeight: 900, fontSize: '12px' }}>REFRESH STATUS</button>
+        <button onClick={() => window.location.reload()} style={{ marginTop: '40px', background: 'transparent', border: 'none', color: 'var(--accent)', fontWeight: 900, fontSize: '12px' }}>REFRESH / 刷新状态</button>
       </motion.div>
     </div>
   );
 
   if (shippingSubmitted) {
-    return <StatusHero icon={PackageCheck} title="Shipment Sent" sub={`Tracking FedEx : ${request.trackingNumber || trackingNumber}`} />;
+    return <StatusHero icon={PackageCheck} title="Shipment Sent / 已发货" sub={`Tracking FedEx : ${request.trackingNumber || trackingNumber}`} />;
   }
 
   if (submitted) {
-    return <StatusHero icon={CheckCircle} title="Quote Submitted" sub="Votre proposition a été transmise avec succès au bureau d'étude." />;
+    return <StatusHero icon={CheckCircle} title="Quote Submitted / 已提交" sub="Votre proposition a été transmise / 您的报价已提交。" />;
   }
 
   return (
@@ -251,9 +253,15 @@ export default function SupplierPortal({ params }: { params: { token: string } }
                  </div>
               </div>
 
-              <div className={triedToSubmit && !shippingCostRMB ? 'shake' : ''} style={{ padding: '24px', background: triedToSubmit && !shippingCostRMB ? 'rgba(255,59,48,0.05)' : '#F9F9F9', borderRadius: '28px', border: triedToSubmit && !shippingCostRMB ? '1px dashed #FF3B30' : '1px solid transparent' }}>
-                 <p className="cyber-label" style={{ fontSize: '7px', marginBottom: '8px', opacity: 0.5, color: triedToSubmit && !shippingCostRMB ? '#FF3B30' : 'inherit' }}>SHIPPING (RMB ¥)</p>
-                 <input type="number" step="0.01" value={shippingCostRMB} onChange={e => setShippingCostRMB(e.target.value)} placeholder="0.00" style={{ width: '100%', background: 'transparent', fontSize: '20px', fontWeight: 900, color: triedToSubmit && !shippingCostRMB ? '#FF3B30' : 'inherit' }} />
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                 <div className={triedToSubmit && !shippingCostRMB ? 'shake' : ''} style={{ padding: '24px', background: triedToSubmit && !shippingCostRMB ? 'rgba(255,59,48,0.05)' : '#F9F9F9', borderRadius: '28px', border: triedToSubmit && !shippingCostRMB ? '1px dashed #FF3B30' : '1px solid transparent' }}>
+                    <p className="cyber-label" style={{ fontSize: '7px', marginBottom: '8px', opacity: 0.5, color: triedToSubmit && !shippingCostRMB ? '#FF3B30' : 'inherit' }}>SHIPPING (RMB ¥) / 运费</p>
+                    <input type="number" step="0.01" value={shippingCostRMB} onChange={e => setShippingCostRMB(e.target.value)} placeholder="0.00" style={{ width: '100%', background: 'transparent', fontSize: '20px', fontWeight: 900, color: triedToSubmit && !shippingCostRMB ? '#FF3B30' : 'inherit' }} />
+                 </div>
+                 <div className={triedToSubmit && !estimatedDeliveryDate ? 'shake' : ''} style={{ padding: '24px', background: triedToSubmit && !estimatedDeliveryDate ? 'rgba(255,59,48,0.05)' : '#F9F9F9', borderRadius: '28px', border: triedToSubmit && !estimatedDeliveryDate ? '1px dashed #FF3B30' : '1px solid transparent' }}>
+                    <p className="cyber-label" style={{ fontSize: '7px', marginBottom: '8px', opacity: 0.5, color: triedToSubmit && !estimatedDeliveryDate ? '#FF3B30' : 'inherit' }}>DELIVERY / 预计送达</p>
+                    <input type="date" value={estimatedDeliveryDate} onChange={e => setEstimatedDeliveryDate(e.target.value)} style={{ width: '100%', background: 'transparent', fontSize: '13px', fontWeight: 900, color: triedToSubmit && !estimatedDeliveryDate ? '#FF3B30' : 'inherit', border: 'none', padding: 0 }} />
+                 </div>
               </div>
 
               <button type="submit" className="btn-main" style={{ background: '#000', color: '#fff' }}>
