@@ -10,6 +10,7 @@ export interface PDFData {
   totals: FinancialTotals;
   status: string;
   goldColor?: string;
+  stoneType?: string;
   weight?: string;
 }
 
@@ -85,11 +86,11 @@ export const generateQuotePDF = async (data: PDFData) => {
   };
 
   drawRow("MÉTAL & ORIGINE", `OR 18K - ${data.goldColor || 'JAUNE'}`, 25, y);
-  drawRow("QUALITÉ PIERRES", "DEF - VVS1 (TYPE IIA)", 110, y);
+  drawRow("QUALITÉ PIERRES", data.stoneType === "Sans Pierre" ? "AUCUNE" : "DEF - VVS1 (TYPE IIA)", 110, y);
   
   y += 18;
   drawRow("TAILLE / DIMENSION", data.size || "SUR MESURE", 25, y);
-  drawRow("POIDS ESTIMÉ", data.weight ? `~ ${data.weight}` : "SUR DEVIS", 110, y);
+  drawRow("POIDS ESTIMÉ", data.weight ? `${data.weight}` : "SUR DEVIS", 110, y);
 
   // 4. INCLUSIONS PILL
   y += 24;

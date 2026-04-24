@@ -327,9 +327,10 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
   const generatePDF = (t: 'QUOTE' | 'INVOICE') => {
     if (!totals || !request) return;
     const data = { 
-      id: request.id, title: request.title, size: request.size, 
+      id: request.id, title: title || request.title, size: size || request.size, 
       sellingPrice: totals.sPrice, totals, status: request.status,
-      imageUrl: request.imageUrl, goldColor: request.goldColor 
+      imageUrl: request.imageUrl, goldColor: request.goldColor,
+      stoneType: request.stoneType, weight: weight || request.estimatedWeight 
     };
     if (t === 'QUOTE') generateQuotePDF(data); else generateInternalInvoicePDF(data);
   };
