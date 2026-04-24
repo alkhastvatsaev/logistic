@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { rtdb, rtdbRef, get, set, push, update } from "@/lib/firebase";
+import { rtdb, rtdbRef, get, set, push, update, storage, storageRef, uploadBytesResumable, getDownloadURL } from "@/lib/firebase";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
-import { CheckCircle, Truck, PackageCheck, ArrowRight, User, MapPin, ChevronLeft, ChevronRight } from "lucide-react";
+import { CheckCircle, Truck, PackageCheck, ArrowRight, User, MapPin, ChevronLeft, ChevronRight, Camera, FileText } from "lucide-react";
 import { TitaneLoader } from "@/components/ui/TitaneLoader";
 
 export default function SupplierPortal({ params }: { params: { token: string } }) {
@@ -24,13 +24,18 @@ export default function SupplierPortal({ params }: { params: { token: string } }
   const [totalCarat, setTotalCarat] = useState("");
   const [shippingCostRMB, setShippingCostRMB] = useState("");
   const [productionTimeDays, setProductionTimeDays] = useState("");
+  const [stoneQuality, setStoneQuality] = useState("");
+  const [goldPurity, setGoldPurity] = useState("18K (750)");
+  const [comments, setComments] = useState("");
   const [estimatedDeliveryDate, setEstimatedDeliveryDate] = useState("");
   const [triedToSubmit, setTriedToSubmit] = useState(false);
   const [showCalendar, setShowCalendar] = useState(false);
   const [calendarView, setCalendarView] = useState({ month: new Date().getMonth(), year: new Date().getFullYear() });
 
-  // Tracking Form State
+  // Tracking & QC State
   const [trackingNumber, setTrackingNumber] = useState("");
+  const [qcMediaUrl, setQCMediaUrl] = useState("");
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   useEffect(() => {
     const fetchTokenAndRequest = async () => {
@@ -87,6 +92,9 @@ export default function SupplierPortal({ params }: { params: { token: string } }
         totalCarat: Number(totalCarat),
         shippingCostRMB: Number(shippingCostRMB),
         productionTimeDays: Number(productionTimeDays),
+        stoneQuality,
+        goldPurity,
+        comments,
         estimatedDeliveryDate,
         createdAt: Date.now()
       });
@@ -114,10 +122,11 @@ export default function SupplierPortal({ params }: { params: { token: string } }
       updates[`requests/${tokenData.requestId}/status`] = "SHIPPED";
       updates[`requests/${tokenData.requestId}/trackingNumber`] = trackingNumber;
       updates[`requests/${tokenData.requestId}/shippedAt`] = Date.now();
+      if (qcMediaUrl) updates[`requests/${tokenData.requestId}/qcMediaUrl`] = qcMediaUrl;
       
       await update(rtdbRef(rtdb), updates);
       setShippingSubmitted(true);
-      toast.success("EXPÉDITION CONFIRMÉE");
+      toast.success("EXPÉDITION ET QC TRANSMIS");
     } catch (error) {
       toast.error("ERREUR MISE À JOUR TRACKING");
     } finally {
@@ -199,6 +208,35 @@ export default function SupplierPortal({ params }: { params: { token: string } }
                    placeholder="Enter FedEx ID..."
                    style={{ width: '100%', background: 'transparent', fontSize: '24px', fontWeight: 900, marginTop: '8px', letterSpacing: '0.05em' }}
                  />
+
+                 <div style={{ marginTop: '32px' }}>
+                    <p className="cyber-label" style={{ marginBottom: '16px' }}>QC PHOTOS / 质检图片</p>
+                    <label style={{ display: 'block', width: '100%', padding: '24px', background: '#fff', borderRadius: '20px', border: '1px dashed rgba(0,0,0,0.1)', textAlign: 'center', cursor: 'pointer' }}>
+                       {uploadProgress > 0 ? (
+                         <span style={{ fontSize: '11px', fontWeight: 900, color: 'var(--accent)' }}>UPLOADING {uploadProgress.toFixed(0)}%</span>
+                       ) : qcMediaUrl ? (
+                         <span style={{ fontSize: '11px', fontWeight: 900, color: '#34C759' }}>MEDIA ATTACHED ✅</span>
+                       ) : (
+                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+                           <Camera size={24} opacity={0.3} />
+                           <span style={{ fontSize: '9px', fontWeight: 900, opacity: 0.4 }}>UPLOAD QC PHOTO/VIDEO</span>
+                         </div>
+                       )}
+                       <input type="file" hidden accept="image/*,video/*" onChange={e => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                             const ref = storageRef(storage, `qc/${tokenData.requestId}/${Date.now()}_${file.name}`);
+                             const task = uploadBytesResumable(ref, file);
+                             task.on('state_changed', s => setUploadProgress((s.bytesTransferred / s.totalBytes) * 100), e => toast.error("Error"), async () => {
+                               const url = await getDownloadURL(task.snapshot.ref);
+                               setQCMediaUrl(url);
+                               setUploadProgress(0);
+                               toast.success("QC MEDIA READY");
+                             });
+                          }
+                       }} />
+                    </label>
+                 </div>
               </div>
               <button onClick={handleShippingSubmit} className="btn-main" style={{ background: 'var(--accent)', color: '#fff' }}>
                  CONFIRM SHIPMENT <ArrowRight size={18} />
@@ -248,6 +286,39 @@ export default function SupplierPortal({ params }: { params: { token: string } }
                        <label className="cyber-label" style={{ fontSize: '7px', opacity: 0.5 }}>DIAMOND COUNT</label>
                        <input type="number" value={diamondCount} onChange={e => setDiamondCount(e.target.value)} placeholder="0" style={{ width: '100%', background: 'transparent', fontSize: '16px', fontWeight: 900, marginTop: '8px', color: triedToSubmit && !diamondCount ? '#FF3B30' : 'inherit' }} />
                     </div>
+                    <div>
+                        <label className="cyber-label" style={{ fontSize: '7px', opacity: 0.5 }}>STONE QUALITY / 净度</label>
+                        <input value={stoneQuality} onChange={e => setStoneQuality(e.target.value)} placeholder="VVS / DEF" style={{ width: '100%', background: 'transparent', fontSize: '16px', fontWeight: 900, marginTop: '8px' }} />
+                    </div>
+                 </div>
+
+                 <div style={{ marginTop: '32px', paddingTop: '32px', borderTop: '1px dotted rgba(0,0,0,0.1)' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                       <div>
+                          <label className="cyber-label" style={{ fontSize: '7px', opacity: 0.5 }}>GOLD PURITY / 成色</label>
+                          <select value={goldPurity} onChange={e => setGoldPurity(e.target.value)} style={{ width: '100%', background: 'transparent', fontSize: '15px', fontWeight: 900, marginTop: '8px' }}>
+                             <option value="18K (750)">18K (750)</option>
+                             <option value="14K (585)">14K (585)</option>
+                             <option value="Platinum (950)">PT950</option>
+                          </select>
+                       </div>
+                       <div>
+                          <label className="cyber-label" style={{ fontSize: '7px', opacity: 0.5 }}>TOTAL CARAT / 总克拉</label>
+                          <input type="number" step="0.01" value={totalCarat} onChange={e => setTotalCarat(e.target.value)} placeholder="0.0" style={{ width: '100%', background: 'transparent', fontSize: '16px', fontWeight: 900, marginTop: '8px' }} />
+                       </div>
+                    </div>
+                 </div>
+              </div>
+
+              <div style={{ padding: '32px', background: '#F9F9F9', borderRadius: '32px' }}>
+                 <p className="cyber-label" style={{ marginBottom: '20px' }}>NOTES / 备注</p>
+                 <textarea 
+                   value={comments}
+                   onChange={e => setComments(e.target.value)}
+                   placeholder="Technical notes..."
+                   style={{ width: '100%', background: 'transparent', border: 'none', resize: 'none', height: '80px', fontSize: '14px', fontWeight: 600, color: '#000' }}
+                 />
+              </div>
                     <div>
                        <label className="cyber-label" style={{ fontSize: '7px', opacity: 0.5 }}>TOTAL CARAT (CT)</label>
                        <input type="number" step="0.01" value={totalCarat} onChange={e => setTotalCarat(e.target.value)} placeholder="0.00" style={{ width: '100%', background: 'transparent', fontSize: '16px', fontWeight: 900, marginTop: '8px', color: triedToSubmit && !totalCarat ? '#FF3B30' : 'inherit' }} />

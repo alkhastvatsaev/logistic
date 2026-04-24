@@ -51,11 +51,19 @@ export default function DeliveryRadar() {
   const ordersForDate = (date: Date) => {
     return requests.filter(r => 
       isSameDay(date, r.deliveryEstimation) || 
-      isSameDay(date, r.productionDeadline)
+      isSameDay(date, r.productionDeadline) ||
+      isSameDay(date, r.qcValidatedAt) ||
+      isSameDay(date, r.shippedAt)
     );
   };
 
   const selectedOrders = useMemo(() => ordersForDate(selectedDate), [requests, selectedDate]);
+
+  const resetToToday = () => {
+    const now = new Date();
+    setCurrentMonth(now);
+    setSelectedDate(now);
+  };
 
   if (loading) return <TitaneLoader />;
 
@@ -66,12 +74,15 @@ export default function DeliveryRadar() {
         <h1 className="cyber-title" style={{ fontSize: '16px', letterSpacing: '-0.08em', marginBottom: '4px' }}>
           CALENDAR<span style={{ color: 'var(--accent)' }}>.</span>
         </h1>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '24px', marginTop: '16px' }}>
-           <button onClick={() => changeMonth(-1)} style={{ background: 'none', border: 'none', opacity: 0.3 }}><ChevronLeft size={20}/></button>
-           <p style={{ fontSize: '10px', fontWeight: 900, letterSpacing: '0.2em', textTransform: 'uppercase' }}>
-             {currentMonth.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}
-           </p>
-           <button onClick={() => changeMonth(1)} style={{ background: 'none', border: 'none', opacity: 0.3 }}><ChevronRight size={20}/></button>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '16px' }}>
+           <button onClick={() => changeMonth(-1)} style={{ width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#F9F9F9', border: 'none', borderRadius: '12px' }}><ChevronLeft size={16}/></button>
+           <div onClick={resetToToday} style={{ textAlign: 'center', cursor: 'pointer' }}>
+              <p style={{ fontSize: '10px', fontWeight: 900, letterSpacing: '0.2em', textTransform: 'uppercase' }}>
+                {currentMonth.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}
+              </p>
+              <p style={{ fontSize: '7px', fontWeight: 900, color: 'var(--accent)', marginTop: '2px', letterSpacing: '0.1em' }}>AUJOURD'HUI</p>
+           </div>
+           <button onClick={() => changeMonth(1)} style={{ width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#F9F9F9', border: 'none', borderRadius: '12px' }}><ChevronRight size={16}/></button>
         </div>
       </header>
 
@@ -140,13 +151,16 @@ export default function DeliveryRadar() {
                 >
                   <Link href={`/requests/${r.id}`} style={{ textDecoration: 'none' }}>
                     <div style={{ padding: '20px', borderRadius: '24px', background: '#F9F9F9', display: 'flex', alignItems: 'center', gap: '16px', border: '1px solid rgba(0,0,0,0.02)' }}>
-                      <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                          <Package size={18} color="var(--accent)" />
+                      <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: isSameDay(selectedDate, r.shippedAt) ? '#4D148C' : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                          <Package size={18} color={isSameDay(selectedDate, r.shippedAt) ? '#fff' : "var(--accent)"} />
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
                           <h3 style={{ fontSize: '13px', fontWeight: 900, color: '#000', margin: 0 }}>{r.title}</h3>
                           <p style={{ fontSize: '9px', fontWeight: 700, color: 'var(--faded)', marginTop: '4px', textTransform: 'uppercase' }}>
-                            {isSameDay(selectedDate, r.deliveryEstimation) ? 'DELIVERY STRASBOURG' : 'FACTORY DEADLINE'}
+                            {isSameDay(selectedDate, r.deliveryEstimation) && 'LIVRAISON STRASBOURG'}
+                            {isSameDay(selectedDate, r.productionDeadline) && 'DEADLINE USINE'}
+                            {isSameDay(selectedDate, r.qcValidatedAt) && 'QC VALIDÉ'}
+                            {isSameDay(selectedDate, r.shippedAt) && 'EXPÉDITION FEDEX'}
                           </p>
                       </div>
                       <ChevronRight size={16} opacity={0.1} />

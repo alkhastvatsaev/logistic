@@ -6,7 +6,7 @@ import { useRequestDetail } from "@/hooks/useFirebase";
 import { motion, AnimatePresence } from "framer-motion";
 import { calculateFinancialTotals, calculateDeliveryDates } from "@/lib/logic";
 export const dynamic = "force-dynamic";
-import { ArrowLeft, Trash2, ChevronRight, FileText, Copy, Check, Pencil, Save, Plus, Calculator, Truck, Package, Plane, Loader2, UploadCloud } from "lucide-react";
+import { ArrowLeft, Trash2, ChevronRight, FileText, Copy, Check, Pencil, Save, Plus, Calculator, Truck, Package, Plane, Loader2, UploadCloud, RotateCcw, LayoutGrid } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { generateQuotePDF, generateInternalInvoicePDF } from "@/lib/pdf";
 import { toast } from "sonner";
@@ -32,7 +32,8 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
   const [showLinkModal, setShowLinkModal] = useState(false);
 
   const acceptedQuote = quotes.find(q => q.id === request?.acceptedQuoteId);
-  const totals = calculateFinancialTotals(acceptedQuote, sellingPrice, payments, liveRate);
+  const bestQuote = quotes.length > 0 ? [...quotes].sort((a,b) => a.priceRMB - b.priceRMB)[0] : undefined;
+  const totals = calculateFinancialTotals(acceptedQuote || bestQuote, sellingPrice, payments, liveRate);
 
   useEffect(() => {
     import("@/lib/logic").then(logic => logic.fetchLiveRate().then(setLiveRate));
@@ -312,7 +313,7 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
       
       <div style={{ position: 'relative', height: '440px', background: '#fff', overflow: 'hidden' }}>
          <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
-           {request.imageUrl && <SmartImage src={request.imageUrl} style={{ width: '100%', height: '100%' }} />}
+            {request.imageUrl && <SmartImage src={request.imageUrl} style={{ width: '100%', height: '100%' }} />}
          </div>
          
          <div style={{ position: 'absolute', top: '48px', left: '32px', right: '32px', display: 'flex', justifyContent: 'space-between', zIndex: 10 }}>
@@ -389,72 +390,82 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
          </div>
 
          <div style={{ padding: '32px', background: '#fff', borderRadius: '40px', border: '1px solid rgba(0,0,0,0.04)', marginBottom: '48px', boxShadow: '0 10px 30px rgba(0,0,0,0.02)' }}>
-            <span className="cyber-label">PRIX DE VENTE TOTAL (TTC)</span>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginTop: '12px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+               <span className="cyber-label">FINANCE AUDIT / 利益分配</span>
+               {!acceptedQuote && bestQuote && <span style={{ fontSize: '9px', fontWeight: 900, color: 'var(--accent)', background: 'var(--accent-glow)', padding: '4px 8px', borderRadius: '6px' }}>PROJECTION (BEST RMB)</span>}
+            </div>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
                <input type="number" value={sellingPrice} onChange={(e) => { setSellingPrice(e.target.value); saveField('sellingPrice', parseFloat(e.target.value) || 0); }} style={{ fontSize: '48px', fontWeight: 900, background: '#F9F9F9', border: 'none', width: '100%', maxWidth: '220px', padding: '8px 16px', borderRadius: '16px' }} />
                <span style={{ fontSize: '24px', fontWeight: 900 }}>€</span>
             </div>
             {totals && (
                <div style={{ marginTop: '32px', paddingTop: '32px', borderTop: '1px dotted rgba(0,0,0,0.1)', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
-                  <div><span className="cyber-label">PROFIT ADAM (50%)</span><div style={{ fontSize: '24px', fontWeight: 900 }}>{totals.adamPart.toFixed(0)}€</div></div>
-                  <div style={{ textAlign: 'right' }}><span className="cyber-label">PROFIT MIRZA (50%)</span><div style={{ fontSize: '24px', fontWeight: 900 }}>{totals.mirzaPart.toFixed(0)}€</div></div>
+                  <div>
+                    <span className="cyber-label" style={{ color: 'var(--accent)' }}>PROFITS ADAM (50%)</span>
+                    <div style={{ fontSize: '24px', fontWeight: 900 }}>{totals.adamPart.toFixed(0)}€</div>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <span className="cyber-label" style={{ color: 'var(--accent)' }}>PROFITS MIRZA (50%)</span>
+                    <div style={{ fontSize: '24px', fontWeight: 900 }}>{totals.mirzaPart.toFixed(0)}€</div>
+                  </div>
                </div>
             )}
+            {!totals && <p style={{ fontSize: '11px', fontWeight: 600, opacity: 0.3, marginTop: '12px' }}>En attente de devis pour calcul...</p>}
          </div>
 
          {quotes.length > 0 && (
-           <div style={{ marginBottom: '64px' }}>
-             <span className="cyber-label">SUPPLIER OFFERS ({quotes.length})</span>
-             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '16px' }}>
-                {quotes.map(q => (
-                  <motion.div key={q.id} whileTap={{ scale: 0.98 }} onClick={() => request.acceptedQuoteId === q.id ? handleUnselectQuote() : handleAcceptQuote(q)}
-                     style={{ padding: '24px', borderRadius: '32px', background: request.acceptedQuoteId === q.id ? 'var(--accent)' : '#fff', border: '1px solid rgba(0,0,0,0.05)', color: request.acceptedQuoteId === q.id ? '#fff' : '#000', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div style={{ flex: 1 }}>
-                       <p className="cyber-label" style={{ color: 'inherit' }}>{q.supplierName || 'FACTORY'}</p>
-                       <div style={{ fontSize: '22px', fontWeight: 900 }}>{q.priceRMB} ¥</div>
-                       <div style={{ fontSize: '10px', opacity: 0.5, fontWeight: 800 }}>OR: {q.goldWeight}g / PIERRES: {q.diamondCount}</div>
-                    </div>
-                    {request.acceptedQuoteId === q.id ? <Check size={20} strokeWidth={3} /> : <Plus size={20} strokeWidth={3} style={{ opacity: 0.2 }} />}
-                  </motion.div>
-                ))}
-             </div>
-           </div>
-         )}
+            <div style={{ marginBottom: '64px' }}>
+              <span className="cyber-label">SUPPLIER OFFERS ({quotes.length})</span>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '16px' }}>
+                 {quotes.map(q => (
+                   <motion.div key={q.id} whileTap={{ scale: 0.98 }} onClick={() => request.acceptedQuoteId === q.id ? handleUnselectQuote() : handleAcceptQuote(q)}
+                      style={{ padding: '24px', borderRadius: '32px', background: request.acceptedQuoteId === q.id ? 'var(--accent)' : '#fff', border: '1px solid rgba(0,0,0,0.05)', color: request.acceptedQuoteId === q.id ? '#fff' : '#000', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                     <div style={{ flex: 1 }}>
+                        <p className="cyber-label" style={{ color: 'inherit' }}>{q.supplierName || 'FACTORY'}</p>
+                        <div style={{ fontSize: '22px', fontWeight: 900 }}>{q.priceRMB} ¥</div>
+                        <div style={{ fontSize: '10px', opacity: 0.5, fontWeight: 800 }}>OR: {q.goldWeight}g ({q.goldPurity || '18K'}) / {q.stoneQuality || 'STONES'}: {q.diamondCount} ({q.totalCarat}ct)</div>
+                     </div>
+                     {request.acceptedQuoteId === q.id ? <Check size={20} strokeWidth={3} /> : <Plus size={20} strokeWidth={3} style={{ opacity: 0.2 }} />}
+                   </motion.div>
+                 ))}
+              </div>
+            </div>
+          )}
 
          {request.status === 'SHIPPED' && request.trackingNumber && (
-           <div style={{ marginBottom: '48px', padding: '32px', background: '#4D148C', borderRadius: '40px', color: '#fff', position: 'relative', overflow: 'hidden' }}>
-              <div style={{ position: 'relative', zIndex: 2 }}>
-                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '32px' }}>
-                    <div style={{ background: '#fff', padding: '4px 10px', borderRadius: '8px' }}><span style={{ color: '#4D148C', fontWeight: 900 }}>Fed</span><span style={{ color: '#FF6600', fontWeight: 900 }}>Ex</span></div>
-                    <div style={{ fontSize: '9px', fontWeight: 900 }}>{request.trackingStatus || 'EN ROUTE'}</div>
-                 </div>
-                 <div style={{ padding: '24px', background: 'rgba(255,255,255,0.05)', borderRadius: '24px' }}>
-                    <p style={{ fontSize: '14px', fontWeight: 900 }}>{request.lastLocation || 'Scan Hub...'}</p>
-                    <p style={{ fontSize: '11px', opacity: 0.6, marginTop: '4px' }}>{request.lastUpdateDate || 'Chargement...'}</p>
-                 </div>
-                 <div style={{ display: 'flex', gap: '12px', marginTop: '32px' }}>
-                    <button onClick={() => setShowEmailImport(true)} style={{ flex: 1, padding: '14px', borderRadius: '16px', background: 'transparent', border: '1px solid #fff', color: '#fff', fontSize: '11px', fontWeight: 900 }}>IMPORT EMAIL</button>
-                    <button onClick={() => syncTracking()} disabled={isSyncing} style={{ flex: 1, padding: '14px', borderRadius: '16px', background: '#fff', color: '#4D148C', border: 'none', fontWeight: 900 }}>{isSyncing ? '...' : 'REFRESH'}</button>
-                 </div>
-              </div>
-           </div>
+            <div style={{ marginBottom: '48px', padding: '32px', background: '#4D148C', borderRadius: '40px', color: '#fff', position: 'relative', overflow: 'hidden' }}>
+               <div style={{ position: 'relative', zIndex: 2 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '32px' }}>
+                     <div style={{ background: '#fff', padding: '4px 10px', borderRadius: '8px' }}><span style={{ color: '#4D148C', fontWeight: 900 }}>Fed</span><span style={{ color: '#FF6600', fontWeight: 900 }}>Ex</span></div>
+                     <div style={{ fontSize: '9px', fontWeight: 900 }}>{request.trackingStatus || 'EN ROUTE'}</div>
+                  </div>
+                  <div style={{ padding: '24px', background: 'rgba(255,255,255,0.05)', borderRadius: '24px' }}>
+                     <p style={{ fontSize: '14px', fontWeight: 900 }}>{request.lastLocation || 'Scan Hub...'}</p>
+                     <p style={{ fontSize: '11px', opacity: 0.6, marginTop: '4px' }}>{request.lastUpdateDate || 'Chargement...'}</p>
+                  </div>
+                  <div style={{ display: 'flex', gap: '12px', marginTop: '32px' }}>
+                     <button onClick={() => setShowEmailImport(true)} style={{ flex: 1, padding: '14px', borderRadius: '16px', background: 'transparent', border: '1px solid #fff', color: '#fff', fontSize: '11px', fontWeight: 900 }}>IMPORT EMAIL</button>
+                     <button onClick={() => syncTracking()} disabled={isSyncing} style={{ flex: 1, padding: '14px', borderRadius: '16px', background: '#fff', color: '#4D148C', border: 'none', fontWeight: 900 }}>{isSyncing ? '...' : 'REFRESH'}</button>
+                  </div>
+               </div>
+            </div>
          )}
 
          <div style={{ marginBottom: '64px', paddingLeft: '8px' }}>
             <span className="cyber-label">LOGISTICS PIPELINE</span>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginTop: '16px' }}>
                {steps.map(step => {
-                 const currentIdx = statusOrder.indexOf(request.status);
-                 const stepIdx = Math.max(...step.statusMatch.map(s => statusOrder.indexOf(s)));
-                 const isCompleted = currentIdx > stepIdx;
-                 const isActive = step.statusMatch.includes(request.status);
-                 return (
-                   <div key={step.id} style={{ display: 'flex', alignItems: 'center', gap: '20px', opacity: (isActive || isCompleted) ? 1 : 0.15 }}>
-                     <div style={{ width: '8px', height: '8px', borderRadius: '4px', background: (isActive || isCompleted) ? 'var(--accent)' : '#000' }} />
-                     <div style={{ flex: 1 }}><span style={{ fontSize: '12px', fontWeight: 900, textTransform: 'uppercase', color: isActive ? 'var(--accent)' : '#000' }}>{step.label}</span></div>
-                     {step.date && <span style={{ fontSize: '10px', fontWeight: 800, opacity: 0.4 }}>{step.date.toUpperCase()}</span>}
-                   </div>
-                 );
+                  const currentIdx = statusOrder.indexOf(request.status);
+                  const stepIdx = Math.max(...step.statusMatch.map(s => statusOrder.indexOf(s)));
+                  const isCompleted = currentIdx > stepIdx;
+                  const isActive = step.statusMatch.includes(request.status);
+                  return (
+                    <div key={step.id} style={{ display: 'flex', alignItems: 'center', gap: '20px', opacity: (isActive || isCompleted) ? 1 : 0.15 }}>
+                      <div style={{ width: '8px', height: '8px', borderRadius: '4px', background: (isActive || isCompleted) ? 'var(--accent)' : '#000' }} />
+                      <div style={{ flex: 1 }}><span style={{ fontSize: '12px', fontWeight: 900, textTransform: 'uppercase', color: isActive ? 'var(--accent)' : '#000' }}>{step.label}</span></div>
+                      {step.date && <span style={{ fontSize: '10px', fontWeight: 800, opacity: 0.4 }}>{step.date.toUpperCase()}</span>}
+                    </div>
+                  );
                })}
             </div>
          </div>
@@ -462,7 +473,9 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
 
       <VisionPill width="calc(100% - 64px)">
          <div style={{ display: 'flex', borderRight: '1px solid rgba(255,255,255,0.1)', paddingRight: '12px', gap: '8px' }}>
-            <motion.button whileTap={{ scale: 0.85 }} className="vision-action" onClick={() => router.back()}><ArrowLeft size={18} /></motion.button>
+            <motion.button whileTap={{ scale: 0.85 }} className="vision-action" onClick={() => router.push('/')} title="Retour Dashboard">
+               <LayoutGrid size={20} />
+            </motion.button>
             {statusOrder.indexOf(request.status) > 0 && (
                <motion.button 
                  whileTap={{ scale: 0.85 }} 
@@ -472,8 +485,9 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
                    setPrevStageName(prev.replace(/_/g, ' '));
                    setShowBackModal(true);
                  }}
+                 title="Étape Précédente"
                >
-                 <ArrowLeft size={18} style={{ opacity: 0.4, transform: 'rotate(180deg)' }} />
+                 <RotateCcw size={18} style={{ color: '#FF3B30' }} />
                </motion.button>
             )}
          </div>
@@ -485,8 +499,9 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
             {request.status === 'FINAL_PAYMENT' && <motion.button whileTap={{ scale: 0.95 }} className="vision-action active primary" onClick={() => handleBalancePayment()}><Calculator size={18} /> BALANCE</motion.button>}
             {request.status === 'SHIPPED' && <motion.button whileTap={{ scale: 0.95 }} className="vision-action active primary" onClick={() => update(rtdbRef(rtdb, `requests/${params.id}`), { status: 'DELIVERED' })}><Check size={18} /> DELIVERED</motion.button>}
          </div>
-         <div style={{ display: 'flex', borderLeft: '1px solid rgba(255,255,255,0.1)', paddingLeft: '12px' }}>
-            <motion.button whileTap={{ scale: 0.85 }} className="vision-action" onClick={() => generatePDF('QUOTE')}><FileText size={20} /></motion.button>
+         <div style={{ display: 'flex', borderLeft: '1px solid rgba(255,255,255,0.1)', paddingLeft: '12px', gap: '8px' }}>
+            <motion.button whileTap={{ scale: 0.85 }} className="vision-action" onClick={() => generatePDF('QUOTE')} title="PROFORMA DEVIS"><FileText size={20} /></motion.button>
+            <motion.button whileTap={{ scale: 0.85 }} className="vision-action" onClick={() => generatePDF('INVOICE')} title="AUDIT FINANCE"><Calculator size={20} /></motion.button>
          </div>
       </VisionPill>
 
@@ -496,7 +511,13 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
              <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} style={{ width: '100%', maxWidth: '400px', background: '#fff', borderRadius: '40px', padding: '40px' }}>
                 <h2 style={{ fontSize: '20px', fontWeight: 900 }}>QUALITY CONTROL</h2>
                 <div style={{ marginTop: '24px' }}>
-                   <input type="file" accept="image/*,video/*" onChange={(e) => e.target.files?.[0] && handleUpload(e.target.files[0])} />
+                   {uploadProgress > 0 ? (
+                      <div style={{ width: '100%', height: '8px', background: '#F9F9F9', borderRadius: '4px', overflow: 'hidden' }}>
+                         <div style={{ width: `${uploadProgress}%`, height: '100%', background: 'var(--accent)', transition: 'width 0.3s ease' }} />
+                      </div>
+                   ) : (
+                      <input type="file" accept="image/*,video/*" onChange={(e) => e.target.files?.[0] && handleUpload(e.target.files[0])} />
+                   )}
                 </div>
                 <button onClick={() => setShowQCModal(false)} style={{ width: '100%', marginTop: '24px', padding: '16px', borderRadius: '14px', border: 'none', background: '#F9F9F9', fontWeight: 900 }}>ANNULER</button>
              </motion.div>
