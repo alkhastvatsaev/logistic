@@ -319,12 +319,6 @@ export default function SupplierPortal({ params }: { params: { token: string } }
                    style={{ width: '100%', background: 'transparent', border: 'none', resize: 'none', height: '80px', fontSize: '14px', fontWeight: 600, color: '#000' }}
                  />
               </div>
-                    <div>
-                       <label className="cyber-label" style={{ fontSize: '7px', opacity: 0.5 }}>TOTAL CARAT (CT)</label>
-                       <input type="number" step="0.01" value={totalCarat} onChange={e => setTotalCarat(e.target.value)} placeholder="0.00" style={{ width: '100%', background: 'transparent', fontSize: '16px', fontWeight: 900, marginTop: '8px', color: triedToSubmit && !totalCarat ? '#FF3B30' : 'inherit' }} />
-                    </div>
-                 </div>
-              </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                  <div className={triedToSubmit && !shippingCostRMB ? 'shake' : ''} style={{ padding: '24px', background: triedToSubmit && !shippingCostRMB ? 'rgba(255,59,48,0.05)' : '#F9F9F9', borderRadius: '28px', border: triedToSubmit && !shippingCostRMB ? '1px dashed #FF3B30' : '1px solid transparent' }}>
