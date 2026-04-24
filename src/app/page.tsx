@@ -1,11 +1,11 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Plus, ChevronRight, Package, AlertCircle } from "lucide-react";
+import { Plus, ChevronRight, Package, AlertCircle, Quote } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { toast } from "sonner";
 import Link from "next/link";
-import { useAllRequests } from "@/hooks/useFirebase";
+import { useAllRequests, useAllQuotes } from "@/hooks/useFirebase";
 import { getRelativeTime } from "@/lib/logic";
 import { VisionPill } from "@/components/ui/VisionPill";
 import { TitaneLoader } from "@/components/ui/TitaneLoader";
@@ -15,6 +15,7 @@ export type RequestStatus = "DRAFT" | "WAITING_FOR_QUOTE" | "QUOTED" | "MANAGER_
 
 export default function Dashboard() {
   const { requests, loading } = useAllRequests();
+  const allQuotes = useAllQuotes();
   const prevStatuses = useRef<Record<string, string>>({});
 
   useEffect(() => {
@@ -27,7 +28,6 @@ export default function Dashboard() {
             icon: <AlertCircle />,
             duration: 5000
           });
-          // Play a subtle sound if possible or vibrate
           if (navigator.vibrate) navigator.vibrate(200);
         }
         prevStatuses.current[r.id] = r.status;
@@ -43,122 +43,90 @@ export default function Dashboard() {
   return (
     <div className="layout" style={{ background: '#fff' }}>
       
-      {/* 2030 SPATIAL HEADER (COMPACT TOP-LEFT) */}
+      {/* SPATIAL HEADER */}
       <motion.div 
-        initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-        style={{ position: 'sticky', top: 0, zIndex: 100, padding: '20px 32px 10px 32px', background: 'rgba(255, 255, 255, 0.9)', backdropFilter: 'blur(30px)', WebkitBackdropFilter: 'blur(30px)', pointerEvents: 'none' }}
+        initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}
+        style={{ position: 'sticky', top: 0, zIndex: 100, padding: '24px 32px', background: 'rgba(255, 255, 255, 0.9)', backdropFilter: 'blur(30px)', borderBottom: '1px solid rgba(0,0,0,0.02)' }}
       >
-        <h1 className="cyber-title" style={{ fontSize: '16px', letterSpacing: '-0.08em', textAlign: 'left' }}>
+        <h1 className="cyber-title" style={{ fontSize: '18px', letterSpacing: '-0.08em' }}>
           LOG<span style={{ color: 'var(--accent)' }}>IS.</span>
         </h1>
       </motion.div>
 
       {/* ACTIVE LIST STREAM */}
-      <div style={{ padding: '0 32px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          {activeRequests.map((r, i) => (
-             <motion.div 
-               key={r.id} 
-               initial={{ opacity: 0, y: 20 }} 
-               animate={{ opacity: 1, y: 0 }} 
-               whileTap={{ scale: 0.97 }}
-               transition={{ duration: 0.8, delay: i * 0.05, ease: [0.16, 1, 0.3, 1] }} 
-             >
-               <Link href={`/requests/${r.id}`} style={{ textDecoration: 'none' }}>
-                 <div style={{ 
-                   padding: '16px', borderRadius: '32px', background: '#fff', border: '1px solid rgba(0,0,0,0.04)',
-                   display: 'flex', alignItems: 'center', gap: '20px', boxShadow: '0 10px 30px rgba(0,0,0,0.015)'
-                 }}>
-                    {r.imageUrl ? (
-                      <div style={{ width: '80px', height: '80px', borderRadius: '22px', overflow: 'hidden', flexShrink: 0, background: '#F9F9F9' }}>
-                        <img src={r.imageUrl} alt={r.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                      </div>
-                    ) : (
-                      <div style={{ width: '80px', height: '80px', borderRadius: '22px', background: '#F9F9F9', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                        <Package size={28} color="rgba(0,0,0,0.1)" strokeWidth={1.5} />
-                      </div>
-                    )}
-                    
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                            <div style={{ 
-                              width: '8px', height: '8px', borderRadius: '4px', 
-                              background: r.goldColor === "Or Jaune" ? "#F5D061" : (r.goldColor === "Or Rose" ? "#E7A78B" : "#E5E5E5"),
-                              boxShadow: '0 0 10px rgba(0,0,0,0.05)'
-                            }} />
-                            <div style={{ flex: 1 }}>
-                                <h3 style={{ fontSize: '18px', fontWeight: 900, color: '#000', margin: 0, letterSpacing: '-0.05em', textTransform: 'uppercase' }}>
-                                  {r.title}
-                                </h3>
-                                <p style={{ fontSize: '9px', fontWeight: 700, color: 'var(--faded)', marginTop: '1px', textTransform: 'uppercase' }}>
-                                  CRÉÉ LE {new Date(r.createdAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })}
-                                </p>
-                            </div>
-                            {['QUOTED', 'FINAL_PAYMENT'].includes(r.status) && (
-                                <motion.div 
-                                    animate={{ opacity: [0.4, 1, 0.4] }} 
-                                    transition={{ repeat: Infinity, duration: 2 }}
-                                    style={{ marginLeft: 'auto', background: 'var(--accent)', color: '#fff', padding: '4px 8px', borderRadius: '8px', fontSize: '8px', fontWeight: 900, letterSpacing: '0.05em' }}
-                                >
-                                    ACTION REQUIRED
-                                </motion.div>
-                            )}
-                        </div>
-                        
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px' }}>
-                            <span style={{ fontSize: '10px', fontWeight: 900, color: 'var(--accent)', background: 'var(--accent-glow)', padding: '4px 10px', borderRadius: '100px', boxShadow: ['QUOTED', 'FINAL_PAYMENT'].includes(r.status) ? '0 0 15px var(--accent)' : 'none' }}>{r.category?.toUpperCase() || 'INFO'}</span>
-                            <span style={{ fontSize: '10px', fontWeight: 800, color: 'var(--faded)' }}>{r.size || 'STD'}</span>
-                            {r.estimatedWeight && <span style={{ fontSize: '10px', fontWeight: 800, color: 'var(--faded)' }}>• {r.estimatedWeight}</span>}
-                        </div>
-
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '12px' }}>
-                            <div style={{ width: '6px', height: '6px', borderRadius: '3px', background: r.status === 'WAITING_FOR_QUOTE' ? '#FF9500' : (['QUOTED', 'FINAL_PAYMENT'].includes(r.status) ? 'var(--accent)' : 'var(--faded)'), opacity: 1 }} />
-                            <span style={{ fontSize: '9px', fontWeight: 900, color: ['QUOTED', 'FINAL_PAYMENT'].includes(r.status) ? 'var(--accent)' : 'var(--faded)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{r.status.replace(/_/g, ' ')}</span>
-                            <span style={{ fontSize: '9px', fontWeight: 800, color: 'rgba(0,0,0,0.1)', marginLeft: 'auto' }}>{getRelativeTime(r.createdAt)}</span>
-                        </div>
+      <div style={{ padding: '0 32px', display: 'flex', flexDirection: 'column', gap: '16px', marginTop: '32px' }}>
+          {activeRequests.map((r, i) => {
+             const quotesForReq = allQuotes[r.id] ? Object.values(allQuotes[r.id]) : [];
+             const bestPrice = quotesForReq.length > 0 ? Math.min(...quotesForReq.map((q: any) => q.priceRMB)) : null;
+             
+             return (
+              <motion.div 
+                key={r.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} whileTap={{ scale: 0.97 }}
+                transition={{ duration: 0.8, delay: i * 0.05, ease: [0.16, 1, 0.3, 1] }} 
+              >
+                <Link href={`/requests/${r.id}`} style={{ textDecoration: 'none' }}>
+                  <div style={{ 
+                    padding: '24px', borderRadius: '40px', background: '#fff', border: '1px solid rgba(0,0,0,0.04)',
+                    display: 'flex', flexDirection: 'column', gap: '20px', boxShadow: '0 10px 40px rgba(0,0,0,0.02)'
+                  }}>
+                    <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+                       <div style={{ width: '64px', height: '64px', borderRadius: '24px', overflow: 'hidden', flexShrink: 0, background: '#F9F9F9' }}>
+                          {r.imageUrl ? <img src={r.imageUrl} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" /> : <Package size={24} color="rgba(0,0,0,0.1)" />}
+                       </div>
+                       <div style={{ flex: 1, minWidth: 0 }}>
+                          <h3 style={{ fontSize: '17px', fontWeight: 900, color: '#000', margin: 0, letterSpacing: '-0.04em', textTransform: 'uppercase' }}>{r.title}</h3>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
+                             <div style={{ width: '8px', height: '8px', borderRadius: '4px', background: r.goldColor === "Or Jaune" ? "#F5D061" : (r.goldColor === "Or Rose" ? "#E7A78B" : "#E5E5E5") }} />
+                             <span style={{ fontSize: '10px', fontWeight: 800, color: 'var(--faded)' }}>{r.brand?.toUpperCase()} • {r.size}</span>
+                          </div>
+                       </div>
+                       <ChevronRight size={18} color="rgba(0,0,0,0.1)" />
                     </div>
-                 </div>
+
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid rgba(0,0,0,0.03)', paddingTop: '16px' }}>
+                       <div style={{ display: 'flex', gap: '12px' }}>
+                          <span style={{ fontSize: '9px', fontWeight: 900, color: 'var(--accent)', background: 'var(--accent-glow)', padding: '5px 10px', borderRadius: '100px' }}>{r.status.replace(/_/g, ' ')}</span>
+                          {quotesForReq.length > 0 && (
+                             <span style={{ fontSize: '9px', fontWeight: 900, color: '#000', background: '#F9F9F9', padding: '5px 10px', borderRadius: '100px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                <Quote size={10} /> {quotesForReq.length}
+                             </span>
+                          )}
+                       </div>
+                       {bestPrice && (
+                          <div style={{ fontSize: '12px', fontWeight: 900 }}>{bestPrice} ¥ <span style={{ opacity: 0.4, fontSize: '9px' }}>BEST</span></div>
+                       )}
+                    </div>
+                  </div>
                 </Link>
-             </motion.div>
-          ))}
+              </motion.div>
+             );
+          })}
       </div>
 
-      {/* COMPLETED SECTION (GREEN ZONE) */}
+      {/* ARCHIVES */}
       {completedRequests.length > 0 && (
          <div style={{ marginTop: '64px', padding: '0 32px', paddingBottom: '160px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px', paddingLeft: '12px' }}>
                <div style={{ width: '20px', height: '4px', borderRadius: '2px', background: '#34C759' }} />
-               <span style={{ fontSize: '10px', fontWeight: 900, letterSpacing: '0.2em', color: '#177132', textTransform: 'uppercase' }}>ARCHIVES</span>
-               <div style={{ marginLeft: 'auto', background: 'rgba(52, 199, 89, 0.1)', color: '#177132', padding: '6px 12px', borderRadius: '100px', fontSize: '10px', fontWeight: 900 }}>{completedRequests.length}</div>
+               <span className="cyber-label" style={{ color: '#177132' }}>ARCHIVES / HISTORIQUE ({completedRequests.length})</span>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                {completedRequests.map((r) => (
-                  <motion.div key={r.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} whileTap={{ scale: 0.98 }}>
-                     <Link href={`/requests/${r.id}`} style={{ textDecoration: 'none' }}>
-                        <div style={{ 
-                          padding: '16px', borderRadius: '28px', background: '#F2FBF4', border: '1px solid rgba(52, 199, 89, 0.05)',
-                          display: 'flex', alignItems: 'center', gap: '16px', opacity: 0.7
-                        }}>
-                           {r.imageUrl ? (
-                             <img src={r.imageUrl} style={{ width: '56px', height: '56px', borderRadius: '16px', objectFit: 'cover' }} alt="" />
-                           ) : (
-                             <div style={{ width: '56px', height: '56px', borderRadius: '16px', background: 'rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Package size={18} opacity={0.2} /></div>
-                           )}
-                           <div style={{ flex: 1 }}>
-                              <h4 style={{ fontSize: '15px', fontWeight: 900, color: '#177132', margin: 0, letterSpacing: '-0.04em' }}>{r.title.toUpperCase()}</h4>
-                              <p style={{ fontSize: '9px', fontWeight: 800, color: '#177132', opacity: 0.4, marginTop: '4px', textTransform: 'uppercase' }}>ARCHIVED {new Date(r.deliveredAt || r.updatedAt).toLocaleDateString()}</p>
-                           </div>
-                           <div style={{ color: '#34C759', marginRight: '8px' }}><Package size={16} /></div>
-                        </div>
-                     </Link>
-                  </motion.div>
+                  <Link key={r.id} href={`/requests/${r.id}`} style={{ textDecoration: 'none' }}>
+                    <div style={{ padding: '16px', borderRadius: '28px', background: '#F2FBF4', display: 'flex', alignItems: 'center', gap: '16px', opacity: 0.7 }}>
+                       {r.imageUrl ? <img src={r.imageUrl} style={{ width: '48px', height: '48px', borderRadius: '16px', objectFit: 'cover' }} alt="" /> : <Package size={18} opacity={0.2} />}
+                       <h4 style={{ fontSize: '14px', fontWeight: 900, color: '#177132', margin: 0 }}>{r.title.toUpperCase()}</h4>
+                       <Check size={14} color="#34C759" style={{ marginLeft: 'auto' }} />
+                    </div>
+                  </Link>
                ))}
             </div>
          </div>
       )}
 
       <VisionPill width="calc(100% - 64px)">
-         <Link href="/radar" className="vision-action" style={{ textDecoration: 'none' }}>CALENDAR</Link>
+         <Link href="/radar" className="vision-action" style={{ textDecoration: 'none' }}>RADAR</Link>
          <Link href="/requests/new" className="vision-action accent" style={{ textDecoration: 'none' }}>
             <Plus size={18} strokeWidth={3} /> NEW
          </Link>
@@ -166,4 +134,8 @@ export default function Dashboard() {
 
     </div>
   );
+}
+
+function Check({ size, color, style }: any) {
+   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={style}><polyline points="20 6 9 17 4 12" /></svg>;
 }

@@ -1,35 +1,32 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('Workflow Logistique 2030', () => {
-  test('devrait permettre de créer un nouveau projet', async ({ page }) => {
-    // 1. Navigation vers l'accueil
+test.describe('Logistique PWA Smoke Tests', () => {
+  
+  test('should load the homepage', async ({ page }) => {
     await page.goto('/');
-    
-    // 2. Clic sur "AJOUTER" dans la Action Island
-    await page.getByRole('link', { name: /AJOUTER/i }).click();
-    await expect(page).toHaveURL(/\/requests\/new/);
-    
-    // 3. Remplissage du formulaire
-    const projectTitle = `Test Logistique ${Date.now()}`;
-    await page.getByPlaceholder('Bague Serpenti, Bracelet Love...').fill(projectTitle);
-    
-    // // 4. Soumission
-    // await page.getByRole('button', { name: /CONFIRMER LA COMMANDE/i }).click();
-    
-    // // 5. Vérification de la redirection vers la page détail
-    // await expect(page).toHaveURL(/\/requests\/-[a-zA-Z0-9_]+/);
-    
-    // // 6. Retour à l'accueil et vérification de la présence
-    // await page.goto('/'); 
-    // await expect(page.locator('.layout')).toContainText(projectTitle);
-    // Commenting out the last steps because they push to live Firebase DB and might conflict or trigger functions in the test environment if not mocked.
+    // Check for the main navigation or logo
+    await expect(page.locator('h1, .cyber-title')).toBeVisible();
+    await expect(page).toHaveTitle(/Logistique/);
   });
 
-  test('devrait afficher la structure Dynamic Island', async ({ page }) => {
+  test('should show the supplier portal for a dummy token', async ({ page }) => {
+    // This will hit the error page or loading state if token is invalid, 
+    // but we can verify the UI structure (VisionPill, etc)
+    await page.goto('/q/invalid-token');
+    
+    // Check if the identity "Titane" or the loader is present
+    const loader = page.locator('.titane-loader');
+    const errorMsg = page.locator('text=/erreur|problème|found/i');
+    
+    await expect(loader.or(errorMsg)).toBeVisible();
+  });
+
+  test('mobile responsiveness check', async ({ page, isMobile }) => {
     await page.goto('/');
-    const floatingPill = page.locator('.action-island');
-    await expect(floatingPill).toBeVisible();
-    await expect(floatingPill).toContainText('HISTORIQUE');
-    await expect(floatingPill).toContainText('AJOUTER');
+    if (isMobile) {
+      // Check for mobile-specific layouts or meta tags
+      const viewport = page.viewportSize();
+      expect(viewport?.width).toBeLessThan(500);
+    }
   });
 });

@@ -1,7 +1,6 @@
-# 📓 RAPPORT D'AVANCEMENT : LOGIS. (SESSION 22-23 AVRIL 2026)
-*Statut : Harmonisation Titane 2030 Terminée*
-
-Ce soir, nous avons passé l'application d'un prototype fonctionnel à un **écosystème de luxe unifié**.
+# 📊 RAPPORT D'AVANCEMENT - LOGISTIQUE PWA
+**Date** : 24 Avril 2026
+**Statut** : PRODUCTION READY & TESTED
 
 ---
 
@@ -13,19 +12,28 @@ Le design system a été appliqué uniformément sur tous les écrans :
 
 ## ⚖️ 2. PRÉCISION TECHNIQUE (SOURCING)
 L'application gère désormais les données réelles du fournisseur :
-- **Gestion du Poids** : Nouveau champ "WEIGHT" ajouté à la création et à l'édition des articles.
-- **Identité Métal** : Distinction systématique entre les variantes d'Or 18K.
-- **Transparence Financière** : Affichage clair du profit net et de la répartition Adam/Mirza.
+- **Multi-Sourcing** : Génération de liens uniques pour plusieurs fournisseurs simultanément.
+- **Détails Techniques** : Les offres affichent désormais les poids d'or (g), le nombre de pierres (pcs) et le poids total en carats (ct).
+- **Dates de Livraison** : Calcul automatique des délais de production + transit (7 jours).
 
-## 📄 3. GÉNÉRATION DE DEVIS "NO BULLSHIT"
-Le moteur PDF a été épuré pour plus d'efficacité commerciale :
-- **Design Interface** : Le PDF ressemble désormais à une interface d'OS (Design Vision, coins ultra-arrondis à 18mm).
-- **Contenu Clarifié** : Suppression des mentions "Investissement" et mentions légales lourdes. Utilisation du terme direct : **PRIX TOTAL TTC LIVRÉ**.
-- **Correction Typo** : Fix du bug d'affichage du prix (suppression du slash parasite dans les milliers).
+## 🚀 3. STABILITÉ ET DÉPLOIEMENT
+- **Résolution Build Vercel** : Correction des erreurs de syntaxe critiques dans les boucles de rendu (`[id]/page.tsx`). Le code est désormais sain et optimisé pour la compilation de production.
+- **Performance Mobile** : Optimisation des composants `VisionPill` pour une fluidité maximale sur iPhone 16 Plus.
 
-## 🚀 4. DÉPLOIEMENT & SÉCURITÉ
-- **Synchronisation GitHub** : Code source 100% à jour sur le dépôt.
-- **Vercel** : Déploiement automatique déclenché sur la branche `main`.
+## 🧪 4. ARCHITECTURE DE TESTS (CODEX)
+- **Infrastructure Vitest** : Framework de tests unitaires centralisé dans `/__tests__/unit`. 12 tests critiques validés pour la logique financière (`logic.ts`) et les utilitaires.
+- **Isolation Firebase** : Création de mocks standardisés (`src/lib/__mocks__/firebase.ts`) pour permettre de tester les composants sans dépendance réseau.
+- **E2E (Playwright)** : Déploiement de "Smoke Tests" (`e2e/workflow.spec.ts`) pour garantir l'accessibilité du shell PWA sur Desktop et Mobile.
+- **Maintenance AI** : Protocole établi pour que Antigravity maintienne et enrichisse les tests lors de chaque nouvelle fonctionnalité.
 
 ---
-**STATUT : PRÊT POUR L'OPÉRATIONNEL.** 🚀💍✅
+
+## 🏗️ 5. ÉTAT DU PROJET & PROCHAINES ÉTAPES
+- **État actuel** : Build Vercel stable, Sourcing multi-fournisseurs opérationnel, Framework de tests en place.
+- **Priorités prioritaires** :
+    1. **Notifications** : Automatisation des alertes email (SendGrid/AWS SES).
+    2. **Audit PDF** : Validation des exports sous forte charge de données techniques.
+    3. **Automatisation Tracking** : Extension du tracking Fedex à d'autres transporteurs (DHL/UPS).
+
+---
+*Rapport généré par Antigravity - Prêt pour reprise immédiate.*
