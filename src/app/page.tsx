@@ -58,28 +58,6 @@ export default function Dashboard() {
         </h1>
       </motion.div>
 
-      {/* FINANCIAL OVERVIEW */}
-      <div style={{ padding: '0 32px' }}>
-         <motion.div 
-            initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
-            style={{ padding: '48px 40px', background: '#000', borderRadius: '56px', color: '#fff', margin: '48px 0', boxShadow: '0 40px 80px rgba(0,0,0,0.12)' }}
-         >
-            <span className="cyber-label" style={{ opacity: 0.5, fontSize: '8px', letterSpacing: '0.2em' }}>ACTIVE LIQUIDITY</span>
-            <div style={{ fontSize: '48px', fontWeight: 900, marginTop: '12px', letterSpacing: '-0.06em' }}>
-               {(34500).toLocaleString()} <span style={{ fontSize: '24px', opacity: 0.3 }}>EUR</span>
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginTop: '48px', paddingTop: '32px', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
-               <div>
-                  <span className="cyber-label" style={{ opacity: 0.4, fontSize: '7px' }}>ACTIVE UNITS</span>
-                  <div style={{ fontSize: '20px', fontWeight: 900, marginTop: '4px' }}>{activeRequests.length}</div>
-               </div>
-               <div style={{ textAlign: 'right' }}>
-                  <span className="cyber-label" style={{ opacity: 0.4, fontSize: '7px' }}>TELEMETRY FX</span>
-                  <div style={{ fontSize: '20px', fontWeight: 900, marginTop: '4px' }}>{liveRate.toFixed(4)}</div>
-               </div>
-            </div>
-         </motion.div>
-      </div>
 
       {/* ACTIVE LIST STREAM */}
       <div style={{ padding: '0 32px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
