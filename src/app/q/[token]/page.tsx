@@ -171,58 +171,58 @@ export default function SupplierPortal({ params }: { params: { token: string } }
 
       {/* REQUEST OVERVIEW */}
       <div style={{ padding: '0 32px' }}>
-         <motion.div initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} style={{ marginBottom: '48px' }}>
-            <span className="cyber-label" style={{ marginBottom: '8px', display: 'block' }}>DESIGN REVIEW / 设计审查</span>
-            <h1 style={{ fontSize: '32px', fontWeight: 900, letterSpacing: '-0.06em', margin: 0, textTransform: 'uppercase' }}>{request.title}</h1>
-            <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
-               <div style={{ padding: '6px 12px', background: '#F9F9F9', borderRadius: '8px', fontSize: '10px', fontWeight: 900 }}>{request.size || 'STD'}</div>
-               <div style={{ padding: '6px 12px', background: 'var(--accent-glow)', borderRadius: '8px', fontSize: '10px', fontWeight: 900, color: 'var(--accent)' }}>{request.goldColor?.toUpperCase()}</div>
-               {request.engraving && <div style={{ padding: '6px 12px', background: '#FFF5F5', borderRadius: '8px', fontSize: '10px', fontWeight: 900, color: '#E0115F' }}>GRAVURE: {request.engraving}</div>}
+         <motion.div initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} style={{ marginBottom: '80px', marginTop: '32px' }}>
+            <span className="cyber-label" style={{ marginBottom: '12px', display: 'block', opacity: 0.4 }}>COMMANDE TECHNIQUE</span>
+            <h1 style={{ fontSize: '36px', fontWeight: 900, letterSpacing: '-0.06em', margin: 0, textTransform: 'uppercase' }}>{request.title}</h1>
+            <div style={{ display: 'flex', gap: '8px', marginTop: '24px' }}>
+               <div style={{ padding: '10px 20px', background: '#F9F9F9', borderRadius: '16px', fontSize: '11px', fontWeight: 900 }}>TAILLE: {request.size || 'STD'}</div>
+               <div style={{ padding: '10px 20px', background: 'var(--accent-glow)', borderRadius: '16px', fontSize: '11px', fontWeight: 900, color: 'var(--accent)' }}>{request.goldColor?.toUpperCase()}</div>
+               {request.engraving && <div style={{ padding: '10px 20px', background: '#000', borderRadius: '16px', fontSize: '11px', fontWeight: 900, color: '#fff' }}>ENGRAVING / {request.engraving}</div>}
             </div>
          </motion.div>
 
          {request.imageUrl && (
-            <div style={{ position: 'relative', width: '100%', aspectRatio: '1', borderRadius: '40px', overflow: 'hidden', background: '#F9F9F9', marginBottom: '48px', border: '1px solid rgba(0,0,0,0.02)' }}>
-               <img src={request.imageUrl} style={{ width: '100%', height: '100%', objectFit: 'contain' }} alt="Reference" />
+            <div style={{ position: 'relative', width: '100%', borderRadius: '56px', overflow: 'hidden', background: '#F9F9F9', marginBottom: '80px', border: '1px solid rgba(0,0,0,0.02)', boxShadow: '0 30px 60px rgba(0,0,0,0.02)' }}>
+               <img src={request.imageUrl} style={{ width: '100%', height: 'auto', display: 'block' }} alt="Reference" />
             </div>
          )}
 
          {/* FORM INTERFACE */}
          {request.status === "IN_PRODUCTION" && request.acceptedTokenId === params.token ? (
            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-              <div style={{ padding: '32px', background: '#F9F9F9', borderRadius: '32px', marginBottom: '32px' }}>
-                 <p className="cyber-label" style={{ marginBottom: '20px' }}>LOGISTICS / 物流信息</p>
-                 <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '32px' }}>
-                    <div style={{ width: '48px', height: '48px', borderRadius: '24px', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 5px 15px rgba(0,0,0,0.02)' }}>
-                       <Truck size={20} />
+              <div style={{ padding: '48px 40px', background: '#F9F9F9', borderRadius: '56px', marginBottom: '48px' }}>
+                 <p className="cyber-label" style={{ marginBottom: '32px' }}>LOGISTICS PIPELINE</p>
+                 <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '48px', padding: '24px', background: '#fff', borderRadius: '32px' }}>
+                    <div style={{ width: '56px', height: '56px', borderRadius: '28px', background: 'var(--accent-glow)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent)' }}>
+                       <Truck size={24} strokeWidth={2.5} />
                     </div>
                     <div>
-                       <p style={{ fontSize: '11px', fontWeight: 900, color: '#000' }}>SHIP TO FRANCE</p>
-                       <p style={{ fontSize: '10px', fontWeight: 600, color: 'var(--faded)', marginTop: '2px' }}>SACHA BENSADOUN, GEISPOLSHEIM</p>
+                       <p style={{ fontSize: '11px', fontWeight: 900, color: '#000', letterSpacing: '0.05em' }}>DESTINATION: FRANCE</p>
+                       <p style={{ fontSize: '10px', fontWeight: 700, opacity: 0.4, marginTop: '4px' }}>S. BENSADOUN, GEISPOLSHEIM</p>
                     </div>
                  </div>
                  
-                 <label className="cyber-label" style={{ fontSize: '7px', opacity: 0.5 }}>TRACKING NUMBER / 运单号</label>
-                 <input 
-                   required
-                   value={trackingNumber}
-                   onChange={e => setTrackingNumber(e.target.value)}
-                   placeholder="Enter FedEx ID..."
-                   style={{ width: '100%', background: 'transparent', fontSize: '24px', fontWeight: 900, marginTop: '8px', letterSpacing: '0.05em' }}
-                 />
+                 <div style={{ marginBottom: '48px' }}>
+                    <label className="cyber-label" style={{ fontSize: '8px', opacity: 0.4 }}>FEDEX TRACKING NUMBER</label>
+                    <input 
+                      required value={trackingNumber} onChange={e => setTrackingNumber(e.target.value)}
+                      placeholder="Enter ID..."
+                      style={{ width: '100%', background: 'transparent', fontSize: '32px', fontWeight: 900, marginTop: '12px', letterSpacing: '0.02em', border: 'none', outline: 'none' }}
+                    />
+                 </div>
 
-                 <div style={{ marginTop: '32px' }}>
-                    <p className="cyber-label" style={{ marginBottom: '16px' }}>QC PHOTOS / 质检图片</p>
-                    <label style={{ display: 'block', width: '100%', padding: '24px', background: '#fff', borderRadius: '20px', border: '1px dashed rgba(0,0,0,0.1)', textAlign: 'center', cursor: 'pointer' }}>
+                 <div>
+                    <p className="cyber-label" style={{ marginBottom: '20px' }}>QUALITY CONTROL MEDIA</p>
+                    <label style={{ display: 'block', width: '100%', padding: '40px', background: '#fff', borderRadius: '32px', border: '2px dashed rgba(0,0,0,0.05)', textAlign: 'center', cursor: 'pointer' }}>
                        {uploadProgress > 0 ? (
-                         <span style={{ fontSize: '11px', fontWeight: 900, color: 'var(--accent)' }}>UPLOADING {uploadProgress.toFixed(0)}%</span>
+                          <span style={{ fontSize: '12px', fontWeight: 900, color: 'var(--accent)' }}>PROGRESS: {uploadProgress.toFixed(0)}%</span>
                        ) : qcMediaUrl ? (
-                         <span style={{ fontSize: '11px', fontWeight: 900, color: '#34C759' }}>MEDIA ATTACHED ✅</span>
+                          <span style={{ fontSize: '12px', fontWeight: 900, color: '#34C759' }}>MEDIA LINKED ✅</span>
                        ) : (
-                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
-                           <Camera size={24} opacity={0.3} />
-                           <span style={{ fontSize: '9px', fontWeight: 900, opacity: 0.4 }}>UPLOAD QC PHOTO/VIDEO</span>
-                         </div>
+                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
+                            <Camera size={32} opacity={0.2} />
+                            <span style={{ fontSize: '10px', fontWeight: 900, opacity: 0.4 }}>PICTURE OR VIDEO</span>
+                          </div>
                        )}
                        <input type="file" hidden accept="image/*,video/*" onChange={e => {
                           const file = e.target.files?.[0];
@@ -230,18 +230,18 @@ export default function SupplierPortal({ params }: { params: { token: string } }
                              const ref = storageRef(storage, `qc/${tokenData.requestId}/${Date.now()}_${file.name}`);
                              const task = uploadBytesResumable(ref, file);
                              task.on('state_changed', s => setUploadProgress((s.bytesTransferred / s.totalBytes) * 100), e => toast.error("Error"), async () => {
-                               const url = await getDownloadURL(task.snapshot.ref);
-                               setQCMediaUrl(url);
-                               setUploadProgress(0);
-                               toast.success("QC MEDIA READY");
+                                const url = await getDownloadURL(task.snapshot.ref);
+                                setQCMediaUrl(url);
+                                setUploadProgress(0);
+                                toast.success("QC MEDIA READY");
                              });
                           }
                        }} />
                     </label>
                  </div>
               </div>
-              <button onClick={handleShippingSubmit} className="btn-main" style={{ background: 'var(--accent)', color: '#fff' }}>
-                 CONFIRM SHIPMENT <ArrowRight size={18} />
+              <button onClick={handleShippingSubmit} className="btn-main" style={{ background: '#000', color: '#fff', padding: '24px', borderRadius: '32px', fontWeight: 900, fontSize: '14px', width: '100%' }}>
+                 CONFIRM EXPEDITION <ArrowRight size={20} strokeWidth={3} />
               </button>
            </motion.div>
          ) : (

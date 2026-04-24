@@ -59,39 +59,42 @@ export default function ArchivesHub() {
       </header>
 
       <div style={{ padding: '0 32px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '32px', padding: '16px', background: '#F9F9F9', borderRadius: '20px' }}>
-           <div style={{ width: '8px', height: '8px', borderRadius: '4px', background: '#34C759', animation: 'pulse 2s infinite' }} />
-           <span style={{ fontSize: '11px', fontWeight: 900, letterSpacing: '0.05em' }}>TELEMETRY STREAM ACTIVE</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '48px', padding: '24px', background: 'linear-gradient(90deg, #F9F9F9 0%, #fff 100%)', borderRadius: '24px', border: '1px solid rgba(0,0,0,0.02)' }}>
+           <div style={{ width: '10px', height: '10px', borderRadius: '5px', background: '#34C759', boxShadow: '0 0 10px rgba(52,199,89,0.4)', animation: 'pulse 2s infinite' }} />
+           <span style={{ fontSize: '11px', fontWeight: 900, letterSpacing: '0.1em' }}>TELEMETRY STREAM ACTIVE</span>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
           {logs.map((log, i) => (
             <motion.div 
-              key={i} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.05 }}
-              style={{ display: 'flex', gap: '16px' }}
+              key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
+              style={{ display: 'flex', gap: '24px' }}
             >
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                 <div style={{ width: '32px', height: '32px', borderRadius: '12px', background: getColor(log.type) + '15', color: getColor(log.type), display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                 <div style={{ width: '48px', height: '48px', borderRadius: '16px', background: '#fff', boxShadow: '0 10px 20px rgba(0,0,0,0.02)', border: '1px solid rgba(0,0,0,0.03)', color: getColor(log.type), display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                     {getIcon(log.type)}
                  </div>
-                 {i !== logs.length - 1 && <div style={{ width: '1px', flex: 1, background: 'rgba(0,0,0,0.05)', marginTop: '8px' }} />}
+                 {i !== logs.length - 1 && <div style={{ width: '2px', flex: 1, background: 'linear-gradient(to bottom, rgba(0,0,0,0.05) 0%, transparent 100%)', marginTop: '12px' }} />}
               </div>
 
-              <div style={{ flex: 1, paddingBottom: '24px' }}>
-                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-                    <h3 style={{ fontSize: '13px', fontWeight: 900, margin: 0, letterSpacing: '0.02em' }}>{log.action.replace(/_/g, ' ')}</h3>
-                    <span style={{ fontSize: '10px', fontWeight: 700, color: 'var(--faded)' }}>{getRelativeTime(log.timestamp)}</span>
+              <div style={{ flex: 1, paddingBottom: '32px' }}>
+                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '16px' }}>
+                    <h3 style={{ fontSize: '15px', fontWeight: 900, margin: 0, letterSpacing: '-0.02em', textTransform: 'capitalize' }}>{log.action.replace(/_/g, ' ').toLowerCase()}</h3>
+                    <span style={{ fontSize: '10px', fontWeight: 800, color: 'var(--faded)', opacity: 0.5 }}>{getRelativeTime(log.timestamp)}</span>
                  </div>
                  
-                 <div style={{ marginTop: '8px', padding: '16px', background: '#F9F9F9', borderRadius: '18px', border: '1px solid rgba(0,0,0,0.02)' }}>
-                    {log.requestId && <div style={{ fontSize: '9px', fontWeight: 900, color: 'var(--accent)', marginBottom: '8px' }}>REQ: {log.requestId.toUpperCase().substring(0, 8)}</div>}
-                    <div style={{ fontSize: '11px', fontWeight: 600, color: 'rgba(0,0,0,0.6)', lineHeight: 1.5 }}>
+                 <div style={{ padding: '24px', background: '#F9F9F9', borderRadius: '32px', border: '1px solid rgba(0,0,0,0.01)' }}>
+                    {log.requestId && <div style={{ fontSize: '9px', fontWeight: 900, color: 'var(--accent)', marginBottom: '12px', letterSpacing: '0.1em' }}>PROJECT: {log.requestId.toUpperCase().substring(0, 8)}</div>}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                        {Object.entries(log.details || {}).map(([k, v]: any) => (
-                         <div key={k}>{k.toUpperCase()}: <span style={{ color: '#000', fontWeight: 800 }}>{String(v)}</span></div>
+                         <div key={k} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', fontWeight: 600 }}>
+                            <span style={{ opacity: 0.4, fontSize: '9px' }}>{k.toUpperCase()}</span>
+                            <span style={{ color: '#000', fontWeight: 900 }}>{String(v)}</span>
+                         </div>
                        ))}
                     </div>
                  </div>
-                 <div style={{ marginTop: '6px', fontSize: '9px', fontWeight: 900, opacity: 0.2, letterSpacing: '0.05em' }}>{log.iso}</div>
+                 <div style={{ marginTop: '12px', fontSize: '8px', fontWeight: 800, opacity: 0.15, letterSpacing: '0.1em' }}>{log.iso}</div>
               </div>
             </motion.div>
           ))}

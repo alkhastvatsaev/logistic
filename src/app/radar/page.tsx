@@ -87,14 +87,14 @@ export default function DeliveryRadar() {
       </header>
 
       {/* MONTHLY GRID */}
-      <div style={{ padding: '0 24px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '4px', marginBottom: '8px' }}>
-          {['L', 'Ma', 'Me', 'J', 'V', 'S', 'D'].map((d, idx) => (
-            <div key={`${d}-${idx}`} style={{ textAlign: 'center', fontSize: '9px', fontWeight: 900, color: 'var(--faded)', padding: '10px 0' }}>{d}</div>
+      <div style={{ padding: '0 32px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '8px', marginBottom: '16px' }}>
+          {['L', 'M', 'M', 'J', 'V', 'S', 'D'].map((d, idx) => (
+            <div key={`${d}-${idx}`} style={{ textAlign: 'center', fontSize: '9px', fontWeight: 900, color: 'var(--faded)', opacity: 0.3, padding: '10px 0' }}>{d}</div>
           ))}
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '4px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '8px' }}>
           {daysInMonth.map((day, i) => {
             if (!day) return <div key={`pad-${i}`} />;
             
@@ -104,18 +104,16 @@ export default function DeliveryRadar() {
 
             return (
               <motion.div 
-                key={i}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => setSelectedDate(day)}
+                key={i} whileTap={{ scale: 0.95 }} onClick={() => setSelectedDate(day)}
                 style={{
-                  height: '54px', borderRadius: '14px',
-                  background: isSelected ? 'var(--accent)' : isToday ? 'rgba(0,68,255,0.05)' : '#F9F9F9',
+                  height: '60px', borderRadius: '18px',
+                   background: isSelected ? 'var(--accent)' : (isToday ? 'var(--accent-glow)' : '#F9F9F9'),
                   display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                  cursor: 'pointer', position: 'relative',
-                  border: isToday && !isSelected ? '1px solid var(--accent)' : 'none'
+                  cursor: 'pointer', position: 'relative', transition: 'all 0.3s ease',
+                  border: isToday && !isSelected ? '1.5px solid var(--accent)' : 'none'
                 }}
               >
-                <span style={{ fontSize: '14px', fontWeight: 900, color: isSelected ? '#fff' : isToday ? 'var(--accent)' : '#000' }}>
+                <span style={{ fontSize: '15px', fontWeight: 900, color: isSelected ? '#fff' : (isToday ? 'var(--accent)' : '#000') }}>
                   {day.getDate()}
                 </span>
                 
@@ -133,45 +131,45 @@ export default function DeliveryRadar() {
       </div>
 
       {/* SELECTED DAY PANEL */}
-      <motion.div layout style={{ padding: '40px 32px 0 32px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '24px' }}>
-           <h2 style={{ fontSize: '12px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+      <motion.div layout style={{ padding: '64px 32px 0 32px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
+           <h2 style={{ fontSize: '13px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
              {selectedDate.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}
            </h2>
-           <span style={{ fontSize: '9px', fontWeight: 800, color: 'var(--faded)' }}>{selectedOrders.length} EVENTS</span>
+           <span style={{ fontSize: '10px', fontWeight: 900, color: 'var(--accent)', background: 'var(--accent-glow)', padding: '6px 12px', borderRadius: '10px' }}>{selectedOrders.length} ÉVÉNEMENTS</span>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <AnimatePresence mode="popLayout">
             {selectedOrders.length > 0 ? (
               selectedOrders.map(r => (
                 <motion.div 
-                  key={r.id} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}
-                  transition={{ duration: 0.3 }}
+                  key={r.id} initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.98 }}
+                  transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
                 >
                   <Link href={`/requests/${r.id}`} style={{ textDecoration: 'none' }}>
-                    <div style={{ padding: '20px', borderRadius: '24px', background: '#F9F9F9', display: 'flex', alignItems: 'center', gap: '16px', border: '1px solid rgba(0,0,0,0.02)' }}>
-                      <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: isSameDay(selectedDate, r.shippedAt) ? '#4D148C' : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                          <Package size={18} color={isSameDay(selectedDate, r.shippedAt) ? '#fff' : "var(--accent)"} />
+                    <div style={{ padding: '24px', borderRadius: '32px', background: '#F9F9F9', display: 'flex', alignItems: 'center', gap: '20px', border: '1px solid rgba(0,0,0,0.02)' }}>
+                      <div style={{ width: '48px', height: '48px', borderRadius: '16px', background: isSameDay(selectedDate, r.shippedAt) ? '#4D148C' : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 5px 15px rgba(0,0,0,0.02)' }}>
+                          <Package size={20} color={isSameDay(selectedDate, r.shippedAt) ? '#fff' : "var(--accent)"} strokeWidth={2.5} />
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                          <h3 style={{ fontSize: '13px', fontWeight: 900, color: '#000', margin: 0 }}>{r.title}</h3>
-                          <p style={{ fontSize: '9px', fontWeight: 700, color: 'var(--faded)', marginTop: '4px', textTransform: 'uppercase' }}>
-                            {isSameDay(selectedDate, r.deliveryEstimation) && 'LIVRAISON STRASBOURG'}
-                            {isSameDay(selectedDate, r.productionDeadline) && 'DEADLINE USINE'}
-                            {isSameDay(selectedDate, r.qcValidatedAt) && 'QC VALIDÉ'}
-                            {isSameDay(selectedDate, r.shippedAt) && 'EXPÉDITION FEDEX'}
+                          <h3 style={{ fontSize: '16px', fontWeight: 900, color: '#000', margin: 0, letterSpacing: '-0.02em' }}>{r.title}</h3>
+                          <p style={{ fontSize: '10px', fontWeight: 800, color: 'var(--faded)', marginTop: '4px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                            {isSameDay(selectedDate, r.deliveryEstimation) && 'LIVRAISON CLIENT'}
+                            {isSameDay(selectedDate, r.productionDeadline) && 'LIMITE PRODUCTION'}
+                            {isSameDay(selectedDate, r.qcValidatedAt) && 'CONTRÔLE QUALITÉ'}
+                            {isSameDay(selectedDate, r.shippedAt) && 'TRANSIT INTERNATIONAL'}
                           </p>
                       </div>
-                      <ChevronRight size={16} opacity={0.1} />
+                      <ChevronRight size={18} opacity={0.15} />
                     </div>
                   </Link>
                 </motion.div>
               ))
             ) : (
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ padding: '48px 0', textAlign: 'center', opacity: 0.2 }}>
-                 <Clock size={24} style={{ margin: '0 auto 12px auto' }} />
-                 <p style={{ fontSize: '9px', fontWeight: 900, letterSpacing: '0.1em' }}>AUCUNE ÉCHÉANCE</p>
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ padding: '64px 0', textAlign: 'center', opacity: 0.1 }}>
+                 <Clock size={32} strokeWidth={1} style={{ margin: '0 auto 16px auto' }} />
+                 <p style={{ fontSize: '11px', fontWeight: 900, letterSpacing: '0.2em' }}>CALME PLAT</p>
               </motion.div>
             )}
           </AnimatePresence>
