@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { rtdb, rtdbRef, push, set } from "@/lib/firebase";
 import { SmartImage } from "@/components/ui/SmartImage";
 import { VisionPill } from "@/components/ui/VisionPill";
+import { logEvent } from "@/lib/logger";
 
 export default function NewRequest() {
   const router = useRouter();
@@ -71,6 +72,7 @@ export default function NewRequest() {
         updatedAt: Date.now() 
       });
 
+      await logEvent({ type: 'WORKFLOW', action: 'NEW_REQUEST', requestId: newRef.key || undefined, details: { title, brand, category } });
       router.push(`/requests/${newRef.key}`);
     } catch (err: any) { 
       toast.error("ERREUR DE SYNCHRONISATION"); 

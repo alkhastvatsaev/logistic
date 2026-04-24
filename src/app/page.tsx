@@ -134,6 +134,7 @@ export default function Dashboard() {
       )}
 
       <VisionPill width="calc(100% - 64px)">
+         <Link href="/logs" className="vision-action" style={{ textDecoration: 'none' }}>ARCHIVES</Link>
          <Link href="/radar" className="vision-action" style={{ textDecoration: 'none' }}>RADAR</Link>
          <Link href="/requests/new" className="vision-action accent" style={{ textDecoration: 'none' }}>
             <Plus size={18} strokeWidth={3} /> NEW

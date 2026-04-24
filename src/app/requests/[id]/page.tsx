@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { SmartImage } from "@/components/ui/SmartImage";
 import { VisionPill } from "@/components/ui/VisionPill";
 import { TitaneLoader } from "@/components/ui/TitaneLoader";
+import { logEvent } from "@/lib/logger";
 
 export default function RequestDetail({ params }: { params: { id: string } }) {
   const router = useRouter();
@@ -162,6 +163,7 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
     });
     setShowTrackingInput(false);
     syncTracking(num);
+    await logEvent({ type: 'WORKFLOW', action: 'SHIPMENT_SENT', requestId: params.id, details: { trackingNumber: num } });
   };
 
   const handleGoBack = async () => {
@@ -169,6 +171,7 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
     if (currentIdx > 0) {
       const prevStatus = statusOrder[currentIdx - 1];
       await update(rtdbRef(rtdb, `requests/${params.id}`), { status: prevStatus });
+      await logEvent({ type: 'WORKFLOW', action: 'STATUS_ROLLBACK', requestId: params.id, details: { from: request.status, to: prevStatus } });
       toast.info(`RETOUR : ${prevStatus.replace(/_/g, ' ')}`);
       setShowBackModal(false);
     }
@@ -242,6 +245,7 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
     const amount = sPrice * 0.3;
     await set(push(rtdbRef(rtdb, `payments/${params.id}`)), { amount, note: "Acompte 30%", createdAt: Date.now() });
     await update(rtdbRef(rtdb, `requests/${params.id}`), { status: 'IN_PRODUCTION' });
+    await logEvent({ type: 'FINANCE', action: 'DEPOSIT_PAID', requestId: params.id, details: { amount } });
     toast.success(`Acompte encaissé.`);
   };
 
@@ -254,6 +258,7 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
         await set(push(rtdbRef(rtdb, `payments/${params.id}`)), { amount, note: "Solde Final", createdAt: Date.now() });
     }
     await update(rtdbRef(rtdb, `requests/${params.id}`), { status: 'SHIPPED', paymentSlipUrl: url || request?.paymentSlipUrl || null, paidAt: Date.now() });
+    await logEvent({ type: 'FINANCE', action: 'BALANCE_PAID', requestId: params.id, details: { amount } });
     setShowPaymentModal(false);
     setShowTrackingInput(true);
     toast.success(`Solde encaissé.`);
@@ -267,6 +272,7 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
       productionDeadline: dates.productionDeadline,
       deliveryEstimation: dates.deliveryEstimation
     });
+    await logEvent({ type: 'SUPPLIER', action: 'QUOTE_ACCEPTED', requestId: params.id, details: { supplier: quote.supplierName, price: quote.priceRMB } });
   };
 
   const generatePDF = (t: 'QUOTE' | 'INVOICE') => {
