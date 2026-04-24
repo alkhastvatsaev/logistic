@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, UploadCloud, ChevronRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { rtdb, rtdbRef, push, set } from "@/lib/firebase";
@@ -18,6 +18,7 @@ export default function NewRequest() {
   const [size, setSize] = useState("52");
   const [goldColor, setGoldColor] = useState("Or Jaune");
   const [stoneType, setStoneType] = useState("Sans Pierre");
+  const [mainStoneCarat, setMainStoneCarat] = useState("");
   const [loading, setLoading] = useState(false);
 
   const stones = [
@@ -60,6 +61,7 @@ export default function NewRequest() {
         size, 
         goldColor,
         stoneType,
+        mainStoneCarat: stoneType !== "Sans Pierre" ? mainStoneCarat : null,
         category: category === 'Ring' ? 'Bague' : (category === 'Bracelet' ? 'Bracelet' : 'Collier'),
         imageUrl, 
         status: "WAITING_FOR_QUOTE", 

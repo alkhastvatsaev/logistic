@@ -117,12 +117,13 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
       });
       const url = `${window.location.origin}/q/${token}`;
       setGeneratedLink(url);
+      setShowLinkModal(true);
       
       try {
         await navigator.clipboard.writeText(url);
-        toast.success("LIEN COPIÉ DANS LE PRESSE-PAPIER");
+        toast.success("LIEN COPIÉ");
       } catch (err) {
-        setShowLinkModal(true);
+        console.warn("Clipboard auto-copy failed");
       }
       
       if (request?.status === 'DRAFT' || request?.status === 'WAITING_FOR_QUOTE') {
@@ -158,6 +159,16 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
     });
     setShowTrackingInput(false);
     syncTracking(num);
+  };
+
+  const handleGoBack = async () => {
+    const currentIdx = statusOrder.indexOf(request.status);
+    if (currentIdx > 0) {
+      const prevStatus = statusOrder[currentIdx - 1];
+      await update(rtdbRef(rtdb, `requests/${params.id}`), { status: prevStatus });
+      toast.info(`RETOUR : ${prevStatus.replace(/_/g, ' ')}`);
+      setShowBackModal(false);
+    }
   };
 
   const syncTracking = async (num?: string) => {
@@ -261,7 +272,7 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
       id: request.id, title: title || request.title, size: size || request.size, 
       sellingPrice: totals.sPrice, totals, status: request.status,
       imageUrl: request.imageUrl, goldColor: request.goldColor,
-      stoneType: request.stoneType, weight: weight || request.estimatedWeight 
+      stoneType: request.stoneType, mainStoneCarat: request.mainStoneCarat, weight: weight || request.estimatedWeight 
     };
     if (t === 'QUOTE') generateQuotePDF(data); else generateInternalInvoicePDF(data);
   };
@@ -333,7 +344,7 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
             <h1 style={{ fontSize: '36px', fontWeight: 900, letterSpacing: '-0.06em', margin: 0 }}>{request.title?.toUpperCase()}</h1>
          </div>
             
-         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', margin: '32px 0' }}>
+         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', margin: '32px 0' }}>
             <div style={{ padding: '16px 8px', borderRadius: '20px', background: '#F9F9F9', border: '1px solid rgba(0,0,0,0.02)', textAlign: 'center' }}>
                <span className="cyber-label">HOUSE</span>
                <p style={{ fontWeight: 900, fontSize: '12px', marginTop: '8px' }}>{request.brand?.toUpperCase() || '...'}</p>
@@ -345,6 +356,10 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
             <div style={{ padding: '16px 8px', borderRadius: '20px', background: '#F9F9F9', border: '1px solid rgba(0,0,0,0.02)', textAlign: 'center' }}>
                <span className="cyber-label">WEIGHT</span>
                <p style={{ fontWeight: 900, fontSize: '12px', marginTop: '8px' }}>{request.estimatedWeight || '...'}</p>
+            </div>
+            <div style={{ padding: '16px 8px', borderRadius: '20px', background: '#F9F9F9', border: '1px solid rgba(0,0,0,0.02)', textAlign: 'center', opacity: request.stoneType === "Sans Pierre" ? 0.3 : 1 }}>
+               <span className="cyber-label">CARATS</span>
+               <p style={{ fontWeight: 900, fontSize: '12px', marginTop: '8px' }}>{request.mainStoneCarat ? `${request.mainStoneCarat} ct` : '-'}</p>
             </div>
          </div>
 
@@ -446,8 +461,21 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
       </div>
 
       <VisionPill width="calc(100% - 64px)">
-         <div style={{ display: 'flex', borderRight: '1px solid rgba(255,255,255,0.1)', paddingRight: '12px' }}>
-            <motion.button whileTap={{ scale: 0.85 }} className="vision-action" onClick={() => router.back()}><ArrowLeft size={20} /></motion.button>
+         <div style={{ display: 'flex', borderRight: '1px solid rgba(255,255,255,0.1)', paddingRight: '12px', gap: '8px' }}>
+            <motion.button whileTap={{ scale: 0.85 }} className="vision-action" onClick={() => router.back()}><ArrowLeft size={18} /></motion.button>
+            {statusOrder.indexOf(request.status) > 0 && (
+               <motion.button 
+                 whileTap={{ scale: 0.85 }} 
+                 className="vision-action" 
+                 onClick={() => {
+                   const prev = statusOrder[statusOrder.indexOf(request.status) - 1];
+                   setPrevStageName(prev.replace(/_/g, ' '));
+                   setShowBackModal(true);
+                 }}
+               >
+                 <ArrowLeft size={18} style={{ opacity: 0.4, transform: 'rotate(180deg)' }} />
+               </motion.button>
+            )}
          </div>
          <div style={{ flex: 1, display: 'flex', gap: '8px', overflowX: 'auto', padding: '0 8px' }}>
             {['DRAFT', 'WAITING_FOR_QUOTE', 'QUOTED'].includes(request.status) && <motion.button whileTap={{ scale: 0.95 }} className="vision-action active primary" onClick={generateSupplierLink}><Plus size={18} /> NEW LINK</motion.button>}
@@ -471,6 +499,61 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
                    <input type="file" accept="image/*,video/*" onChange={(e) => e.target.files?.[0] && handleUpload(e.target.files[0])} />
                 </div>
                 <button onClick={() => setShowQCModal(false)} style={{ width: '100%', marginTop: '24px', padding: '16px', borderRadius: '14px', border: 'none', background: '#F9F9F9', fontWeight: 900 }}>ANNULER</button>
+             </motion.div>
+          </motion.div>
+        )}
+
+        {showLinkModal && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', zIndex: 3000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '32px' }}>
+            <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} style={{ width: '100%', maxWidth: '400px', background: '#fff', borderRadius: '40px', padding: '40px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
+                <div style={{ width: '40px', height: '40px', borderRadius: '100px', background: 'var(--accent-glow)', color: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Copy size={20} />
+                </div>
+                <h2 style={{ fontSize: '20px', fontWeight: 900 }}>LIEN FOURNISSEUR</h2>
+              </div>
+              
+              <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--faded)', marginBottom: '24px', lineHeight: 1.5 }}>
+                Envoyez ce lien aux fournisseurs pour qu'ils puissent soumettre leurs devis techniques.
+              </p>
+
+              <div style={{ padding: '20px', background: '#F9F9F9', borderRadius: '20px', wordBreak: 'break-all', fontSize: '11px', fontWeight: 800, color: 'var(--accent)', marginBottom: '32px', border: '1px solid rgba(0,0,0,0.02)' }}>
+                {generatedLink}
+              </div>
+
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <button 
+                  onClick={() => { navigator.clipboard.writeText(generatedLink); toast.success("COPIÉ !"); }}
+                  style={{ flex: 1, padding: '18px', borderRadius: '18px', border: 'none', background: 'var(--accent)', color: '#fff', fontWeight: 900, fontSize: '13px' }}
+                >
+                  COPIER LE LIEN
+                </button>
+                <button 
+                  onClick={() => setShowLinkModal(false)}
+                  style={{ padding: '18px 24px', borderRadius: '18px', border: 'none', background: '#F2F2F2', fontWeight: 900, fontSize: '13px' }}
+                >
+                  FERMER
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+
+        {showBackModal && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', zIndex: 3000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '32px' }}>
+             <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} style={{ width: '100%', maxWidth: '400px', background: '#fff', borderRadius: '40px', padding: '40px', textAlign: 'center' }}>
+                <div style={{ width: '64px', height: '64px', borderRadius: '32px', background: 'rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px auto' }}>
+                   <ArrowLeft size={24} />
+                </div>
+                <h2 style={{ fontSize: '20px', fontWeight: 900 }}>RETOUR EN ARRIÈRE ?</h2>
+                <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--faded)', marginTop: '12px', lineHeight: 1.5 }}>
+                   Voulez-vous vraiment revenir à l'étape précédente : <br/>
+                   <span style={{ color: 'var(--accent)', fontWeight: 900 }}>{prevStageName}</span> ?
+                </p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '32px' }}>
+                   <button onClick={handleGoBack} style={{ padding: '18px', borderRadius: '18px', border: 'none', background: '#000', color: '#fff', fontWeight: 900, fontSize: '14px' }}>CONFIRMER LE RETOUR</button>
+                   <button onClick={() => setShowBackModal(false)} style={{ padding: '18px', borderRadius: '18px', border: 'none', background: '#F9F9F9', fontWeight: 900, fontSize: '14px' }}>ANNULER</button>
+                </div>
              </motion.div>
           </motion.div>
         )}
