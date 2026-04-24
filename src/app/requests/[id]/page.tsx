@@ -23,6 +23,8 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
   const [size, setSize] = useState("");
   const [category, setCategory] = useState("");
   const [weight, setWeight] = useState("");
+  const [isEditing, setIsEditing] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [liveRate, setLiveRate] = useState(0.135);
   const [showBackModal, setShowBackModal] = useState(false);
   const [prevStageName, setPrevStageName] = useState("");
@@ -394,6 +396,7 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
               <h1 style={{ fontSize: '36px', fontWeight: 900, letterSpacing: '-0.06em', margin: 0 }}>{request.title.toUpperCase()}</h1>
             )}
             <p className="cyber-label" style={{ marginTop: '8px', color: 'var(--accent)' }}></p>
+          </div>
             
             {/* SPECIFICATIONS GRID (COMPACT FOR MOBILE) */}
          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', margin: '32px 0' }}>
@@ -536,9 +539,9 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
                      </motion.button>
                    );
                 })}
-             </div>
           </div>
-         </div>       </div>
+       </div>
+    </div>
 
          {/* FINANCE MODULE (TITANE WHITE) */}
          <div style={{ padding: '32px', background: '#fff', borderRadius: '40px', border: '1px solid rgba(0,0,0,0.04)', marginBottom: '48px', boxShadow: '0 10px 30px rgba(0,0,0,0.02)' }}>
