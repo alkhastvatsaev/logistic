@@ -149,6 +149,8 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
   };
 
   const [showTrackingInput, setShowTrackingInput] = useState(false);
+  const [showEmailImport, setShowEmailImport] = useState(false);
+  const [emailText, setEmailText] = useState("");
   const [isEditingTracking, setIsEditingTracking] = useState(false);
   const [manualTracking, setManualTracking] = useState({ location: "", event: "", status: "" });
   const [isSyncing, setIsSyncing] = useState(false);
@@ -215,6 +217,43 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
       toast.success("Statut mis à jour manuellement.");
     } catch (e) {
       toast.error("Erreur de sauvegarde.");
+    }
+  };
+
+  const handleEmailImport = async () => {
+    if (!emailText) return;
+    const lines = emailText.split('\n');
+    let lastUpdateDate = "";
+    let lastLocation = "";
+    let lastEvent = "";
+
+    const activityIdx = lines.findIndex(l => l.toLowerCase().includes('activity/location'));
+    if (activityIdx !== -1 && lines[activityIdx + 1]) {
+      const parts = lines[activityIdx + 1].trim().split(/\t| {2,}/);
+      if (parts.length >= 2) {
+        lastUpdateDate = parts[0];
+        const statusParts = parts[1].split(' - ');
+        lastEvent = statusParts[0];
+        lastLocation = statusParts[1] || "HUB FEDEX";
+      }
+    } else {
+      if (emailText.includes("HONG KONG")) lastLocation = "HONG KONG, HK";
+      if (emailText.includes("Label created")) lastEvent = "Label created";
+    }
+
+    try {
+      await update(rtdbRef(rtdb, `requests/${params.id}`), {
+        trackingStatus: "EN ROUTE",
+        lastLocation: lastLocation || "HUB LOGISTIQUE",
+        lastEvent: lastEvent || "Information reçue par mail",
+        lastUpdateDate: lastUpdateDate || "Dernier scan",
+        lastSyncAt: Date.now()
+      });
+      setShowEmailImport(false);
+      setEmailText("");
+      toast.success("Données extraites avec succès !");
+    } catch (e) {
+      toast.error("Échec de l'import email.");
     }
   };
 
@@ -616,12 +655,18 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
                   </div>
                  <div style={{ display: 'flex', gap: '12px', marginTop: '32px' }}>
                     <button 
-                      onClick={() => syncTracking()} 
+                       onClick={() => setShowEmailImport(true)} 
+                       style={{ flex: 1, height: '48px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', fontSize: '11px', fontWeight: 900 }}
+                     >
+                        IMPORT EMAIL
+                     </button>
+                     <button 
+                       onClick={() => syncTracking()} 
                        disabled={isSyncing} 
-                      style={{ flex: 1, height: '48px', borderRadius: '16px', background: '#fff', border: 'none', color: '#4D148C', fontSize: '11px', fontWeight: 900, cursor: 'pointer' }}
-                    >
-                       {isSyncing ? 'SYNCING...' : 'REFRESH DATA'}
-                    </button>
+                       style={{ flex: 1, height: '48px', borderRadius: '16px', background: '#fff', border: 'none', color: '#4D148C', fontSize: '11px', fontWeight: 900, cursor: 'pointer' }}
+                     >
+                        {isSyncing ? 'SYNCING...' : 'REFRESH DATA'}
+                     </button>
                     <a 
                       href={`https://www.fedex.com/fedextrack/?trknbr=${request.trackingNumber}`} 
                       target="_blank" 
@@ -826,6 +871,25 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
               <p style={{ marginTop: '12px', color: 'var(--faded)', fontWeight: 600, fontSize: '14px' }}>This cannot be undone.</p>
               <button onClick={() => { remove(rtdbRef(rtdb, `requests/${params.id}`)); router.push('/'); }} className="btn-main" style={{ background: '#FF3B30', marginTop: '40px' }}>CONFIRM</button>
               <button onClick={() => setShowDeleteModal(false)} style={{ background: 'none', border: 'none', marginTop: '20px', fontWeight: 800, color: 'var(--faded)', fontSize: '13px' }}>CANCEL</button>
+            </div>
+          </motion.div>
+        )}
+        {showEmailImport && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'fixed', inset: 0, background: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(30px)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
+            <div style={{ textAlign: 'center', maxWidth: '400px', width: '100%' }}>
+              <div style={{ width: '64px', height: '64px', borderRadius: '32px', background: '#4D148C', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px auto', color: '#fff' }}><FileText /></div>
+              <h2 style={{ fontSize: '24px', fontWeight: 900, letterSpacing: '-0.04em' }}>IMPORT EMAIL</h2>
+              <p style={{ marginTop: '12px', color: 'var(--faded)', fontWeight: 600, fontSize: '12px' }}>COLLEZ LE TEXTE DU MAIL FEDEX</p>
+              
+              <textarea 
+                placeholder="Copiez tout le mail ici..."
+                value={emailText}
+                onChange={(e) => setEmailText(e.target.value)}
+                style={{ width: '100%', height: '200px', padding: '20px', background: '#F9F9F9', borderRadius: '20px', fontSize: '13px', fontWeight: 500, marginTop: '32px', border: '1px solid rgba(0,0,0,0.05)', resize: 'none' }}
+              />
+
+              <button onClick={handleEmailImport} className="btn-main" style={{ background: '#4D148C', marginTop: '24px' }}>EXTRAIRE INFO</button>
+              <button onClick={() => setShowEmailImport(false)} style={{ background: 'none', border: 'none', marginTop: '20px', fontWeight: 800, color: 'var(--faded)', fontSize: '13px' }}>ANNULER</button>
             </div>
           </motion.div>
         )}
