@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import { rtdb, rtdbRef, get, set, push, update } from "@/lib/firebase";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
-import { CheckCircle, Truck, PackageCheck } from "lucide-react";
+import { CheckCircle, Truck, PackageCheck, ArrowRight, User, MapPin } from "lucide-react";
+import { TitaneLoader } from "@/components/ui/TitaneLoader";
 
 export default function SupplierPortal({ params }: { params: { token: string } }) {
   const [loading, setLoading] = useState(true);
@@ -86,8 +87,9 @@ export default function SupplierPortal({ params }: { params: { token: string } }
       
       await update(rtdbRef(rtdb), updates);
       setSubmitted(true);
+      toast.success("DEMANDE ENVOYÉE AVEC SUCCÈS");
     } catch (error) {
-      toast.error("Error submitting. Please try again.");
+      toast.error("ERREUR DE SYNCHRONISATION");
     } finally {
       setLoading(false);
     }
@@ -105,165 +107,158 @@ export default function SupplierPortal({ params }: { params: { token: string } }
       
       await update(rtdbRef(rtdb), updates);
       setShippingSubmitted(true);
+      toast.success("EXPÉDITION CONFIRMÉE");
     } catch (error) {
-      toast.error("Error updating tracking");
+      toast.error("ERREUR MISE À JOUR TRACKING");
     } finally {
       setLoading(false);
     }
   };
 
-  if (loading) return <div className="layout py-20 text-center">Loading portal...</div>;
-  if (!request) return <div className="layout py-20 text-center">Invalid or expired link.</div>;
+  if (loading) return <TitaneLoader />;
+  if (!request) return <div className="layout" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px', textAlign: 'center', fontWeight: 900 }}>Invalid or expired link.</div>;
 
-  // SCENARIO 3: SHIPPED
+  // SUCCESS STATE COMPONENTS
+  const StatusHero = ({ icon: Icon, title, sub }: { icon: any, title: string, sub: string }) => (
+    <div className="layout" style={{ background: '#fff', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px', textAlign: 'center' }}>
+      <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
+        <div style={{ width: '80px', height: '80px', borderRadius: '40px', background: 'var(--accent-glow)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 32px auto', color: 'var(--accent)' }}>
+          <Icon size={40} strokeWidth={2.5} />
+        </div>
+        <h1 style={{ fontSize: '28px', fontWeight: 900, letterSpacing: '-0.05em', marginBottom: '12px' }}>{title.toUpperCase()}</h1>
+        <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--faded)', lineHeight: 1.6 }}>{sub}</p>
+        <button onClick={() => window.location.reload()} style={{ marginTop: '40px', background: 'transparent', border: 'none', color: 'var(--accent)', fontWeight: 900, fontSize: '12px' }}>REFRESH STATUS</button>
+      </motion.div>
+    </div>
+  );
+
   if (shippingSubmitted) {
-    return (
-      <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '0 24px' }}>
-        <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}>
-          <CheckCircle size={64} className="text-green-500" style={{ margin: '0 auto 24px auto' }} />
-          <h1 className="title" style={{ fontSize: '24px', marginBottom: '8px' }}>Shipment Confirmed</h1>
-          <p className="subtitle">FedEx Tracking: {request.trackingNumber || trackingNumber}</p>
-        </motion.div>
-      </div>
-    );
+    return <StatusHero icon={PackageCheck} title="Shipment Sent" sub={`Tracking FedEx : ${request.trackingNumber || trackingNumber}`} />;
   }
 
-  // SCENARIO 2: IN PRODUCTION -> Ask for tracking
-  if (request.status === "IN_PRODUCTION" && request.acceptedTokenId === params.token) {
-    return (
-      <div style={{ padding: '40px 20px' }}>
-        <header style={{ textAlign: 'center', marginBottom: '32px' }}>
-          <Truck size={48} color="var(--accent)" style={{ margin: '0 auto 16px auto' }} />
-          <h1 className="title" style={{ fontSize: '24px' }}>Production Active</h1>
-          <p className="subtitle">Enter FedEx tracking number once shipped</p>
-        </header>
-
-        <form onSubmit={handleShippingSubmit}>
-          <div className="list-group">
-            <div className="row-item">
-              <label>FedEx Tracking Number</label>
-              <input 
-                required 
-                type="text" 
-                value={trackingNumber} 
-                onChange={e => setTrackingNumber(e.target.value)} 
-                placeholder="1234 5678 9012" 
-                style={{ fontSize: '24px', fontWeight: 600, textAlign: 'center', letterSpacing: '1px' }}
-              />
-            </div>
-          </div>
-          <button type="submit" className="btn" style={{ width: '100%', padding: '18px' }}>
-            Confirm Shipment
-          </button>
-        </form>
-      </div>
-    );
-  }
-
-  // SCENARIO 1.5: QUOTE ALREADY SUBMITTED
   if (submitted) {
-    return (
-      <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '0 24px' }}>
-        <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}>
-          <CheckCircle size={64} style={{ color: 'var(--success)', margin: '0 auto 24px auto' }} />
-          <h1 className="title" style={{ fontSize: '24px', marginBottom: '8px' }}>Quote Submitted</h1>
-          <p className="subtitle">Waiting for buyer review</p>
-        </motion.div>
-      </div>
-    );
+    return <StatusHero icon={CheckCircle} title="Quote Submitted" sub="Votre proposition a été transmise avec succès au bureau d'étude." />;
   }
 
-  // SCENARIO 1: FIRST TIME QUOTE FORM
   return (
-    <div style={{ padding: '40px 0' }}>
-      <header style={{ textAlign: 'center', marginBottom: '32px', padding: '0 20px' }}>
-        <p style={{ fontSize: '12px', textTransform: 'uppercase', color: 'var(--faded)', fontWeight: 600, letterSpacing: '1px' }}>MANUFACTURING REVIEW</p>
-        <h1 className="title" style={{ fontSize: '28px', marginTop: '4px' }}>{request.title}</h1>
+    <div className="layout" style={{ background: '#fff', paddingBottom: '120px' }}>
+      
+      {/* BRAND HEADER */}
+      <header style={{ padding: '48px 32px 32px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <h2 style={{ fontSize: '16px', fontWeight: 900, letterSpacing: '-0.05em' }}>LOGIS.</h2>
+        <span className="cyber-label" style={{ letterSpacing: '0.1em', fontSize: '8px' }}>SUPPLIER PORTAL</span>
       </header>
 
-      <div style={{ padding: '0 20px' }}>
-        <div className="list-group" style={{ background: 'rgba(0, 122, 255, 0.05)', border: '1px solid rgba(0, 122, 255, 0.1)' }}>
-          <div style={{ padding: '12px 16px 4px 16px', fontSize: '11px', fontWeight: 700, color: 'var(--accent)' }}>SHIP TO DESTINATION (FRANCE)</div>
-          <div className="row-item" style={{ border: 'none', background: 'transparent', paddingBottom: '16px' }}>
-            <p style={{ fontSize: '14px', lineHeight: '1.5', color: 'var(--foreground)', fontWeight: 500 }}>
-              <strong>SACHA BENSADOUN</strong><br />
-              FedEx Express – Geispolsheim<br />
-              4 Rue des Imprimeurs, 67118 Geispolsheim<br />
-              France
-            </p>
-          </div>
-        </div>
-
-        {request.imageUrl && (
-          <div style={{ marginBottom: '32px', borderRadius: '16px', overflow: 'hidden', background: '#fff', border: '0.5px solid var(--separator)' }}>
-            <img 
-              src={request.imageUrl} 
-              alt="Reference" 
-              style={{ width: '100%', aspectRatio: '1/1', objectFit: 'contain' }} 
-            />
-          </div>
-        )}
-
-        <form onSubmit={handleSubmitQuote}>
-          <div className="list-group">
-            <div className="row-item">
-              <label>Factory Name</label>
-              <input required type="text" value={supplierName} onChange={e => setSupplierName(e.target.value)} placeholder="Enter factory ID" />
+      {/* REQUEST OVERVIEW */}
+      <div style={{ padding: '0 32px' }}>
+         <motion.div initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} style={{ marginBottom: '48px' }}>
+            <span className="cyber-label" style={{ marginBottom: '8px', display: 'block' }}>DESIGN REVIEW / 设计审查</span>
+            <h1 style={{ fontSize: '32px', fontWeight: 900, letterSpacing: '-0.06em', margin: 0, textTransform: 'uppercase' }}>{request.title}</h1>
+            <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
+               <div style={{ padding: '6px 12px', background: '#F9F9F9', borderRadius: '8px', fontSize: '10px', fontWeight: 900 }}>{request.size || 'STD'}</div>
+               <div style={{ padding: '6px 12px', background: 'var(--accent-glow)', borderRadius: '8px', fontSize: '10px', fontWeight: 900, color: 'var(--accent)' }}>{request.goldColor?.toUpperCase()}</div>
             </div>
-          </div>
+         </motion.div>
 
-          <div className="list-group">
-            <div className="row-item">
-              <label>Jewelry Price (RMB ¥)</label>
-              <input required type="number" step="0.01" value={priceRMB} onChange={e => setPriceRMB(e.target.value)} placeholder="0.00" style={{ fontWeight: 600 }} />
+         {request.imageUrl && (
+            <div style={{ position: 'relative', width: '100%', aspectRatio: '1', borderRadius: '40px', overflow: 'hidden', background: '#F9F9F9', marginBottom: '48px', border: '1px solid rgba(0,0,0,0.02)' }}>
+               <img src={request.imageUrl} style={{ width: '100%', height: '100%', objectFit: 'contain' }} alt="Reference" />
             </div>
-            <div className="row-item">
-              <label>Shipping Cost (RMB ¥)</label>
-              <input required type="number" step="0.01" value={shippingCostRMB} onChange={e => setShippingCostRMB(e.target.value)} placeholder="0.00" />
-            </div>
-            <div className="row-item">
-              <label>Lead Time (Days)</label>
-              <input required type="number" value={productionTimeDays} onChange={e => setProductionTimeDays(e.target.value)} placeholder="7" />
-            </div>
-          </div>
+         )}
 
-          <div className="list-group">
-            <div style={{ display: 'flex' }}>
-              <div className="row-item" style={{ flex: 1, borderRight: '0.5px solid var(--separator)' }}>
-                <label>Total Weight (g)</label>
-                <input required type="number" step="0.1" value={totalWeight} onChange={e => setTotalWeight(e.target.value)} placeholder="0.0" />
+         {/* FORM INTERFACE */}
+         {request.status === "IN_PRODUCTION" && request.acceptedTokenId === params.token ? (
+           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+              <div style={{ padding: '32px', background: '#F9F9F9', borderRadius: '32px', marginBottom: '32px' }}>
+                 <p className="cyber-label" style={{ marginBottom: '20px' }}>LOGISTICS / 物流信息</p>
+                 <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '32px' }}>
+                    <div style={{ width: '48px', height: '48px', borderRadius: '24px', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 5px 15px rgba(0,0,0,0.02)' }}>
+                       <Truck size={20} />
+                    </div>
+                    <div>
+                       <p style={{ fontSize: '11px', fontWeight: 900, color: '#000' }}>SHIP TO FRANCE</p>
+                       <p style={{ fontSize: '10px', fontWeight: 600, color: 'var(--faded)', marginTop: '2px' }}>SACHA BENSADOUN, GEISPOLSHEIM</p>
+                    </div>
+                 </div>
+                 
+                 <label className="cyber-label" style={{ fontSize: '7px', opacity: 0.5 }}>TRACKING NUMBER / 运单号</label>
+                 <input 
+                   required
+                   value={trackingNumber}
+                   onChange={e => setTrackingNumber(e.target.value)}
+                   placeholder="Enter FedEx ID..."
+                   style={{ width: '100%', background: 'transparent', fontSize: '24px', fontWeight: 900, marginTop: '8px', letterSpacing: '0.05em' }}
+                 />
               </div>
-              <div className="row-item" style={{ flex: 1 }}>
-                <label>Gold Weight (g)</label>
-                <input required type="number" step="0.1" value={goldWeight} onChange={e => setGoldWeight(e.target.value)} placeholder="0.0" />
+              <button onClick={handleShippingSubmit} className="btn-main" style={{ background: 'var(--accent)', color: '#fff' }}>
+                 CONFIRM SHIPMENT <ArrowRight size={18} />
+              </button>
+           </motion.div>
+         ) : (
+           <form onSubmit={handleSubmitQuote} style={{ display: 'flex', flexDirection: 'column', gap: '40px' }}>
+              
+              <div style={{ padding: '32px', background: '#F9F9F9', borderRadius: '32px' }}>
+                 <p className="cyber-label" style={{ marginBottom: '24px' }}>IDENTIFICATION / 标识</p>
+                 <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                    <div style={{ width: '40px', height: '40px', borderRadius: '20px', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                       <User size={18} />
+                    </div>
+                    <input 
+                      required
+                      value={supplierName}
+                      onChange={e => setSupplierName(e.target.value)}
+                      placeholder="Factory Code..."
+                      style={{ flex: 1, background: 'transparent', fontSize: '18px', fontWeight: 900 }}
+                    />
+                 </div>
               </div>
-            </div>
-            <div style={{ display: 'flex', borderTop: '0.5px solid var(--separator)' }}>
-              <div className="row-item" style={{ flex: 1, borderRight: '0.5px solid var(--separator)' }}>
-                <label>Diamond Count</label>
-                <input required type="number" value={diamondCount} onChange={e => setDiamondCount(e.target.value)} placeholder="0" />
-              </div>
-              <div className="row-item" style={{ flex: 1 }}>
-                <label>Total Carat (ct)</label>
-                <input required type="number" step="0.01" value={totalCarat} onChange={e => setTotalCarat(e.target.value)} placeholder="0.00" />
-              </div>
-            </div>
-            <div className="row-item" style={{ borderTop: '0.5px solid var(--separator)' }}>
-              <label>Diamond Quality</label>
-              <select value={diamondType} onChange={e => setDiamondType(e.target.value)}>
-                <option value="Lab Grown">Lab Grown (CVD/HPHT)</option>
-                <option value="Natural">Natural / Mined</option>
-                <option value="Moissanite">Moissanite</option>
-                <option value="None">No Diamonds</option>
-              </select>
-            </div>
-          </div>
 
-          <button type="submit" className="btn" style={{ width: '100%', padding: '18px', fontSize: '18px', marginBottom: '40px' }}>
-            Submit Performance Data
-          </button>
-        </form>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                 <div style={{ padding: '24px', background: '#F9F9F9', borderRadius: '28px' }}>
+                    <p className="cyber-label" style={{ fontSize: '7px', marginBottom: '8px', opacity: 0.5 }}>PRICE (RMB ¥)</p>
+                    <input type="number" step="0.01" value={priceRMB} onChange={e => setPriceRMB(e.target.value)} placeholder="0.00" style={{ width: '100%', background: 'transparent', fontSize: '20px', fontWeight: 900 }} required />
+                 </div>
+                 <div style={{ padding: '24px', background: '#F9F9F9', borderRadius: '28px' }}>
+                    <p className="cyber-label" style={{ fontSize: '7px', marginBottom: '8px', opacity: 0.5 }}>TIME (DAYS)</p>
+                    <input type="number" value={productionTimeDays} onChange={e => setProductionTimeDays(e.target.value)} placeholder="0" style={{ width: '100%', background: 'transparent', fontSize: '20px', fontWeight: 900 }} required />
+                 </div>
+              </div>
+
+              <div style={{ padding: '32px', background: '#F9F9F9', borderRadius: '32px' }}>
+                 <p className="cyber-label" style={{ marginBottom: '24px' }}>MANUFACTURING DATA / 制造数据</p>
+                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px' }}>
+                    <div>
+                       <label className="cyber-label" style={{ fontSize: '7px', opacity: 0.5 }}>TOTAL WEIGHT (G)</label>
+                       <input required type="number" step="0.01" value={totalWeight} onChange={e => setTotalWeight(e.target.value)} placeholder="0.0" style={{ width: '100%', background: 'transparent', fontSize: '16px', fontWeight: 900, marginTop: '8px' }} />
+                    </div>
+                    <div>
+                       <label className="cyber-label" style={{ fontSize: '7px', opacity: 0.5 }}>GOLD WEIGHT (G)</label>
+                       <input required type="number" step="0.01" value={goldWeight} onChange={e => setGoldWeight(e.target.value)} placeholder="0.0" style={{ width: '100%', background: 'transparent', fontSize: '16px', fontWeight: 900, marginTop: '8px' }} />
+                    </div>
+                    <div>
+                       <label className="cyber-label" style={{ fontSize: '7px', opacity: 0.5 }}>DIAMOND COUNT</label>
+                       <input required type="number" value={diamondCount} onChange={e => setDiamondCount(e.target.value)} placeholder="0" style={{ width: '100%', background: 'transparent', fontSize: '16px', fontWeight: 900, marginTop: '8px' }} />
+                    </div>
+                    <div>
+                       <label className="cyber-label" style={{ fontSize: '7px', opacity: 0.5 }}>TOTAL CARAT (CT)</label>
+                       <input required type="number" step="0.01" value={totalCarat} onChange={e => setTotalCarat(e.target.value)} placeholder="0.00" style={{ width: '100%', background: 'transparent', fontSize: '16px', fontWeight: 900, marginTop: '8px' }} />
+                    </div>
+                 </div>
+              </div>
+
+              <div style={{ padding: '24px', background: '#F9F9F9', borderRadius: '28px' }}>
+                 <p className="cyber-label" style={{ fontSize: '7px', marginBottom: '8px', opacity: 0.5 }}>SHIPPING (RMB ¥)</p>
+                 <input type="number" step="0.01" value={shippingCostRMB} onChange={e => setShippingCostRMB(e.target.value)} placeholder="0.00" style={{ width: '100%', background: 'transparent', fontSize: '20px', fontWeight: 900 }} required />
+              </div>
+
+              <button type="submit" className="btn-main" style={{ background: '#000', color: '#fff' }}>
+                 SUBMIT QUOTE / 提交报价 <ArrowRight size={18} />
+              </button>
+
+           </form>
+         )}
       </div>
+
     </div>
   );
 }
