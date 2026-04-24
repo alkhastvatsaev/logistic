@@ -421,9 +421,17 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
                    <motion.div key={q.id} whileTap={{ scale: 0.98 }} onClick={() => request.acceptedQuoteId === q.id ? handleUnselectQuote() : handleAcceptQuote(q)}
                       style={{ padding: '24px', borderRadius: '32px', background: request.acceptedQuoteId === q.id ? 'var(--accent)' : '#fff', border: '1px solid rgba(0,0,0,0.05)', color: request.acceptedQuoteId === q.id ? '#fff' : '#000', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                      <div style={{ flex: 1 }}>
-                        <p className="cyber-label" style={{ color: 'inherit' }}>{q.supplierName || 'FACTORY'}</p>
-                        <div style={{ fontSize: '22px', fontWeight: 900 }}>{q.priceRMB} ¥</div>
-                        <div style={{ fontSize: '10px', opacity: 0.5, fontWeight: 800 }}>OR: {q.goldWeight}g ({q.goldPurity || '18K'}) / {q.stoneQuality || 'STONES'}: {q.diamondCount} ({q.totalCarat}ct)</div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '4px' }}>
+                           <p className="cyber-label" style={{ color: 'inherit' }}>{q.supplierName || 'FACTORY'}</p>
+                           <div style={{ fontSize: '18px', fontWeight: 900, color: request.acceptedQuoteId === q.id ? '#fff' : 'var(--accent)' }}>
+                             {((Number(q.priceRMB) + Number(q.shippingCostRMB || 0)) * liveRate).toFixed(0)}€
+                           </div>
+                        </div>
+                        <div style={{ fontSize: '20px', fontWeight: 900 }}>{Number(q.priceRMB) + Number(q.shippingCostRMB || 0)} ¥</div>
+                        <div style={{ fontSize: '9px', opacity: 0.6, fontWeight: 800, marginTop: '4px' }}>
+                           {q.priceRMB}¥ (PIÈCE) + {q.shippingCostRMB || 0}¥ (PORT)
+                        </div>
+                        <div style={{ fontSize: '10px', opacity: 0.4, fontWeight: 800, marginTop: '12px' }}>OR: {q.goldWeight}g ({q.goldPurity || '18K'}) / {q.stoneQuality || 'STONES'}: {q.diamondCount} ({q.totalCarat}ct)</div>
                      </div>
                      {request.acceptedQuoteId === q.id ? <Check size={20} strokeWidth={3} /> : <Plus size={20} strokeWidth={3} style={{ opacity: 0.2 }} />}
                    </motion.div>

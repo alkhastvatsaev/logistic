@@ -16,7 +16,12 @@ export type RequestStatus = "DRAFT" | "WAITING_FOR_QUOTE" | "QUOTED" | "MANAGER_
 export default function Dashboard() {
   const { requests, loading } = useAllRequests();
   const allQuotes = useAllQuotes();
+  const [liveRate, setLiveRate] = useState(0.135);
   const prevStatuses = useRef<Record<string, string>>({});
+
+  useEffect(() => {
+    import("@/lib/logic").then(logic => logic.fetchLiveRate().then(setLiveRate));
+  }, []);
 
   useEffect(() => {
     if (!loading && requests.length > 0) {
@@ -93,7 +98,10 @@ export default function Dashboard() {
                           )}
                        </div>
                        {bestPrice && (
-                          <div style={{ fontSize: '12px', fontWeight: 900 }}>{bestPrice} ¥ <span style={{ opacity: 0.4, fontSize: '9px' }}>BEST</span></div>
+                          <div style={{ textAlign: 'right' }}>
+                             <div style={{ fontSize: '12px', fontWeight: 900 }}>{bestPrice} ¥</div>
+                             <div style={{ fontSize: '10px', fontWeight: 900, color: 'var(--accent)', marginTop: '2px' }}>~{(bestPrice * liveRate).toFixed(0)}€</div>
+                          </div>
                        )}
                     </div>
                   </div>
