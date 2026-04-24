@@ -89,8 +89,8 @@ export default function DeliveryRadar() {
       {/* MONTHLY GRID */}
       <div style={{ padding: '0 24px' }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '4px', marginBottom: '8px' }}>
-          {['L', 'M', 'M', 'J', 'V', 'S', 'D'].map(d => (
-            <div key={d} style={{ textAlign: 'center', fontSize: '9px', fontWeight: 900, color: 'var(--faded)', padding: '10px 0' }}>{d}</div>
+          {['L', 'Ma', 'Me', 'J', 'V', 'S', 'D'].map((d, idx) => (
+            <div key={`${d}-${idx}`} style={{ textAlign: 'center', fontSize: '9px', fontWeight: 900, color: 'var(--faded)', padding: '10px 0' }}>{d}</div>
           ))}
         </div>
 
