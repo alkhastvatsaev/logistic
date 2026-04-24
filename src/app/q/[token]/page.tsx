@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { rtdb, rtdbRef, get, set, push, update } from "@/lib/firebase";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
-import { CheckCircle, Truck, PackageCheck, ArrowRight, User, MapPin } from "lucide-react";
+import { CheckCircle, Truck, PackageCheck, ArrowRight, User, MapPin, ChevronLeft, ChevronRight } from "lucide-react";
 import { TitaneLoader } from "@/components/ui/TitaneLoader";
 
 export default function SupplierPortal({ params }: { params: { token: string } }) {
@@ -27,6 +27,7 @@ export default function SupplierPortal({ params }: { params: { token: string } }
   const [estimatedDeliveryDate, setEstimatedDeliveryDate] = useState("");
   const [triedToSubmit, setTriedToSubmit] = useState(false);
   const [showCalendar, setShowCalendar] = useState(false);
+  const [calendarView, setCalendarView] = useState({ month: new Date().getMonth(), year: new Date().getFullYear() });
 
   // Tracking Form State
   const [trackingNumber, setTrackingNumber] = useState("");
@@ -293,32 +294,76 @@ export default function SupplierPortal({ params }: { params: { token: string } }
         {showCalendar && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'fixed', inset: 0, background: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(40px)', zIndex: 3000, display: 'flex', alignItems: 'flex-end' }}>
             <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} style={{ width: '100%', background: '#fff', borderRadius: '40px 40px 0 0', padding: '40px 32px', boxShadow: '0 -20px 60px rgba(0,0,0,0.1)' }}>
+              
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
-                <h2 style={{ fontSize: '18px', fontWeight: 900 }}>SELECT DELIVERY DATE</h2>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                   <button 
+                     onClick={() => {
+                        const newMonth = calendarView.month === 0 ? 11 : calendarView.month - 1;
+                        const newYear = calendarView.month === 0 ? calendarView.year - 1 : calendarView.year;
+                        setCalendarView({ month: newMonth, year: newYear });
+                     }}
+                     style={{ width: '40px', height: '40px', borderRadius: '20px', border: 'none', background: '#F9F9F9', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                   >
+                     <ChevronLeft size={18} />
+                   </button>
+                   <div style={{ textAlign: 'center' }}>
+                      <p style={{ fontSize: '13px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                        {new Date(calendarView.year, calendarView.month).toLocaleString('fr-FR', { month: 'long' })}
+                      </p>
+                      <p style={{ fontSize: '10px', fontWeight: 700, opacity: 0.3 }}>{calendarView.year}</p>
+                   </div>
+                   <button 
+                     onClick={() => {
+                        const newMonth = calendarView.month === 11 ? 0 : calendarView.month + 1;
+                        const newYear = calendarView.month === 11 ? calendarView.year + 1 : calendarView.year;
+                        setCalendarView({ month: newMonth, year: newYear });
+                     }}
+                     style={{ width: '40px', height: '40px', borderRadius: '20px', border: 'none', background: '#F9F9F9', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                   >
+                     <ChevronRight size={18} />
+                   </button>
+                </div>
                 <button onClick={() => setShowCalendar(false)} style={{ background: '#000', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: '100px', fontSize: '11px', fontWeight: 900 }}>CLOSE</button>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '12px' }}>
-                {['M','T','W','T','F','S','S'].map((d, i) => <div key={i} style={{ textAlign: 'center', fontSize: '9px', fontWeight: 900, opacity: 0.3 }}>{d}</div>)}
-                {Array.from({ length: 42 }, (_, i) => {
-                  const date = new Date();
-                  date.setDate(date.getDate() + i);
-                  const dateStr = date.toISOString().split('T')[0];
-                  const isSelected = estimatedDeliveryDate === dateStr;
-                  return (
-                    <button 
-                      key={i} 
-                      onClick={() => { setEstimatedDeliveryDate(dateStr); setShowCalendar(false); }}
-                      style={{ 
-                        aspectRatio: '1', borderRadius: '16px', border: 'none', background: isSelected ? 'var(--accent)' : '#F9F9F9', 
-                        color: isSelected ? '#fff' : '#000', fontSize: '11px', fontWeight: 900,
-                        transition: 'all 0.2s ease'
-                      }}
-                    >
-                      {date.getDate()}
-                    </button>
-                  );
-                })}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '8px' }}>
+                {['L','M','M','J','V','S','D'].map((d, i) => <div key={i} style={{ textAlign: 'center', fontSize: '9px', fontWeight: 900, opacity: 0.3, paddingBottom: '12px' }}>{d}</div>)}
+                
+                {(() => {
+                  const firstDay = new Date(calendarView.year, calendarView.month, 1).getDay();
+                  const emptyDays = firstDay === 0 ? 6 : firstDay - 1;
+                  const daysInMonth = new Date(calendarView.year, calendarView.month + 1, 0).getDate();
+                  const displayDays = [];
+                  
+                  // Empty slots
+                  for (let i = 0; i < emptyDays; i++) displayDays.push(<div key={`empty-${i}`} />);
+                  
+                  // Real days
+                  for (let i = 1; i <= daysInMonth; i++) {
+                    const date = new Date(calendarView.year, calendarView.month, i);
+                    const dateStr = date.toISOString().split('T')[0];
+                    const isSelected = estimatedDeliveryDate === dateStr;
+                    const isToday = new Date().toISOString().split('T')[0] === dateStr;
+                    
+                    displayDays.push(
+                      <button 
+                        key={i} 
+                        onClick={() => { setEstimatedDeliveryDate(dateStr); setShowCalendar(false); }}
+                        style={{ 
+                          aspectRatio: '1', borderRadius: '16px', border: 'none', 
+                          background: isSelected ? 'var(--accent)' : (isToday ? 'var(--accent-glow)' : '#F9F9F9'), 
+                          color: isSelected ? '#fff' : (isToday ? 'var(--accent)' : '#000'), 
+                          fontSize: '11px', fontWeight: 900,
+                          transition: 'all 0.2s ease'
+                        }}
+                      >
+                        {i}
+                      </button>
+                    );
+                  }
+                  return displayDays;
+                })()}
               </div>
             </motion.div>
           </motion.div>
