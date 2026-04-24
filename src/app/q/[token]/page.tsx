@@ -24,6 +24,7 @@ export default function SupplierPortal({ params }: { params: { token: string } }
   const [totalCarat, setTotalCarat] = useState("");
   const [shippingCostRMB, setShippingCostRMB] = useState("");
   const [productionTimeDays, setProductionTimeDays] = useState("");
+  const [triedToSubmit, setTriedToSubmit] = useState(false);
 
   // Tracking Form State
   const [trackingNumber, setTrackingNumber] = useState("");
@@ -63,6 +64,11 @@ export default function SupplierPortal({ params }: { params: { token: string } }
 
   const handleSubmitQuote = async (e: React.FormEvent) => {
     e.preventDefault();
+    setTriedToSubmit(true);
+    if (!supplierName || !priceRMB || !totalWeight || !goldWeight || !diamondCount || !totalCarat || !productionTimeDays) {
+       toast.error("VEUILLEZ REMPLIR TOUS LES CHAMPS OBLIGATOIRES");
+       return;
+    }
     setLoading(true);
 
     try {
@@ -197,11 +203,11 @@ export default function SupplierPortal({ params }: { params: { token: string } }
          ) : (
            <form onSubmit={handleSubmitQuote} style={{ display: 'flex', flexDirection: 'column', gap: '40px' }}>
               
-              <div style={{ padding: '32px', background: '#F9F9F9', borderRadius: '32px' }}>
-                 <p className="cyber-label" style={{ marginBottom: '24px' }}>IDENTIFICATION / 标识</p>
+              <div style={{ padding: '32px', background: triedToSubmit && !supplierName ? 'rgba(255,59,48,0.05)' : '#F9F9F9', borderRadius: '32px', border: triedToSubmit && !supplierName ? '1px dashed #FF3B30' : '1px solid transparent', transition: 'all 0.3s ease' }}>
+                 <p className="cyber-label" style={{ marginBottom: '24px', color: triedToSubmit && !supplierName ? '#FF3B30' : 'inherit' }}>IDENTIFICATION / 标识</p>
                  <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                    <div style={{ width: '40px', height: '40px', borderRadius: '20px', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                       <User size={18} />
+                    <div style={{ width: '40px', height: '40px', borderRadius: '20px', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 5px 15px rgba(0,0,0,0.02)' }}>
+                       <User size={18} color={triedToSubmit && !supplierName ? '#FF3B30' : 'inherit'} />
                     </div>
                     <input 
                       required
@@ -214,34 +220,34 @@ export default function SupplierPortal({ params }: { params: { token: string } }
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                 <div style={{ padding: '24px', background: '#F9F9F9', borderRadius: '28px' }}>
-                    <p className="cyber-label" style={{ fontSize: '7px', marginBottom: '8px', opacity: 0.5 }}>PRICE (RMB ¥)</p>
+                 <div style={{ padding: '24px', background: triedToSubmit && !priceRMB ? 'rgba(255,59,48,0.05)' : '#F9F9F9', borderRadius: '28px', border: triedToSubmit && !priceRMB ? '1px dashed #FF3B30' : '1px solid transparent' }}>
+                    <p className="cyber-label" style={{ fontSize: '7px', marginBottom: '8px', opacity: 0.5, color: triedToSubmit && !priceRMB ? '#FF3B30' : 'inherit' }}>PRICE (RMB ¥)</p>
                     <input type="number" step="0.01" value={priceRMB} onChange={e => setPriceRMB(e.target.value)} placeholder="0.00" style={{ width: '100%', background: 'transparent', fontSize: '20px', fontWeight: 900 }} required />
                  </div>
-                 <div style={{ padding: '24px', background: '#F9F9F9', borderRadius: '28px' }}>
-                    <p className="cyber-label" style={{ fontSize: '7px', marginBottom: '8px', opacity: 0.5 }}>TIME (DAYS)</p>
+                 <div style={{ padding: '24px', background: triedToSubmit && !productionTimeDays ? 'rgba(255,59,48,0.05)' : '#F9F9F9', borderRadius: '28px', border: triedToSubmit && !productionTimeDays ? '1px dashed #FF3B30' : '1px solid transparent' }}>
+                    <p className="cyber-label" style={{ fontSize: '7px', marginBottom: '8px', opacity: 0.5, color: triedToSubmit && !productionTimeDays ? '#FF3B30' : 'inherit' }}>TIME (DAYS)</p>
                     <input type="number" value={productionTimeDays} onChange={e => setProductionTimeDays(e.target.value)} placeholder="0" style={{ width: '100%', background: 'transparent', fontSize: '20px', fontWeight: 900 }} required />
                  </div>
               </div>
 
-              <div style={{ padding: '32px', background: '#F9F9F9', borderRadius: '32px' }}>
-                 <p className="cyber-label" style={{ marginBottom: '24px' }}>MANUFACTURING DATA / 制造数据</p>
+              <div style={{ padding: '32px', background: (triedToSubmit && (!totalWeight || !goldWeight || !diamondCount || !totalCarat)) ? 'rgba(255,59,48,0.05)' : '#F9F9F9', borderRadius: '32px', border: (triedToSubmit && (!totalWeight || !goldWeight || !diamondCount || !totalCarat)) ? '1px dashed #FF3B30' : '1px solid transparent' }}>
+                 <p className="cyber-label" style={{ marginBottom: '24px', color: (triedToSubmit && (!totalWeight || !goldWeight || !diamondCount || !totalCarat)) ? '#FF3B30' : 'inherit' }}>MANUFACTURING DATA / 制造数据</p>
                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px' }}>
                     <div>
                        <label className="cyber-label" style={{ fontSize: '7px', opacity: 0.5 }}>TOTAL WEIGHT (G)</label>
-                       <input required type="number" step="0.01" value={totalWeight} onChange={e => setTotalWeight(e.target.value)} placeholder="0.0" style={{ width: '100%', background: 'transparent', fontSize: '16px', fontWeight: 900, marginTop: '8px' }} />
+                       <input required type="number" step="0.01" value={totalWeight} onChange={e => setTotalWeight(e.target.value)} placeholder="0.0" style={{ width: '100%', background: 'transparent', fontSize: '16px', fontWeight: 900, marginTop: '8px', color: triedToSubmit && !totalWeight ? '#FF3B30' : 'inherit' }} />
                     </div>
                     <div>
                        <label className="cyber-label" style={{ fontSize: '7px', opacity: 0.5 }}>GOLD WEIGHT (G)</label>
-                       <input required type="number" step="0.01" value={goldWeight} onChange={e => setGoldWeight(e.target.value)} placeholder="0.0" style={{ width: '100%', background: 'transparent', fontSize: '16px', fontWeight: 900, marginTop: '8px' }} />
+                       <input required type="number" step="0.01" value={goldWeight} onChange={e => setGoldWeight(e.target.value)} placeholder="0.0" style={{ width: '100%', background: 'transparent', fontSize: '16px', fontWeight: 900, marginTop: '8px', color: triedToSubmit && !goldWeight ? '#FF3B30' : 'inherit' }} />
                     </div>
                     <div>
                        <label className="cyber-label" style={{ fontSize: '7px', opacity: 0.5 }}>DIAMOND COUNT</label>
-                       <input required type="number" value={diamondCount} onChange={e => setDiamondCount(e.target.value)} placeholder="0" style={{ width: '100%', background: 'transparent', fontSize: '16px', fontWeight: 900, marginTop: '8px' }} />
+                       <input required type="number" value={diamondCount} onChange={e => setDiamondCount(e.target.value)} placeholder="0" style={{ width: '100%', background: 'transparent', fontSize: '16px', fontWeight: 900, marginTop: '8px', color: triedToSubmit && !diamondCount ? '#FF3B30' : 'inherit' }} />
                     </div>
                     <div>
                        <label className="cyber-label" style={{ fontSize: '7px', opacity: 0.5 }}>TOTAL CARAT (CT)</label>
-                       <input required type="number" step="0.01" value={totalCarat} onChange={e => setTotalCarat(e.target.value)} placeholder="0.00" style={{ width: '100%', background: 'transparent', fontSize: '16px', fontWeight: 900, marginTop: '8px' }} />
+                       <input required type="number" step="0.01" value={totalCarat} onChange={e => setTotalCarat(e.target.value)} placeholder="0.00" style={{ width: '100%', background: 'transparent', fontSize: '16px', fontWeight: 900, marginTop: '8px', color: triedToSubmit && !totalCarat ? '#FF3B30' : 'inherit' }} />
                     </div>
                  </div>
               </div>
