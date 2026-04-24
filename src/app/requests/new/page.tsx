@@ -17,7 +17,17 @@ export default function NewRequest() {
   const [category, setCategory] = useState<"Ring" | "Bracelet" | "Necklace">("Ring");
   const [size, setSize] = useState("52");
   const [goldColor, setGoldColor] = useState("Or Jaune");
+  const [stoneType, setStoneType] = useState("Sans Pierre");
   const [loading, setLoading] = useState(false);
+
+  const stones = [
+    { id: "Sans Pierre", label: "SANS", color: "#F9F9F9" },
+    { id: "Diamants", label: "DIAMANTS", color: "#FFFFFF" },
+    { id: "Rubis", label: "RUBIS", color: "#E0115F" },
+    { id: "Saphir", label: "SAPHIR", color: "#0F52BA" },
+    { id: "Émeraude", label: "ÉMERAUDE", color: "#50C878" },
+    { id: "Perles", label: "PERLES", color: "#F0EAD6" }
+  ];
 
   const sizeOptions = {
     Ring: Array.from({ length: 15 }, (_, i) => (49 + i).toString()),
@@ -49,6 +59,7 @@ export default function NewRequest() {
         brand,
         size, 
         goldColor,
+        stoneType,
         category: category === 'Ring' ? 'Bague' : (category === 'Bracelet' ? 'Bracelet' : 'Collier'),
         imageUrl, 
         status: "WAITING_FOR_QUOTE", 
@@ -128,6 +139,28 @@ export default function NewRequest() {
                      }}
                    >
                       <span style={{ fontSize: '10px', fontWeight: 900 }}>{g.label}</span>
+                   </button>
+                ))}
+             </div>
+          </motion.div>
+
+          {/* STONES SELECTION */}
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.18 }}>
+             <p className="cyber-label" style={{ marginBottom: '16px' }}>PIERRES / 宝石类型</p>
+             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
+                {stones.map(s => (
+                   <button 
+                     key={s.id} onClick={() => setStoneType(s.id)}
+                     style={{ 
+                       padding: '14px 4px', borderRadius: '20px', border: 'none',
+                       background: stoneType === s.id ? s.color : '#F9F9F9',
+                       color: stoneType === s.id ? (['Diamants', 'Perles', 'Sans Pierre'].includes(s.id) ? '#000' : '#fff') : 'rgba(0,0,0,0.4)',
+                       display: 'flex', justifyContent: 'center', alignItems: 'center',
+                       boxShadow: stoneType === s.id ? `0 8px 15px ${s.color}44` : 'none',
+                       transition: 'all 0.3s ease'
+                     }}
+                   >
+                      <span style={{ fontSize: '9px', fontWeight: 900 }}>{s.label}</span>
                    </button>
                 ))}
              </div>

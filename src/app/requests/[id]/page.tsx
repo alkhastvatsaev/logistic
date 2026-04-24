@@ -478,6 +478,39 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
                   </motion.button>
                ))}
             </div>
+
+          {/* STONES SELECTOR */}
+          <div style={{ marginBottom: '48px' }}>
+             <p className="cyber-label" style={{ fontSize: '7px', opacity: 0.5, marginBottom: '16px', paddingLeft: '8px' }}>PIERRES / 宝石类型</p>
+             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
+                {[
+                  { id: "Sans Pierre", label: "SANS", color: "#F9F9F9" },
+                  { id: "Diamants", label: "DIAMANTS", color: "#FFFFFF" },
+                  { id: "Rubis", label: "RUBIS", color: "#E0115F" },
+                  { id: "Saphir", label: "SAPHIR", color: "#0F52BA" },
+                  { id: "Émeraude", label: "ÉMERAUDE", color: "#50C878" },
+                  { id: "Perles", label: "PERLES", color: "#F0EAD6" }
+                ].map(s => (
+                   <motion.button 
+                     key={s.id} 
+                     whileTap={{ scale: 0.95 }}
+                     onClick={() => isEditing && saveField('stoneType', s.id)}
+                     style={{ 
+                       padding: '14px 4px', borderRadius: '20px', 
+                       background: request.stoneType === s.id ? s.color : '#F9F9F9',
+                       color: request.stoneType === s.id ? (['Diamants', 'Perles', 'Sans Pierre'].includes(s.id) ? '#000' : '#fff') : 'rgba(0,0,0,0.4)',
+                       border: 'none', display: 'flex', justifyContent: 'center', alignItems: 'center',
+                       opacity: isEditing ? 1 : (request.stoneType === s.id ? 1 : 0.4),
+                       boxShadow: request.stoneType === s.id ? `0 8px 15px ${s.color}44` : 'none',
+                       cursor: isEditing ? 'pointer' : 'default',
+                       transition: 'all 0.4s ease'
+                     }}
+                   >
+                      <span style={{ fontSize: '9px', fontWeight: 900 }}>{s.label}</span>
+                   </motion.button>
+                ))}
+             </div>
+          </div>
          </div>       </div>
 
          {/* FINANCE MODULE (TITANE WHITE) */}
