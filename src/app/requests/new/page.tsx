@@ -228,9 +228,6 @@ export default function NewRequest() {
         </div>
       </div>
 
-        </div>
-      </div>
-
       {/* VISION NAVIGATION PILL */}
       <VisionPill width="calc(100% - 64px)">
         <button className="vision-action accent" disabled={loading || !title} onClick={handleSubmit} style={{ width: '100%' }}>
