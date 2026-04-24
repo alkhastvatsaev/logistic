@@ -777,7 +777,7 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
          <div style={{ marginBottom: '64px', paddingLeft: '8px' }}>
             <span className="cyber-label" style={{ marginBottom: '24px', display: 'block' }}>LOGISTICS PIPELINE</span>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-               {[
+               {([
                  { id: 1, label: "Sourcing", statusMatch: ['DRAFT', 'WAITING_FOR_QUOTE'], date: request.createdAt ? new Date(request.createdAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }) : null },
                  { id: 2, label: "Review", statusMatch: ['QUOTED', 'MANAGER_REVIEW'] },
                  { id: 3, label: "Deposit", statusMatch: ['WAITING_FOR_DEPOSIT'] },
@@ -785,7 +785,7 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
                  { id: 5, label: "Payment", statusMatch: ['FINAL_PAYMENT'] },
                  { id: 6, label: "Transit", statusMatch: ['SHIPPED'] },
                  { id: 7, label: "Delivered", statusMatch: ['DELIVERED'], date: request.deliveryEstimation ? new Date(request.deliveryEstimation).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }) : (request.createdAt ? new Date(request.createdAt + 14 * 24 * 60 * 60 * 1000).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }) : null), isEstimate: !request.deliveryEstimation }
-               ].map((step: any) => {
+               ]).map((step: any) => {
                  const statusOrder = ["DRAFT", "WAITING_FOR_QUOTE", "QUOTED", "MANAGER_REVIEW", "WAITING_FOR_DEPOSIT", "IN_PRODUCTION", "FINAL_PAYMENT", "SHIPPED", "DELIVERED"];
                  const currentStatusIdx = statusOrder.indexOf(request.status);
                  const stepMaxIdx = Math.max(...step.statusMatch.map((s: string) => statusOrder.indexOf(s)));
@@ -852,7 +852,7 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
             )}
 
             {request.status === 'FINAL_PAYMENT' && (
-               <motion.button whileTap={{ scale: 0.95 }} className="vision-action active primary" onClick={() => setShowPaymentModal(true)} style={{ whiteSpace: 'nowrap', padding: '0 24px' }}>
+               <motion.button whileTap={{ scale: 0.95 }} className="vision-action active primary" onClick={handleBalancePayment} style={{ whiteSpace: 'nowrap', padding: '0 24px' }}>
                   <Calculator size={18} /> ENCAISSER SOLDE
                </motion.button>
             )}
