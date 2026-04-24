@@ -260,7 +260,25 @@ export default function SupplierPortal({ params }: { params: { token: string } }
                  </div>
                  <div className={triedToSubmit && !estimatedDeliveryDate ? 'shake' : ''} style={{ padding: '24px', background: triedToSubmit && !estimatedDeliveryDate ? 'rgba(255,59,48,0.05)' : '#F9F9F9', borderRadius: '28px', border: triedToSubmit && !estimatedDeliveryDate ? '1px dashed #FF3B30' : '1px solid transparent' }}>
                     <p className="cyber-label" style={{ fontSize: '7px', marginBottom: '8px', opacity: 0.5, color: triedToSubmit && !estimatedDeliveryDate ? '#FF3B30' : 'inherit' }}>DELIVERY / 预计送达</p>
-                    <input type="date" value={estimatedDeliveryDate} onChange={e => setEstimatedDeliveryDate(e.target.value)} style={{ width: '100%', background: 'transparent', fontSize: '13px', fontWeight: 900, color: triedToSubmit && !estimatedDeliveryDate ? '#FF3B30' : 'inherit', border: 'none', padding: 0 }} />
+                    <input 
+                      type="date" 
+                      value={estimatedDeliveryDate} 
+                      onChange={e => setEstimatedDeliveryDate(e.target.value)} 
+                      onClick={(e) => (e.target as any).showPicker?.()}
+                      style={{ 
+                        width: '100%', 
+                        background: 'transparent', 
+                        fontSize: '13px', 
+                        fontWeight: 900, 
+                        color: triedToSubmit && !estimatedDeliveryDate ? '#FF3B30' : 'inherit', 
+                        border: 'none', 
+                        padding: '4px 0',
+                        minHeight: '24px',
+                        cursor: 'pointer',
+                        appearance: 'none',
+                        WebkitAppearance: 'none'
+                      }} 
+                    />
                  </div>
               </div>
 
