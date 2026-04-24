@@ -113,6 +113,18 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
 
   const [showPaymentModal, setShowPaymentModal] = useState(false);
 
+  const handleDelete = async () => {
+    try {
+      await remove(rtdbRef(rtdb, `requests/${params.id}`));
+      // Also clean up quotes/payments if needed, but for now just the request is enough
+      await logEvent({ type: 'WORKFLOW', action: 'DELETE_REQUEST', requestId: params.id, details: { title: request?.title } });
+      toast.success("COMMANDE SUPPRIMÉE");
+      router.push('/');
+    } catch (err) {
+      toast.error("Erreur de suppression.");
+    }
+  };
+
   const generateSupplierLink = async () => {
     try {
       const token = Math.random().toString(36).substring(2, 15);
@@ -659,6 +671,24 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '32px' }}>
                    <button onClick={handleGoBack} style={{ padding: '18px', borderRadius: '18px', border: 'none', background: '#000', color: '#fff', fontWeight: 900, fontSize: '14px' }}>CONFIRMER LE RETOUR</button>
                    <button onClick={() => setShowBackModal(false)} style={{ padding: '18px', borderRadius: '18px', border: 'none', background: '#F9F9F9', fontWeight: 900, fontSize: '14px' }}>ANNULER</button>
+                </div>
+             </motion.div>
+          </motion.div>
+        )}
+
+        {showDeleteModal && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', zIndex: 3000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '32px' }}>
+             <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} style={{ width: '100%', maxWidth: '400px', background: '#fff', borderRadius: '40px', padding: '40px', textAlign: 'center' }}>
+                <div style={{ width: '64px', height: '64px', borderRadius: '32px', background: 'rgba(255,59,48,0.1)', color: '#FF3B30', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px auto' }}>
+                   <Trash2 size={24} />
+                </div>
+                <h2 style={{ fontSize: '20px', fontWeight: 900 }}>SUPPRIMER DÉFINITIVEMENT ?</h2>
+                <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--faded)', marginTop: '12px', lineHeight: 1.5 }}>
+                   Cette action est irréversible. Toutes les données de cette commande seront perdues.
+                </p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '32px' }}>
+                   <button onClick={handleDelete} style={{ padding: '18px', borderRadius: '18px', border: 'none', background: '#FF3B30', color: '#fff', fontWeight: 900, fontSize: '14px' }}>OUI, SUPPRIMER</button>
+                   <button onClick={() => setShowDeleteModal(false)} style={{ padding: '18px', borderRadius: '18px', border: 'none', background: '#F9F9F9', fontWeight: 900, fontSize: '14px' }}>ANNULER</button>
                 </div>
              </motion.div>
           </motion.div>
