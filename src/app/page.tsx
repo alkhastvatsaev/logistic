@@ -85,9 +85,14 @@ export default function Dashboard() {
                               background: r.goldColor === "Or Jaune" ? "#F5D061" : (r.goldColor === "Or Rose" ? "#E7A78B" : "#E5E5E5"),
                               boxShadow: '0 0 10px rgba(0,0,0,0.05)'
                             }} />
-                            <h3 style={{ fontSize: '18px', fontWeight: 900, color: '#000', margin: 0, letterSpacing: '-0.05em', textTransform: 'uppercase' }}>
-                              {r.title}
-                            </h3>
+                            <div style={{ flex: 1 }}>
+                                <h3 style={{ fontSize: '18px', fontWeight: 900, color: '#000', margin: 0, letterSpacing: '-0.05em', textTransform: 'uppercase' }}>
+                                  {r.title}
+                                </h3>
+                                <p style={{ fontSize: '9px', fontWeight: 700, color: 'var(--faded)', marginTop: '1px', textTransform: 'uppercase' }}>
+                                  CRÉÉ LE {new Date(r.createdAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                </p>
+                            </div>
                             {['QUOTED', 'FINAL_PAYMENT'].includes(r.status) && (
                                 <motion.div 
                                     animate={{ opacity: [0.4, 1, 0.4] }} 
