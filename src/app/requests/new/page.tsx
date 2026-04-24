@@ -148,21 +148,41 @@ export default function NewRequest() {
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.18 }}>
              <p className="cyber-label" style={{ marginBottom: '16px' }}>PIERRES / 宝石类型</p>
              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
-                {stones.map(s => (
-                   <button 
-                     key={s.id} onClick={() => setStoneType(s.id)}
-                     style={{ 
-                       padding: '14px 4px', borderRadius: '20px', border: 'none',
-                       background: stoneType === s.id ? s.color : '#F9F9F9',
-                       color: stoneType === s.id ? (['Diamants', 'Perles', 'Sans Pierre'].includes(s.id) ? '#000' : '#fff') : 'rgba(0,0,0,0.4)',
-                       display: 'flex', justifyContent: 'center', alignItems: 'center',
-                       boxShadow: stoneType === s.id ? `0 8px 15px ${s.color}44` : 'none',
-                       transition: 'all 0.3s ease'
-                     }}
-                   >
-                      <span style={{ fontSize: '9px', fontWeight: 900 }}>{s.label}</span>
-                   </button>
-                ))}
+                {stones.map(s => {
+                   const isSelected = stoneType === s.id;
+                   let stoneBg = isSelected ? s.color : '#F9F9F9';
+                   let textColor = isSelected ? (['Diamants', 'Perles', 'Sans Pierre'].includes(s.id) ? '#000' : '#fff') : 'rgba(0,0,0,0.4)';
+                   
+                   if (isSelected) {
+                      if (s.id === 'Diamants') stoneBg = 'linear-gradient(135deg, #fff 0%, #e0f2fe 40%, #bae6fd 60%, #fff 100%)';
+                      if (s.id === 'Rubis') stoneBg = 'radial-gradient(circle at 30% 30%, #ff5e9c 0%, #E0115F 60%, #8b0000 100%)';
+                      if (s.id === 'Saphir') stoneBg = 'radial-gradient(circle at 30% 30%, #4ea5ff 0%, #0F52BA 60%, #002366 100%)';
+                      if (s.id === 'Émeraude') stoneBg = 'radial-gradient(circle at 30% 30%, #94fbba 0%, #50C878 60%, #065535 100%)';
+                      if (s.id === 'Perles') stoneBg = 'radial-gradient(circle at 30% 30%, #ffffff 0%, #F0EAD6 50%, #dcd4b8 100%)';
+                      if (s.id === 'Sans Pierre') stoneBg = '#000';
+                   }
+
+                   return (
+                     <button 
+                       key={s.id} onClick={() => setStoneType(s.id)}
+                       style={{ 
+                         padding: '14px 4px', borderRadius: '20px', border: 'none',
+                         background: stoneBg,
+                         color: textColor,
+                         display: 'flex', justifyContent: 'center', alignItems: 'center',
+                         boxShadow: isSelected ? `0 10px 20px ${s.color === '#FFFFFF' ? 'rgba(0,102,255,0.1)' : s.color + '66'}` : 'none',
+                         transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                         position: 'relative',
+                         overflow: 'hidden'
+                       }}
+                     >
+                        {isSelected && s.id !== 'Sans Pierre' && (
+                          <div style={{ position: 'absolute', top: '-50%', left: '-50%', width: '200%', height: '200%', background: 'linear-gradient(45deg, transparent 45%, rgba(255,255,255,0.4) 50%, transparent 55%)', animation: 'shine 3s infinite' }} />
+                        )}
+                        <span style={{ fontSize: '9px', fontWeight: 900, position: 'relative', zIndex: 1, letterSpacing: '0.02em' }}>{s.label}</span>
+                     </button>
+                   );
+                })}
              </div>
           </motion.div>
 

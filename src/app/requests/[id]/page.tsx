@@ -491,25 +491,45 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
                   { id: "Saphir", label: "SAPHIR", color: "#0F52BA" },
                   { id: "Émeraude", label: "ÉMERAUDE", color: "#50C878" },
                   { id: "Perles", label: "PERLES", color: "#F0EAD6" }
-                ].map(s => (
-                   <motion.button 
-                     key={s.id} 
-                     whileTap={{ scale: 0.95 }}
-                     onClick={() => isEditing && saveField('stoneType', s.id)}
-                     style={{ 
-                       padding: '14px 4px', borderRadius: '20px', 
-                       background: request.stoneType === s.id ? s.color : '#F9F9F9',
-                       color: request.stoneType === s.id ? (['Diamants', 'Perles', 'Sans Pierre'].includes(s.id) ? '#000' : '#fff') : 'rgba(0,0,0,0.4)',
-                       border: 'none', display: 'flex', justifyContent: 'center', alignItems: 'center',
-                       opacity: isEditing ? 1 : (request.stoneType === s.id ? 1 : 0.4),
-                       boxShadow: request.stoneType === s.id ? `0 8px 15px ${s.color}44` : 'none',
-                       cursor: isEditing ? 'pointer' : 'default',
-                       transition: 'all 0.4s ease'
-                     }}
-                   >
-                      <span style={{ fontSize: '9px', fontWeight: 900 }}>{s.label}</span>
-                   </motion.button>
-                ))}
+                ].map(s => {
+                   const isSelected = request.stoneType === s.id;
+                   let stoneBg = isSelected ? s.color : '#F9F9F9';
+                   let textColor = isSelected ? (['Diamants', 'Perles', 'Sans Pierre'].includes(s.id) ? '#000' : '#fff') : 'rgba(0,0,0,0.4)';
+                   
+                   if (isSelected) {
+                      if (s.id === 'Diamants') stoneBg = 'linear-gradient(135deg, #fff 0%, #e0f2fe 40%, #bae6fd 60%, #fff 100%)';
+                      if (s.id === 'Rubis') stoneBg = 'radial-gradient(circle at 30% 30%, #ff5e9c 0%, #E0115F 60%, #8b0000 100%)';
+                      if (s.id === 'Saphir') stoneBg = 'radial-gradient(circle at 30% 30%, #4ea5ff 0%, #0F52BA 60%, #002366 100%)';
+                      if (s.id === 'Émeraude') stoneBg = 'radial-gradient(circle at 30% 30%, #94fbba 0%, #50C878 60%, #065535 100%)';
+                      if (s.id === 'Perles') stoneBg = 'radial-gradient(circle at 30% 30%, #ffffff 0%, #F0EAD6 50%, #dcd4b8 100%)';
+                      if (s.id === 'Sans Pierre') stoneBg = '#000';
+                   }
+
+                   return (
+                     <motion.button 
+                       key={s.id} 
+                       whileTap={{ scale: 0.95 }}
+                       onClick={() => isEditing && saveField('stoneType', s.id)}
+                       style={{ 
+                         padding: '14px 4px', borderRadius: '20px', 
+                         background: stoneBg,
+                         color: textColor,
+                         border: 'none', display: 'flex', justifyContent: 'center', alignItems: 'center',
+                         opacity: isEditing ? 1 : (request.stoneType === s.id ? 1 : 0.4),
+                         boxShadow: isSelected ? `0 10px 20px ${s.color === '#FFFFFF' ? 'rgba(0,102,255,0.1)' : s.color + '66'}` : 'none',
+                         cursor: isEditing ? 'pointer' : 'default',
+                         transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                         position: 'relative',
+                         overflow: 'hidden'
+                       }}
+                     >
+                        {isSelected && s.id !== 'Sans Pierre' && (
+                          <div style={{ position: 'absolute', top: '-50%', left: '-50%', width: '200%', height: '200%', background: 'linear-gradient(45deg, transparent 45%, rgba(255,255,255,0.4) 50%, transparent 55%)', animation: 'shine 3s infinite' }} />
+                        )}
+                        <span style={{ fontSize: '9px', fontWeight: 900, position: 'relative', zIndex: 1, letterSpacing: '0.02em' }}>{s.label}</span>
+                     </motion.button>
+                   );
+                })}
              </div>
           </div>
          </div>       </div>
