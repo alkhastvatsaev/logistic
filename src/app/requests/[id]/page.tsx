@@ -358,120 +358,143 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
             <h1 style={{ fontSize: '36px', fontWeight: 900, letterSpacing: '-0.06em', margin: 0 }}>{request.title?.toUpperCase()}</h1>
          </div>
             
-         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '6px', margin: '32px 0' }}>
-            <div style={{ padding: '12px 4px', borderRadius: '16px', background: '#F9F9F9', border: '1px solid rgba(0,0,0,0.02)', textAlign: 'center' }}>
-               <span className="cyber-label" style={{ fontSize: '7px' }}>HOUSE</span>
-               <p style={{ fontWeight: 900, fontSize: '10px', marginTop: '6px' }}>{request.brand?.toUpperCase() || '...'}</p>
+         {/* TECH SPECS: ROW 1 (Core) */}
+         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px', margin: '48px 0 16px 0' }}>
+            <div style={{ padding: '20px 8px', borderRadius: '24px', background: '#F9F9F9', border: '1px solid rgba(0,0,0,0.02)', textAlign: 'center' }}>
+               <span className="cyber-label" style={{ fontSize: '7px', opacity: 0.5 }}>HOUSE</span>
+               <p style={{ fontWeight: 900, fontSize: '11px', marginTop: '8px', letterSpacing: '0.05em' }}>{request.brand?.toUpperCase() || '...'}</p>
             </div>
-            <div style={{ padding: '12px 4px', borderRadius: '16px', background: '#F9F9F9', border: '1px solid rgba(0,0,0,0.02)', textAlign: 'center' }}>
-               <span className="cyber-label" style={{ fontSize: '7px' }}>SIZE</span>
-               <p style={{ fontWeight: 900, fontSize: '10px', marginTop: '6px', color: 'var(--accent)' }}>{request.size || 'STD'}</p>
+            <div style={{ padding: '20px 8px', borderRadius: '24px', background: '#FDF7F9', border: '1px solid rgba(224,17,95,0.05)', textAlign: 'center' }}>
+               <span className="cyber-label" style={{ fontSize: '7px', color: '#E0115F' }}>SIZE</span>
+               <p style={{ fontWeight: 900, fontSize: '13px', marginTop: '8px', color: '#E0115F' }}>{request.size || 'STD'}</p>
             </div>
-            <div style={{ padding: '12px 4px', borderRadius: '16px', background: '#F9F9F9', border: '1px solid rgba(0,0,0,0.02)', textAlign: 'center' }}>
-               <span className="cyber-label" style={{ fontSize: '7px' }}>WEIGHT</span>
-               <p style={{ fontWeight: 900, fontSize: '10px', marginTop: '6px' }}>{request.estimatedWeight || '...'}</p>
+            <div style={{ padding: '20px 8px', borderRadius: '24px', background: '#F9F9F9', border: '1px solid rgba(0,0,0,0.02)', textAlign: 'center' }}>
+               <span className="cyber-label" style={{ fontSize: '7px', opacity: 0.5 }}>WEIGHT</span>
+               <p style={{ fontWeight: 900, fontSize: '11px', marginTop: '8px' }}>{request.estimatedWeight || '...'}G</p>
             </div>
-            <div style={{ padding: '12px 4px', borderRadius: '16px', background: '#F9F9F9', border: '1px solid rgba(0,0,0,0.02)', textAlign: 'center', opacity: request.stoneType === "Sans Pierre" ? 0.3 : 1 }}>
+         </div>
+
+         {/* TECH SPECS: ROW 2 (Extra) */}
+         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: '12px', marginBottom: '64px' }}>
+            <div style={{ padding: '20px 16px', borderRadius: '24px', background: '#F9F9F9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                <span className="cyber-label" style={{ fontSize: '7px' }}>CARATS</span>
-               <p style={{ fontWeight: 900, fontSize: '10px', marginTop: '6px' }}>{request.mainStoneCarat ? `${request.mainStoneCarat} ct` : '-'}</p>
+               <p style={{ fontWeight: 900, fontSize: '12px', margin: 0 }}>{request.mainStoneCarat ? `${request.mainStoneCarat} ct` : '-'}</p>
             </div>
-            <div style={{ padding: '12px 4px', borderRadius: '16px', background: '#F9F9F9', border: '1px solid rgba(0,0,0,0.02)', textAlign: 'center' }}>
-               <span className="cyber-label" style={{ fontSize: '7px' }}>GRAVURE</span>
+            <div style={{ padding: '20px 24px', borderRadius: '24px', background: '#000', color: '#fff', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+               <span className="cyber-label" style={{ fontSize: '7px', color: 'rgba(255,255,255,0.4)' }}>GRAVURE</span>
                {isEditing ? (
-                 <input value={engraving} onChange={(e) => { setEngraving(e.target.value); saveField('engraving', e.target.value); }} style={{ width: '100%', background: 'transparent', border: 'none', fontSize: '10px', fontWeight: 900, textAlign: 'center', marginTop: '6px', color: 'var(--accent)' }} placeholder="..." />
+                 <input value={engraving} onChange={(e) => { setEngraving(e.target.value); saveField('engraving', e.target.value); }} style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '11px', fontWeight: 900, textAlign: 'right', outline: 'none' }} placeholder="..." />
                ) : (
-                 <p style={{ fontWeight: 900, fontSize: '10px', marginTop: '6px', color: 'var(--accent)' }}>{request.engraving || '-'}</p>
+                 <p style={{ fontWeight: 900, fontSize: '11px', margin: 0 }}>{request.engraving || 'AUCUNE'}</p>
                )}
             </div>
          </div>
 
-         <div style={{ marginBottom: '48px' }}>
-            <p className="cyber-label">METALS / 金属颜色</p>
-            <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>
-               {goldColors.map(g => (
-                  <motion.button key={g.id} whileTap={{ scale: 0.95 }} onClick={() => isEditing && saveField('goldColor', g.id)}
-                    style={{ flex: 1, padding: '18px 8px', borderRadius: '24px', background: request.goldColor === g.id ? g.color : '#F9F9F9', color: request.goldColor === g.id ? '#000' : 'rgba(0,0,0,0.4)', opacity: isEditing ? 1 : (request.goldColor === g.id ? 1 : 0.4), transition: 'all 0.4s ease', border: 'none' }}>
-                     <span style={{ fontSize: '10px', fontWeight: 900 }}>{g.label}</span>
-                  </motion.button>
-               ))}
-            </div>
-
-            <p className="cyber-label" style={{ marginTop: '32px' }}>PIERRES / 宝石类型</p>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', marginTop: '16px' }}>
-               {stoneTypes.map(s => {
-                  const isSelected = request.stoneType === s.id;
-                  return (
-                    <motion.button key={s.id} whileTap={{ scale: 0.95 }} onClick={() => isEditing && saveField('stoneType', s.id)}
-                      style={{ padding: '14px 4px', borderRadius: '20px', background: isSelected ? s.color : '#F9F9F9', color: isSelected ? '#000' : 'rgba(0,0,0,0.4)', border: 'none', position: 'relative', overflow: 'hidden' }}>
-                       <span style={{ fontSize: '9px', fontWeight: 900 }}>{s.label}</span>
+         <div style={{ marginBottom: '80px' }}>
+            <p className="cyber-label" style={{ marginBottom: '24px' }}>CONFIGURATION VISUELLE</p>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
+              <div>
+                <span className="cyber-label" style={{ fontSize: '8px', opacity: 0.4 }}>GOLD SELECTION</span>
+                <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
+                  {goldColors.map(g => (
+                    <motion.button key={g.id} whileTap={{ scale: 0.95 }} onClick={() => isEditing && saveField('goldColor', g.id)}
+                      style={{ flex: 1, padding: '16px 8px', borderRadius: '24px', background: request.goldColor === g.id ? g.color : '#F9F9F9', color: request.goldColor === g.id ? '#000' : 'rgba(0,0,0,0.3)', opacity: isEditing ? 1 : (request.goldColor === g.id ? 1 : 0.4), transition: 'all 0.4s ease', border: 'none' }}>
+                        <span style={{ fontSize: '10px', fontWeight: 900 }}>{g.label}</span>
                     </motion.button>
-                  );
-               })}
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <span className="cyber-label" style={{ fontSize: '8px', opacity: 0.4 }}>STONE SELECTION</span>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', marginTop: '12px' }}>
+                  {stoneTypes.map(s => {
+                      const isSelected = request.stoneType === s.id;
+                      return (
+                        <motion.button key={s.id} whileTap={{ scale: 0.95 }} onClick={() => isEditing && saveField('stoneType', s.id)}
+                          style={{ padding: '14px 4px', borderRadius: '20px', background: isSelected ? s.color : '#F9F9F9', color: isSelected ? '#000' : 'rgba(0,0,0,0.3)', border: 'none', position: 'relative', overflow: 'hidden' }}>
+                          <span style={{ fontSize: '9px', fontWeight: 900 }}>{s.label}</span>
+                        </motion.button>
+                      );
+                  })}
+                </div>
+              </div>
             </div>
          </div>
 
-         <div style={{ padding: '32px', background: '#fff', borderRadius: '40px', border: '1px solid rgba(0,0,0,0.04)', marginBottom: '48px', boxShadow: '0 10px 30px rgba(0,0,0,0.02)' }}>
-             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <h2 style={{ fontSize: '11px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.1em' }}>FINANCE AUDIT / {new Date().getFullYear()}</h2>
-                {liveRate && (
-                  <div style={{ fontSize: '8px', fontWeight: 900, opacity: 0.3, letterSpacing: '0.05em' }}>
-                    LIVE RATE: 1¥ = {liveRate.toFixed(4)}€
-                  </div>
-                )}
-             </div>
-             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '8px' }}>
+         <div style={{ padding: '40px', background: 'linear-gradient(135deg, #fff 0%, #fafafa 100%)', borderRadius: '48px', border: '1px solid rgba(0,0,0,0.03)', marginBottom: '80px', boxShadow: '0 20px 60px rgba(0,0,0,0.03)' }}>
+             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '40px' }}>
+                <div>
+                   <h2 style={{ fontSize: '11px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.2em' }}>AUDIT FINANCIER</h2>
+                   {liveRate && <div style={{ fontSize: '8px', fontWeight: 900, opacity: 0.3, marginTop: '4px' }}>TELEMETRY FX: 1¥ = {liveRate.toFixed(4)}€</div>}
+                </div>
                 {acceptedQuote && (
-                  <div style={{ fontSize: '9px', fontWeight: 900, opacity: 0.4, color: 'var(--accent)' }}>
-                    {acceptedQuote.goldWeight}G ({acceptedQuote.goldPurity}) • {acceptedQuote.totalCarat}CT ({acceptedQuote.stoneQuality})
+                  <div style={{ textAlign: 'right', background: 'var(--accent-glow)', padding: '8px 16px', borderRadius: '12px' }}>
+                    <div style={{ fontSize: '9px', fontWeight: 900, color: 'var(--accent)' }}>
+                      {acceptedQuote.goldWeight}G ({acceptedQuote.goldPurity}) • {acceptedQuote.totalCarat}CT
+                    </div>
                   </div>
                 )}
              </div>
-             {!acceptedQuote && bestQuote && <span style={{ fontSize: '9px', fontWeight: 900, color: 'var(--accent)', background: 'var(--accent-glow)', padding: '4px 8px', borderRadius: '6px' }}>PROJECTION (BEST RMB)</span>}
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
-               <input type="number" value={sellingPrice} onChange={(e) => { setSellingPrice(e.target.value); saveField('sellingPrice', parseFloat(e.target.value) || 0); }} style={{ fontSize: '48px', fontWeight: 900, background: '#F9F9F9', border: 'none', width: '100%', maxWidth: '220px', padding: '8px 16px', borderRadius: '16px' }} />
-               <span style={{ fontSize: '24px', fontWeight: 900 }}>€</span>
-            </div>
-            {totals && (
-               <div style={{ marginTop: '32px', paddingTop: '32px', borderTop: '1px dotted rgba(0,0,0,0.1)', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
-                  <div>
-                    <span className="cyber-label" style={{ color: 'var(--accent)' }}>PROFITS ADAM (50%)</span>
-                    <div style={{ fontSize: '24px', fontWeight: 900 }}>{totals.adamPart.toFixed(0)}€</div>
+
+             <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '48px' }}>
+                <input type="number" value={sellingPrice} onChange={(e) => { setSellingPrice(e.target.value); saveField('sellingPrice', parseFloat(e.target.value) || 0); }} style={{ fontSize: '56px', fontWeight: 900, background: '#F9F9F9', border: 'none', width: '100%', maxWidth: '240px', padding: '12px 24px', borderRadius: '24px', letterSpacing: '-0.04em' }} />
+                <span style={{ fontSize: '32px', fontWeight: 900, opacity: 0.2 }}>EUR</span>
+             </div>
+
+             {totals ? (
+               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', paddingTop: '40px', borderTop: '1px dashed rgba(0,0,0,0.08)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span className="cyber-label" style={{ color: 'var(--accent)', opacity: 0.8 }}>ADAM PART (50%)</span>
+                    <div style={{ fontSize: '28px', fontWeight: 900 }}>{totals.adamPart.toFixed(0)}€</div>
                   </div>
-                  <div style={{ textAlign: 'right' }}>
-                    <span className="cyber-label" style={{ color: 'var(--accent)' }}>PROFITS MIRZA (50%)</span>
-                    <div style={{ fontSize: '24px', fontWeight: 900 }}>{totals.mirzaPart.toFixed(0)}€</div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span className="cyber-label" style={{ color: 'var(--accent)', opacity: 0.8 }}>MIRZA PART (50%)</span>
+                    <div style={{ fontSize: '28px', fontWeight: 900 }}>{totals.mirzaPart.toFixed(0)}€</div>
                   </div>
                </div>
-            )}
-            {!totals && <p style={{ fontSize: '11px', fontWeight: 600, opacity: 0.3, marginTop: '12px' }}>En attente de devis pour calcul...</p>}
+             ) : (
+               <p style={{ fontSize: '11px', fontWeight: 800, opacity: 0.3 }}>En attente de devis validé...</p>
+             )}
          </div>
 
          {quotes.length > 0 && (
-            <div style={{ marginBottom: '64px' }}>
-              <span className="cyber-label">SUPPLIER OFFERS ({quotes.length})</span>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '16px' }}>
-                 {quotes.map(q => (
-                   <motion.div key={q.id} whileTap={{ scale: 0.98 }} onClick={() => request.acceptedQuoteId === q.id ? handleUnselectQuote() : handleAcceptQuote(q)}
-                      style={{ padding: '24px', borderRadius: '32px', background: request.acceptedQuoteId === q.id ? 'var(--accent)' : '#fff', border: '1px solid rgba(0,0,0,0.05)', color: request.acceptedQuoteId === q.id ? '#fff' : '#000', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                     <div style={{ flex: 1 }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '4px' }}>
-                           <p className="cyber-label" style={{ color: 'inherit' }}>{q.supplierName || 'FACTORY'}</p>
-                           <div style={{ fontSize: '18px', fontWeight: 900, color: request.acceptedQuoteId === q.id ? '#fff' : 'var(--accent)' }}>
-                             {((Number(q.priceRMB) + Number(q.shippingCostRMB || 0)) * liveRate).toFixed(0)}€
-                           </div>
-                        </div>
-                        <div style={{ fontSize: '20px', fontWeight: 900 }}>{Number(q.priceRMB) + Number(q.shippingCostRMB || 0)} ¥</div>
-                        <div style={{ fontSize: '9px', opacity: 0.6, fontWeight: 800, marginTop: '4px' }}>
-                           {q.priceRMB}¥ (PIÈCE) + {q.shippingCostRMB || 0}¥ (PORT)
-                        </div>
-                        <div style={{ fontSize: '10px', opacity: 0.4, fontWeight: 800, marginTop: '12px' }}>OR: {q.goldWeight}g ({q.goldPurity || '18K'}) / {q.stoneQuality || 'STONES'}: {q.diamondCount} ({q.totalCarat}ct)</div>
-                     </div>
-                     {request.acceptedQuoteId === q.id ? <Check size={20} strokeWidth={3} /> : <Plus size={20} strokeWidth={3} style={{ opacity: 0.2 }} />}
-                   </motion.div>
-                 ))}
-              </div>
-            </div>
-          )}
+             <div style={{ marginBottom: '80px' }}>
+               <span className="cyber-label" style={{ opacity: 0.4 }}>OFFRES FOURNISSEURS ({quotes.length})</span>
+               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginTop: '24px' }}>
+                  {quotes.map(q => (
+                    <motion.div key={q.id} whileTap={{ scale: 0.98 }} onClick={() => request.acceptedQuoteId === q.id ? handleUnselectQuote() : handleAcceptQuote(q)}
+                       style={{ 
+                          padding: '32px', borderRadius: '40px', background: request.acceptedQuoteId === q.id ? 'var(--accent)' : '#fff', 
+                          border: request.acceptedQuoteId === q.id ? 'none' : '1px solid rgba(0,0,0,0.06)', 
+                          color: request.acceptedQuoteId === q.id ? '#fff' : '#000', 
+                          boxShadow: request.acceptedQuoteId === q.id ? '0 20px 40px rgba(0,0,0,0.1)' : 'none',
+                          transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
+                       }}>
+                      <div style={{ width: '100%' }}>
+                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                            <div style={{ padding: '6px 12px', background: 'rgba(0,0,0,0.03)', borderRadius: '100px', fontSize: '9px', fontWeight: 900 }}>{q.supplierName?.toUpperCase() || 'FACTORY'}</div>
+                            <div style={{ fontSize: '22px', fontWeight: 900, color: request.acceptedQuoteId === q.id ? '#fff' : 'var(--accent)' }}>
+                              {((Number(q.priceRMB) + Number(q.shippingCostRMB || 0)) * liveRate).toFixed(0)}€
+                            </div>
+                         </div>
+                         <div style={{ fontSize: '32px', fontWeight: 900 }}>{Number(q.priceRMB) + Number(q.shippingCostRMB || 0)} ¥</div>
+                         <div style={{ display: 'flex', gap: '12px', marginTop: '8px', fontSize: '10px', opacity: 0.5, fontWeight: 700 }}>
+                            <span>ITEM: {q.priceRMB}¥</span>
+                            <span>•</span>
+                            <span>SHIP: {q.shippingCostRMB || 0}¥</span>
+                         </div>
+                         <div style={{ marginTop: '24px', paddingTop: '20px', borderTop: '1px solid rgba(0,0,0,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div style={{ fontSize: '10px', opacity: 0.6, fontWeight: 800 }}>{q.goldWeight}G ({q.goldPurity}) • {q.totalCarat}CT ({q.stoneQuality})</div>
+                            {request.acceptedQuoteId === q.id ? <Check size={18} strokeWidth={4} /> : <div style={{ width: '24px', height: '24px', borderRadius: '12px', background: 'rgba(0,0,0,0.03)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Plus size={14} /></div>}
+                         </div>
+                      </div>
+                    </motion.div>
+                  ))}
+               </div>
+             </div>
+           )}
 
          {request.status === 'SHIPPED' && request.trackingNumber && (
             <div style={{ marginBottom: '48px', padding: '32px', background: '#4D148C', borderRadius: '40px', color: '#fff', position: 'relative', overflow: 'hidden' }}>

@@ -58,52 +58,67 @@ export default function Dashboard() {
         </h1>
       </motion.div>
 
+      {/* FINANCIAL OVERVIEW */}
+      <div style={{ padding: '0 32px' }}>
+         <motion.div 
+            initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
+            style={{ padding: '48px 40px', background: '#000', borderRadius: '56px', color: '#fff', margin: '48px 0', boxShadow: '0 40px 80px rgba(0,0,0,0.12)' }}
+         >
+            <span className="cyber-label" style={{ opacity: 0.5, fontSize: '8px', letterSpacing: '0.2em' }}>ACTIVE LIQUIDITY</span>
+            <div style={{ fontSize: '48px', fontWeight: 900, marginTop: '12px', letterSpacing: '-0.06em' }}>
+               {(34500).toLocaleString()} <span style={{ fontSize: '24px', opacity: 0.3 }}>EUR</span>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginTop: '48px', paddingTop: '32px', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+               <div>
+                  <span className="cyber-label" style={{ opacity: 0.4, fontSize: '7px' }}>ACTIVE UNITS</span>
+                  <div style={{ fontSize: '20px', fontWeight: 900, marginTop: '4px' }}>{activeRequests.length}</div>
+               </div>
+               <div style={{ textAlign: 'right' }}>
+                  <span className="cyber-label" style={{ opacity: 0.4, fontSize: '7px' }}>TELEMETRY FX</span>
+                  <div style={{ fontSize: '20px', fontWeight: 900, marginTop: '4px' }}>{liveRate.toFixed(4)}</div>
+               </div>
+            </div>
+         </motion.div>
+      </div>
+
       {/* ACTIVE LIST STREAM */}
-      <div style={{ padding: '0 32px', display: 'flex', flexDirection: 'column', gap: '16px', marginTop: '32px' }}>
+      <div style={{ padding: '0 32px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
           {activeRequests.map((r, i) => {
              const quotesForReq = allQuotes[r.id] ? Object.values(allQuotes[r.id]) : [];
              const bestPrice = quotesForReq.length > 0 ? Math.min(...quotesForReq.map((q: any) => q.priceRMB)) : null;
              
              return (
               <motion.div 
-                key={r.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} whileTap={{ scale: 0.97 }}
-                transition={{ duration: 0.8, delay: i * 0.05, ease: [0.16, 1, 0.3, 1] }} 
+                key={r.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
               >
                 <Link href={`/requests/${r.id}`} style={{ textDecoration: 'none' }}>
                   <div style={{ 
-                    padding: '24px', borderRadius: '40px', background: '#fff', border: '1px solid rgba(0,0,0,0.04)',
-                    display: 'flex', flexDirection: 'column', gap: '20px', boxShadow: '0 10px 40px rgba(0,0,0,0.02)'
+                    padding: '32px', borderRadius: '48px', background: '#fff', border: '1px solid rgba(0,0,0,0.06)', 
+                    boxShadow: '0 15px 40px rgba(0,0,0,0.02)', transition: 'all 0.4s ease'
                   }}>
-                    <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-                       <div style={{ width: '64px', height: '64px', borderRadius: '24px', overflow: 'hidden', flexShrink: 0, background: '#F9F9F9' }}>
-                          {r.imageUrl ? <img src={r.imageUrl} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" /> : <Package size={24} color="rgba(0,0,0,0.1)" />}
-                       </div>
-                       <div style={{ flex: 1, minWidth: 0 }}>
-                          <h3 style={{ fontSize: '17px', fontWeight: 900, color: '#000', margin: 0, letterSpacing: '-0.04em', textTransform: 'uppercase' }}>{r.title}</h3>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
-                             <div style={{ width: '8px', height: '8px', borderRadius: '4px', background: r.goldColor === "Or Jaune" ? "#F5D061" : (r.goldColor === "Or Rose" ? "#E7A78B" : "#E5E5E5") }} />
-                             <span style={{ fontSize: '10px', fontWeight: 800, color: 'var(--faded)' }}>{r.brand?.toUpperCase()} • {r.size}</span>
-                          </div>
-                       </div>
-                       <ChevronRight size={18} color="rgba(0,0,0,0.1)" />
-                    </div>
+                     <div style={{ display: 'flex', gap: '24px', alignItems: 'center' }}>
+                        <div style={{ width: '80px', height: '80px', borderRadius: '28px', overflow: 'hidden', flexShrink: 0, background: '#F9F9F9' }}>
+                           {r.imageUrl ? <img src={r.imageUrl} style={{ width: '100%', height: '100%', objectFit: 'contain' }} alt="" /> : <Package size={24} color="rgba(0,0,0,0.1)" />}
+                        </div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                           <h3 style={{ fontSize: '18px', fontWeight: 900, color: '#000', margin: 0, letterSpacing: '-0.04em', textTransform: 'uppercase' }}>{r.title}</h3>
+                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '6px' }}>
+                              <div style={{ width: '8px', height: '8px', borderRadius: '4px', background: r.goldColor === "Or Jaune" ? "#F5D061" : (r.goldColor === "Or Rose" ? "#E7A78B" : "#E5E5E5") }} />
+                              <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--faded)', opacity: 0.6 }}>{r.brand?.toUpperCase()}</span>
+                           </div>
+                        </div>
+                        <ChevronRight size={18} color="rgba(0,0,0,0.1)" />
+                     </div>
 
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid rgba(0,0,0,0.03)', paddingTop: '16px' }}>
-                       <div style={{ display: 'flex', gap: '12px' }}>
-                          <span style={{ fontSize: '9px', fontWeight: 900, color: 'var(--accent)', background: 'var(--accent-glow)', padding: '5px 10px', borderRadius: '100px' }}>{r.status.replace(/_/g, ' ')}</span>
-                          {quotesForReq.length > 0 && (
-                             <span style={{ fontSize: '9px', fontWeight: 900, color: '#000', background: '#F9F9F9', padding: '5px 10px', borderRadius: '100px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                <Quote size={10} /> {quotesForReq.length}
-                             </span>
-                          )}
-                       </div>
-                       {bestPrice && (
-                          <div style={{ textAlign: 'right' }}>
-                             <div style={{ fontSize: '12px', fontWeight: 900 }}>{bestPrice} ¥</div>
-                             <div style={{ fontSize: '10px', fontWeight: 900, color: 'var(--accent)', marginTop: '2px' }}>~{(bestPrice * liveRate).toFixed(0)}€</div>
-                          </div>
-                       )}
-                    </div>
+                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '24px', paddingTop: '24px', borderTop: '1px solid rgba(0,0,0,0.03)' }}>
+                        <span style={{ fontSize: '9px', fontWeight: 900, color: 'var(--accent)', background: 'var(--accent-glow)', padding: '6px 14px', borderRadius: '100px', letterSpacing: '0.05em' }}>{r.status.replace(/_/g, ' ')}</span>
+                        {bestPrice && (
+                           <div style={{ textAlign: 'right' }}>
+                              <div style={{ fontSize: '14px', fontWeight: 900 }}>{bestPrice} ¥</div>
+                              <div style={{ fontSize: '11px', fontWeight: 900, color: 'var(--accent)', marginTop: '2px' }}>~{(bestPrice * liveRate).toFixed(0)}€</div>
+                           </div>
+                        )}
+                     </div>
                   </div>
                 </Link>
               </motion.div>
