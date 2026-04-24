@@ -12,8 +12,13 @@ import { useRouter } from "next/navigation";
 export default function DeliveryRadar() {
   const { requests, loading } = useAllRequests();
   const router = useRouter();
+  const [mounted, setMounted] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // CALENDAR LOGIC
   const daysInMonth = useMemo(() => {
@@ -65,7 +70,7 @@ export default function DeliveryRadar() {
     setSelectedDate(now);
   };
 
-  if (loading) return <TitaneLoader />;
+  if (!mounted || loading) return <TitaneLoader />;
 
   return (
     <div className="layout" style={{ background: '#fff', minHeight: '100vh', paddingBottom: '160px' }}>
