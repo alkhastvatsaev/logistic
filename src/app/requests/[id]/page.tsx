@@ -501,14 +501,14 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
           <div style={{ marginBottom: '48px', marginTop: '32px' }}>
              <p className="cyber-label" style={{ fontSize: '7px', opacity: 0.5, marginBottom: '16px', paddingLeft: '8px' }}>PIERRES / 宝石类型</p>
              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
-                {[
+                {([
                   { id: "Sans Pierre", label: "SANS", color: "#F9F9F9" },
                   { id: "Diamants", label: "DIAMANTS", color: "#FFFFFF" },
                   { id: "Rubis", label: "RUBIS", color: "#E0115F" },
                   { id: "Saphir", label: "SAPHIR", color: "#0F52BA" },
                   { id: "Émeraude", label: "ÉMERAUDE", color: "#50C878" },
                   { id: "Perles", label: "PERLES", color: "#F0EAD6" }
-                ].map(s => {
+                ]).map(s => {
                    const isSelected = request.stoneType === s.id;
                    let stoneBg = isSelected ? s.color : '#F9F9F9';
                    let textColor = isSelected ? (['Diamants', 'Perles', 'Sans Pierre'].includes(s.id) ? '#000' : '#fff') : 'rgba(0,0,0,0.4)';
