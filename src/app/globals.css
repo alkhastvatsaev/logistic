@@ -162,3 +162,13 @@ input[type=number] {
   0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
   20%, 100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
 }
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+
+.shake {
+  animation: shake 0.4s ease-in-out;
+}
