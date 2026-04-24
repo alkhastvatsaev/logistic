@@ -273,7 +273,12 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
       id: request.id, title: title || request.title, size: size || request.size, 
       sellingPrice: totals.sPrice, totals, status: request.status,
       imageUrl: request.imageUrl, goldColor: request.goldColor,
-      stoneType: request.stoneType, mainStoneCarat: request.mainStoneCarat, weight: weight || request.estimatedWeight 
+      stoneType: request.stoneType, mainStoneCarat: request.mainStoneCarat, weight: weight || request.estimatedWeight,
+      goldPurity: acceptedQuote?.goldPurity,
+      goldWeight: acceptedQuote?.goldWeight,
+      diamondCount: acceptedQuote?.diamondCount,
+      totalCarat: acceptedQuote?.totalCarat,
+      stoneQuality: acceptedQuote?.stoneQuality
     };
     if (t === 'QUOTE') generateQuotePDF(data); else generateInternalInvoicePDF(data);
   };
@@ -390,10 +395,15 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
          </div>
 
          <div style={{ padding: '32px', background: '#fff', borderRadius: '40px', border: '1px solid rgba(0,0,0,0.04)', marginBottom: '48px', boxShadow: '0 10px 30px rgba(0,0,0,0.02)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-               <span className="cyber-label">FINANCE AUDIT / 利益分配</span>
-               {!acceptedQuote && bestQuote && <span style={{ fontSize: '9px', fontWeight: 900, color: 'var(--accent)', background: 'var(--accent-glow)', padding: '4px 8px', borderRadius: '6px' }}>PROJECTION (BEST RMB)</span>}
-            </div>
+             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <h2 style={{ fontSize: '11px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.1em' }}>FINANCE AUDIT / {new Date().getFullYear()}</h2>
+                {acceptedQuote && (
+                  <div style={{ fontSize: '9px', fontWeight: 900, opacity: 0.4, color: 'var(--accent)' }}>
+                    {acceptedQuote.goldWeight}G ({acceptedQuote.goldPurity}) • {acceptedQuote.totalCarat}CT ({acceptedQuote.stoneQuality})
+                  </div>
+                )}
+             </div>
+             {!acceptedQuote && bestQuote && <span style={{ fontSize: '9px', fontWeight: 900, color: 'var(--accent)', background: 'var(--accent-glow)', padding: '4px 8px', borderRadius: '6px' }}>PROJECTION (BEST RMB)</span>}
             <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
                <input type="number" value={sellingPrice} onChange={(e) => { setSellingPrice(e.target.value); saveField('sellingPrice', parseFloat(e.target.value) || 0); }} style={{ fontSize: '48px', fontWeight: 900, background: '#F9F9F9', border: 'none', width: '100%', maxWidth: '220px', padding: '8px 16px', borderRadius: '16px' }} />
                <span style={{ fontSize: '24px', fontWeight: 900 }}>€</span>

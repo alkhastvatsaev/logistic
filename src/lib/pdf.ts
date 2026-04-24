@@ -12,6 +12,11 @@ export interface PDFData {
   goldColor?: string;
   stoneType?: string;
   weight?: string;
+  goldPurity?: string;
+  goldWeight?: string;
+  diamondCount?: string;
+  totalCarat?: string;
+  stoneQuality?: string;
 }
 
 /**
@@ -85,12 +90,12 @@ export const generateQuotePDF = async (data: PDFData) => {
     doc.text(String(value || "N/A").toUpperCase(), xPos, currentY + 7, { charSpace: -0.3 });
   };
 
-  drawRow("MÉTAL & ORIGINE", `OR 18K - ${data.goldColor || 'JAUNE'}`, 25, y);
-  drawRow("QUALITÉ PIERRES", data.stoneType === "Sans Pierre" ? "AUCUNE" : "DEF - VVS1 (TYPE IIA)", 110, y);
+  drawRow("MÉTAL & PURETÉ", `${data.goldPurity || 'OR 18K'} - ${data.goldColor || 'JAUNE'}`, 25, y);
+  drawRow("QUALITÉ PIERRES", data.stoneQuality || (data.stoneType === "Sans Pierre" ? "AUCUNE" : "VVS / DEF"), 110, y);
   
   y += 18;
-  drawRow("TAILLE / DIMENSION", data.size || "SUR MESURE", 25, y);
-  drawRow("POIDS ESTIMÉ", data.weight ? `${data.weight}` : "SUR DEVIS", 110, y);
+  drawRow("POIDS MÉTAL (G)", data.goldWeight ? `${data.goldWeight}g` : (data.weight || "N/A"), 25, y);
+  drawRow("TOTAL CARATS (CT)", data.totalCarat ? `${data.totalCarat}ct (${data.diamondCount || 0} pcs)` : "SUR DEVIS", 110, y);
 
   // 4. INCLUSIONS PILL
   y += 24;
@@ -159,7 +164,8 @@ export const generateInternalInvoicePDF = async (data: PDFData) => {
   
   doc.setFontSize(8);
   doc.setTextColor(150);
-  doc.text(`CONFIG: OR 18K • ${data.goldColor || 'JAUNE'} • ${data.size || 'STD'}`, 85, 68, { charSpace: 0.5 });
+  const techSpecs = `OR: ${data.goldWeight || '?'}g (${data.goldPurity || '18K'}) • STONES: ${data.totalCarat || '?'}ct (${data.diamondCount || '0'} pces) • ${data.stoneQuality || 'VVS'}`;
+  doc.text(techSpecs, 85, 68, { charSpace: 0.5 });
 
   // 3. PERFORMANCE DATA
   let y = 110;
