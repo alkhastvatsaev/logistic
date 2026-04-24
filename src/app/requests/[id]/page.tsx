@@ -23,11 +23,11 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
   const [size, setSize] = useState("");
   const [category, setCategory] = useState("");
   const [weight, setWeight] = useState("");
-  const [isEditing, setIsEditing] = useState(false);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [liveRate, setLiveRate] = useState(0.135);
   const [showBackModal, setShowBackModal] = useState(false);
   const [prevStageName, setPrevStageName] = useState("");
+  const [generatedLink, setGeneratedLink] = useState("");
+  const [showLinkModal, setShowLinkModal] = useState(false);
 
   const acceptedQuote = quotes.find(q => q.id === request?.acceptedQuoteId);
   const totals = calculateFinancialTotals(acceptedQuote, sellingPrice, payments, liveRate);
@@ -139,8 +139,14 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
         createdAt: Date.now()
       });
       const url = `${window.location.origin}/q/${token}`;
-      navigator.clipboard.writeText(url);
-      toast.success("LIEN FOURNISSEUR COPIÉ !");
+      setGeneratedLink(url);
+      
+      try {
+        await navigator.clipboard.writeText(url);
+        toast.success("LIEN COPIÉ DANS LE PRESSE-PAPIER");
+      } catch (err) {
+        setShowLinkModal(true);
+      }
       
       if (request?.status === 'DRAFT') {
         await update(rtdbRef(rtdb, `requests/${params.id}`), { status: 'WAITING_FOR_QUOTE' });
@@ -972,6 +978,26 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
 
               <button onClick={handleEmailImport} className="btn-main" style={{ background: '#4D148C', marginTop: '24px' }}>EXTRAIRE INFO</button>
               <button onClick={() => setShowEmailImport(false)} style={{ background: 'none', border: 'none', marginTop: '20px', fontWeight: 800, color: 'var(--faded)', fontSize: '13px' }}>ANNULER</button>
+            </div>
+          </motion.div>
+        )}
+
+        {showLinkModal && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'fixed', inset: 0, background: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(40px)', zIndex: 3000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
+            <div style={{ textAlign: 'center', maxWidth: '360px', width: '100%' }}>
+              <div style={{ width: '64px', height: '64px', borderRadius: '32px', background: '#FF9500', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px auto', color: '#fff' }}>
+                <Check size={32} />
+              </div>
+              <h2 style={{ fontSize: '20px', fontWeight: 900, letterSpacing: '-0.04em' }}>LIEN GÉNÉRÉ</h2>
+              <p style={{ marginTop: '12px', color: 'var(--faded)', fontWeight: 600, fontSize: '12px', lineHeight: 1.5 }}>Le lien a été généré avec succès. Copiez-le manuellement si besoin :</p>
+              
+              <div style={{ marginTop: '24px', padding: '16px', background: '#F9F9F9', borderRadius: '16px', wordBreak: 'break-all', fontSize: '11px', fontWeight: 800, color: 'var(--accent)' }}>
+                {generatedLink}
+              </div>
+
+              <div style={{ marginTop: '32px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                 <button onClick={() => { navigator.clipboard.writeText(generatedLink); setShowLinkModal(false); }} className="btn-main" style={{ background: '#000', color: '#fff' }}>OK, JE L&apos;AI</button>
+              </div>
             </div>
           </motion.div>
         )}
