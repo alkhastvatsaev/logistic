@@ -25,9 +25,9 @@
 
 body {
   font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  background: var(--background);
+  background: #F2F2F2; /* Subtle grey for desktop background */
   color: var(--foreground);
-  overflow: hidden; /* No outer scroll */
+  overflow-x: hidden;
   letter-spacing: -0.035em;
   user-select: none;
   -webkit-user-select: none;
@@ -38,12 +38,16 @@ body {
 /* MOBILE FRAME ENFORCED */
 .layout {
   width: 100%;
+  max-width: 440px; /* iPhone 16 Plus width limit */
+  margin: 0 auto;  /* Center the app on desktop */
+  min-height: 100dvh;
   height: 100dvh;
   position: relative;
   background: var(--background);
   overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
+  box-shadow: 0 0 100px rgba(0,0,0,0.04); /* Soft shadow for focus */
   
   /* Handle iOS Safe Areas */
   padding-top: env(safe-area-inset-top);
