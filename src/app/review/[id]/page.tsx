@@ -67,8 +67,8 @@ export default function MirzaReview({ params }: { params: { id: string } }) {
   if (decision) {
     return (
       <div className="layout" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', textAlign: 'center', background: '#fff' }}>
-        <header style={{ position: 'absolute', top: '64px', width: '100%' }}>
-          <h1 className="cyber-title" style={{ fontSize: '24px', letterSpacing: '-0.08em' }}>
+        <header style={{ position: 'absolute', top: '24px', left: '32px', textAlign: 'left' }}>
+          <h1 className="cyber-title" style={{ fontSize: '16px', letterSpacing: '-0.08em' }}>
             LOG<span style={{ color: 'var(--accent)' }}>IS.</span>
           </h1>
         </header>

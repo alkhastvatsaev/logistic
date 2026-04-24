@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { rtdb, rtdbRef, get, set, push, update } from "@/lib/firebase";
 import { motion } from "framer-motion";
+import { toast } from "sonner";
 import { CheckCircle, Truck, PackageCheck } from "lucide-react";
 
 export default function SupplierPortal({ params }: { params: { token: string } }) {
@@ -86,7 +87,7 @@ export default function SupplierPortal({ params }: { params: { token: string } }
       await update(rtdbRef(rtdb), updates);
       setSubmitted(true);
     } catch (error) {
-      alert("Error submitting. Please try again.");
+      toast.error("Error submitting. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -105,7 +106,7 @@ export default function SupplierPortal({ params }: { params: { token: string } }
       await update(rtdbRef(rtdb), updates);
       setShippingSubmitted(true);
     } catch (error) {
-      alert("Error updating tracking");
+      toast.error("Error updating tracking");
     } finally {
       setLoading(false);
     }

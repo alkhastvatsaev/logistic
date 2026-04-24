@@ -28,7 +28,7 @@ export default function SupplierQuotePortal({ params }: { params: { id: string }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!priceRMB || !productionDays) return alert("Please fill the required fields.");
+    if (!priceRMB || !productionDays) return toast.error("Please fill the required fields / 请填写必填字段");
     
     setIsSubmitting(true);
     try {
@@ -46,7 +46,7 @@ export default function SupplierQuotePortal({ params }: { params: { id: string }
       });
       setSubmitted(true);
     } catch (err: any) {
-      alert("Error: " + err.message);
+      toast.error("Error: " + err.message);
     } finally {
       setIsSubmitting(false);
     }
@@ -58,8 +58,8 @@ export default function SupplierQuotePortal({ params }: { params: { id: string }
   if (submitted) {
     return (
       <div className="layout" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', textAlign: 'center', background: '#fff' }}>
-        <header style={{ position: 'absolute', top: '64px', width: '100%' }}>
-          <h1 className="cyber-title" style={{ fontSize: '24px', letterSpacing: '-0.08em' }}>
+        <header style={{ position: 'absolute', top: '24px', left: '32px', textAlign: 'left' }}>
+          <h1 className="cyber-title" style={{ fontSize: '16px', letterSpacing: '-0.08em' }}>
             LOG<span style={{ color: 'var(--accent)' }}>IS.</span>
           </h1>
         </header>
@@ -76,11 +76,11 @@ export default function SupplierQuotePortal({ params }: { params: { id: string }
 
   return (
     <div className="layout" style={{ background: '#fff', minHeight: '100vh', paddingBottom: '160px' }}>
-      <header style={{ padding: '64px 32px 32px 32px', textAlign: 'center' }}>
-        <h1 className="cyber-title" style={{ fontSize: '32px', letterSpacing: '-0.08em', marginBottom: '8px' }}>
+      <header style={{ padding: '32px 32px 16px 32px', textAlign: 'left' }}>
+        <h1 className="cyber-title" style={{ fontSize: '16px', letterSpacing: '-0.08em', marginBottom: '4px' }}>
           LOG<span style={{ color: 'var(--accent)' }}>IS.</span>
         </h1>
-        <p className="cyber-label" style={{ fontSize: '8px', letterSpacing: '0.2em' }}>SUPPLIER PORTAL | 供应商门户</p>
+        <p className="cyber-label" style={{ fontSize: '7px', letterSpacing: '0.2em' }}>SUPPLIER PORTAL | 供应商门户</p>
       </header>
       
       {/* IMMERSIVE PRODUCT IMAGE */}

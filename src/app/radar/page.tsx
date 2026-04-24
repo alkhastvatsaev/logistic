@@ -62,8 +62,8 @@ export default function DeliveryRadar() {
   return (
     <div className="layout" style={{ background: '#fff', minHeight: '100vh', paddingBottom: '160px' }}>
       
-      <header style={{ padding: '72px 32px 32px 32px', textAlign: 'center' }}>
-        <h1 className="cyber-title" style={{ fontSize: '32px', letterSpacing: '-0.08em', marginBottom: '8px' }}>
+      <header style={{ padding: '32px 32px 16px 32px', textAlign: 'left' }}>
+        <h1 className="cyber-title" style={{ fontSize: '16px', letterSpacing: '-0.08em', marginBottom: '4px' }}>
           CALENDAR<span style={{ color: 'var(--accent)' }}>.</span>
         </h1>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '24px', marginTop: '16px' }}>

@@ -43,20 +43,19 @@ export default function Dashboard() {
   return (
     <div className="layout" style={{ background: '#fff' }}>
       
-      {/* 2030 SPATIAL HEADER (ULTRA MINIMAL) */}
+      {/* 2030 SPATIAL HEADER (COMPACT TOP-LEFT) */}
       <motion.div 
-        initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-        style={{ position: 'sticky', top: 0, zIndex: 50, padding: '72px 32px 32px 32px', background: 'rgba(255, 255, 255, 0.8)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', pointerEvents: 'none', textAlign: 'center' }}
+        initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        style={{ position: 'sticky', top: 0, zIndex: 100, padding: '20px 32px 10px 32px', background: 'rgba(255, 255, 255, 0.9)', backdropFilter: 'blur(30px)', WebkitBackdropFilter: 'blur(30px)', pointerEvents: 'none' }}
       >
-        <h1 className="cyber-title" style={{ fontSize: '42px', letterSpacing: '-0.08em' }}>
+        <h1 className="cyber-title" style={{ fontSize: '16px', letterSpacing: '-0.08em', textAlign: 'left' }}>
           LOG<span style={{ color: 'var(--accent)' }}>IS.</span>
         </h1>
       </motion.div>
 
       {/* ACTIVE LIST STREAM */}
       <div style={{ padding: '0 32px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-         <p className="cyber-label" style={{ opacity: 0.4, paddingLeft: '8px' }}>FLUX OPÉRATIONNEL ACTIF</p>
-         {activeRequests.map((r, i) => (
+          {activeRequests.map((r, i) => (
              <motion.div 
                key={r.id} 
                initial={{ opacity: 0, y: 20 }} 

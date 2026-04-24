@@ -119,14 +119,14 @@ export default function NewRequest() {
                    <button 
                      key={g.id} onClick={() => setGoldColor(g.id)}
                      style={{ 
-                       flex: 1, padding: '16px', borderRadius: '24px', border: '1px solid rgba(0,0,0,0.05)',
-                       background: goldColor === g.id ? '#000' : '#fff',
-                       color: goldColor === g.id ? '#fff' : '#000',
-                       display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px',
+                       flex: 1, padding: '18px 8px', borderRadius: '24px', border: 'none',
+                       background: goldColor === g.id ? g.color : '#F9F9F9',
+                       color: goldColor === g.id ? '#000' : 'rgba(0,0,0,0.4)',
+                       display: 'flex', justifyContent: 'center', alignItems: 'center',
+                       boxShadow: goldColor === g.id ? `0 10px 25px ${g.color}66` : 'none',
                        transition: 'all 0.3s ease'
                      }}
                    >
-                      <div style={{ width: '12px', height: '12px', borderRadius: '6px', background: g.color }} />
                       <span style={{ fontSize: '10px', fontWeight: 900 }}>{g.label}</span>
                    </button>
                 ))}

@@ -26,6 +26,8 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
   const [isEditing, setIsEditing] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [liveRate, setLiveRate] = useState(0.135);
+  const [showBackModal, setShowBackModal] = useState(false);
+  const [prevStageName, setPrevStageName] = useState("");
 
   const acceptedQuote = quotes.find(q => q.id === request?.acceptedQuoteId);
   const totals = calculateFinancialTotals(acceptedQuote, sellingPrice, payments, liveRate);
@@ -384,12 +386,13 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
             ) : (
               <h1 style={{ fontSize: '36px', fontWeight: 900, letterSpacing: '-0.06em', margin: 0 }}>{request.title.toUpperCase()}</h1>
             )}
-            <p className="cyber-label" style={{ marginTop: '8px', color: 'var(--accent)' }}>CONFIGURATION DÉTAILLÉE</p>
-             {/* SPECIFICATIONS GRID (HARMONIZED DESIGN) */}
-         <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 1fr)', gap: '16px', margin: '48px 0' }}>
+            <p className="cyber-label" style={{ marginTop: '8px', color: 'var(--accent)' }}></p>
+            
+            {/* SPECIFICATIONS GRID (COMPACT FOR MOBILE) */}
+         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', margin: '32px 0' }}>
             {/* HOUSE */}
-            <div style={{ padding: '24px', borderRadius: '28px', background: '#F9F9F9', border: '1px solid rgba(0,0,0,0.02)' }}>
-               <span className="cyber-label" style={{ fontSize: '7px', opacity: 0.5 }}>HOUSE / 品牌</span>
+            <div style={{ padding: '16px 8px', borderRadius: '20px', background: '#F9F9F9', border: '1px solid rgba(0,0,0,0.02)', textAlign: 'center' }}>
+               <span className="cyber-label" style={{ fontSize: '8px', opacity: 0.5, display: 'block' }}>HOUSE</span>
                {isEditing ? (
                  <select 
                    value={brand}
@@ -397,18 +400,18 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
                      setBrand(e.target.value);
                      saveField('brand', e.target.value);
                    }}
-                   style={{ fontWeight: 900, fontSize: '13px', marginTop: '10px', width: '100%', border: 'none', background: 'transparent', padding: 0 }}
+                   style={{ fontWeight: 900, fontSize: '11px', marginTop: '8px', width: '100%', border: 'none', background: 'transparent', padding: 0, textAlign: 'center' }}
                  >
                    {["Cartier", "Van Cleef", "Bulgari", "Messika", "Tiffany", "Boucheron", "Custom Atelier"].map(h => <option key={h} value={h}>{h.toUpperCase()}</option>)}
                  </select>
                ) : (
-                 <p style={{ fontWeight: 900, fontSize: '15px', marginTop: '10px', letterSpacing: '-0.02em' }}>{request.brand?.toUpperCase() || '...'}</p>
+                 <p style={{ fontWeight: 900, fontSize: '12px', marginTop: '8px', letterSpacing: '-0.02em', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{request.brand?.toUpperCase() || '...'}</p>
                )}
             </div>
 
             {/* SIZE */}
-            <div style={{ padding: '24px', borderRadius: '28px', background: '#F9F9F9', border: '1px solid rgba(0,0,0,0.02)' }}>
-               <span className="cyber-label" style={{ fontSize: '7px', opacity: 0.5 }}>SIZE / 规格</span>
+            <div style={{ padding: '16px 8px', borderRadius: '20px', background: '#F9F9F9', border: '1px solid rgba(0,0,0,0.02)', textAlign: 'center' }}>
+               <span className="cyber-label" style={{ fontSize: '8px', opacity: 0.5, display: 'block' }}>SIZE</span>
                {isEditing ? (
                  <select 
                    value={size}
@@ -416,7 +419,7 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
                      setSize(e.target.value);
                      saveField('size', e.target.value);
                    }}
-                   style={{ fontWeight: 900, fontSize: '13px', marginTop: '10px', width: '100%', border: 'none', background: 'transparent', padding: 0, color: 'var(--accent)' }}
+                   style={{ fontWeight: 900, fontSize: '11px', marginTop: '8px', width: '100%', border: 'none', background: 'transparent', padding: 0, color: 'var(--accent)', textAlign: 'center' }}
                  >
                    {category === "Bague" && Array.from({ length: 27 }, (_, i) => (44 + i).toString()).map(s => <option key={s} value={s}>{s}</option>)}
                    {(category === "Bracelet") && ["15 CM", "16 CM", "17 CM", "18 CM", "19 CM", "20 CM", "21 CM"].map(s => <option key={s} value={s}>{s}</option>)}
@@ -424,13 +427,13 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
                    {["Boucles d'oreilles", "Montre"].includes(category) && <option value="STD">STD</option>}
                  </select>
                ) : (
-                 <p style={{ fontWeight: 900, fontSize: '15px', marginTop: '10px', color: 'var(--accent)' }}>{request.size || 'STD'}</p>
+                 <p style={{ fontWeight: 900, fontSize: '12px', marginTop: '8px', color: 'var(--accent)' }}>{request.size || 'STD'}</p>
                )}
             </div>
 
             {/* WEIGHT */}
-            <div style={{ padding: '24px', borderRadius: '28px', background: '#F9F9F9', border: '1px solid rgba(0,0,0,0.02)' }}>
-               <span className="cyber-label" style={{ fontSize: '7px', opacity: 0.5 }}>WEIGHT / 重量</span>
+            <div style={{ padding: '16px 8px', borderRadius: '20px', background: '#F9F9F9', border: '1px solid rgba(0,0,0,0.02)', textAlign: 'center' }}>
+               <span className="cyber-label" style={{ fontSize: '8px', opacity: 0.5, display: 'block' }}>WEIGHT</span>
                {isEditing ? (
                  <input 
                    placeholder="4.85g"
@@ -439,10 +442,10 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
                      setWeight(e.target.value);
                      saveField('estimatedWeight', e.target.value);
                    }}
-                   style={{ fontWeight: 900, fontSize: '13px', marginTop: '10px', width: '100%', border: 'none', background: 'transparent', padding: 0 }}
+                   style={{ fontWeight: 900, fontSize: '11px', marginTop: '8px', width: '100%', border: 'none', background: 'transparent', padding: 0, textAlign: 'center' }}
                  />
                ) : (
-                 <p style={{ fontWeight: 900, fontSize: '15px', marginTop: '10px' }}>{request.estimatedWeight || '...'}</p>
+                 <p style={{ fontWeight: 900, fontSize: '12px', marginTop: '8px' }}>{request.estimatedWeight || '...'}</p>
                )}
             </div>
          </div>
@@ -461,16 +464,16 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
                     whileTap={{ scale: 0.95 }}
                     onClick={() => isEditing && saveField('goldColor', g.id)}
                     style={{ 
-                      flex: 1, padding: '16px', borderRadius: '24px', 
-                      background: request.goldColor === g.id ? '#000' : '#F9F9F9',
-                      color: request.goldColor === g.id ? '#fff' : '#000',
-                      border: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px',
-                      opacity: isEditing ? 1 : (request.goldColor === g.id ? 1 : 0.3),
+                      flex: 1, padding: '18px 8px', borderRadius: '24px', 
+                      background: request.goldColor === g.id ? g.color : '#F9F9F9',
+                      color: request.goldColor === g.id ? '#000' : 'rgba(0,0,0,0.4)',
+                      border: 'none', display: 'flex', justifyContent: 'center', alignItems: 'center',
+                      opacity: isEditing ? 1 : (request.goldColor === g.id ? 1 : 0.4),
+                      boxShadow: request.goldColor === g.id ? `0 10px 30px ${g.color}66` : 'none',
                       cursor: isEditing ? 'pointer' : 'default',
-                      transition: 'all 0.3s ease'
+                      transition: 'all 0.4s ease'
                     }}
                   >
-                     <div style={{ width: '12px', height: '12px', borderRadius: '6px', background: g.color }} />
                      <span style={{ fontSize: '10px', fontWeight: 900 }}>{g.label}</span>
                   </motion.button>
                ))}
@@ -533,8 +536,8 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
 
          {/* INCLUSIONS BAR */}
          <div style={{ marginBottom: '48px', padding: '20px', background: 'var(--accent-glow)', borderRadius: '24px', textAlign: 'center' }}>
-            <p className="cyber-label" style={{ fontSize: '8px', color: 'var(--accent)' }}>PACKAGE INCLUSIONS</p>
-            <p style={{ fontWeight: 800, fontSize: '11px', marginTop: '4px', textTransform: 'uppercase' }}>Box • Travel Pouch • Kit • Maison 7 Cert.</p>
+            <p className="cyber-label" style={{ fontSize: '8px', color: 'var(--accent)' }}>PACKAGING</p>
+            <p style={{ fontWeight: 900, fontSize: '13px', marginTop: '4px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>BOITE INCLUS</p>
          </div>
 
          {/* QUOTES SECTION */}
@@ -685,25 +688,32 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
             <span className="cyber-label" style={{ marginBottom: '24px', display: 'block' }}>LOGISTICS PIPELINE</span>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                {[
-                 { id: 1, label: "Sourcing", statusMatch: ['DRAFT', 'WAITING_FOR_QUOTE'] },
+                 { id: 1, label: "Sourcing", statusMatch: ['DRAFT', 'WAITING_FOR_QUOTE'], date: request.createdAt ? new Date(request.createdAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }) : null },
                  { id: 2, label: "Review", statusMatch: ['QUOTED', 'MANAGER_REVIEW'] },
                  { id: 3, label: "Deposit", statusMatch: ['WAITING_FOR_DEPOSIT'] },
                  { id: 4, label: "Production", statusMatch: ['IN_PRODUCTION'] },
                  { id: 5, label: "Payment", statusMatch: ['FINAL_PAYMENT'] },
                  { id: 6, label: "Transit", statusMatch: ['SHIPPED'] },
-                 { id: 7, label: "Delivered", statusMatch: ['DELIVERED'] }
-               ].map((step) => {
+                 { id: 7, label: "Delivered", statusMatch: ['DELIVERED'], date: request.deliveryEstimation ? new Date(request.deliveryEstimation).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }) : (request.createdAt ? new Date(request.createdAt + 14 * 24 * 60 * 60 * 1000).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }) : null), isEstimate: !request.deliveryEstimation }
+               ].map((step: any) => {
                  const statusOrder = ["DRAFT", "WAITING_FOR_QUOTE", "QUOTED", "MANAGER_REVIEW", "WAITING_FOR_DEPOSIT", "IN_PRODUCTION", "FINAL_PAYMENT", "SHIPPED", "DELIVERED"];
                  const currentStatusIdx = statusOrder.indexOf(request.status);
-                 const stepMaxIdx = Math.max(...step.statusMatch.map(s => statusOrder.indexOf(s)));
+                 const stepMaxIdx = Math.max(...step.statusMatch.map((s: string) => statusOrder.indexOf(s)));
                  const isCompleted = currentStatusIdx > stepMaxIdx;
                  const isActive = step.statusMatch.includes(request.status);
 
                  return (
                    <div key={step.id} style={{ display: 'flex', alignItems: 'center', gap: '20px', opacity: (isActive || isCompleted) ? 1 : 0.15 }}>
                      <div style={{ width: '8px', height: '8px', borderRadius: '4px', background: (isActive || isCompleted) ? 'var(--accent)' : '#000' }} />
-                     <span style={{ fontSize: '12px', fontWeight: (isActive || isCompleted) ? 900 : 500, textTransform: 'uppercase', color: isActive ? 'var(--accent)' : '#000', letterSpacing: '0.02em' }}>{step.label}</span>
-                     {isActive && <div style={{ fontSize: '9px', fontWeight: 900, color: 'var(--accent)', marginLeft: '4px' }}>●</div>}
+                     <div style={{ display: 'flex', alignItems: 'center', flex: 1, gap: '8px' }}>
+                        <span style={{ fontSize: '12px', fontWeight: (isActive || isCompleted) ? 900 : 500, textTransform: 'uppercase', color: isActive ? 'var(--accent)' : '#000', letterSpacing: '0.02em' }}>{step.label}</span>
+                        {isActive && <div style={{ fontSize: '9px', fontWeight: 900, color: 'var(--accent)' }}>●</div>}
+                     </div>
+                     {step.date && (
+                        <span style={{ fontSize: '10px', fontWeight: 800, opacity: 0.4, fontVariantNumeric: 'tabular-nums' }}>
+                           {step.isEstimate ? 'EST. ' : ''}{step.date.toUpperCase()}
+                        </span>
+                     )}
                    </div>
                  );
                })}
@@ -718,8 +728,9 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
                const stages = ["DRAFT", "WAITING_FOR_QUOTE", "QUOTED", "MANAGER_REVIEW", "WAITING_FOR_DEPOSIT", "IN_PRODUCTION", "FINAL_PAYMENT", "SHIPPED", "DELIVERED"];
                const currentIdx = stages.indexOf(request.status);
                const prevStatus = stages[currentIdx - 1];
-               if (prevStatus && confirm(`Revenir à l'étape : ${prevStatus} ?`)) {
-                 saveField('status', prevStatus);
+               if (prevStatus) {
+                 setPrevStageName(prevStatus);
+                 setShowBackModal(true);
                }
             }} style={{ width: '44px', flex: 'none' }}><ArrowLeft size={20} strokeWidth={2.5} /></motion.button>
          </div>
@@ -837,7 +848,24 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
               </div>
 
               <button onClick={() => handleQC("")} style={{ background: 'none', border: 'none', marginTop: '24px', fontWeight: 800, color: 'var(--accent)', fontSize: '11px', textDecoration: 'underline', opacity: 0.7 }}>PASSER LE QC (MODE DÉVELOPPEMENT)</button>
-              <button onClick={() => setShowQCModal(false)} style={{ background: 'none', border: 'none', marginTop: '16px', fontWeight: 800, color: 'var(--faded)', fontSize: '13px' }}>ANNULER</button>
+             <button onClick={() => setShowQCModal(false)} style={{ background: 'none', border: 'none', marginTop: '16px', fontWeight: 800, color: 'var(--faded)', fontSize: '13px' }}>ANNULER</button>
+            </div>
+          </motion.div>
+        )}
+
+        {showBackModal && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'fixed', inset: 0, background: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(40px)', zIndex: 3000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
+            <div style={{ textAlign: 'center', maxWidth: '320px', width: '100%' }}>
+              <div style={{ width: '64px', height: '64px', borderRadius: '32px', background: 'rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px auto' }}>
+                <ArrowLeft size={32} />
+              </div>
+              <h2 style={{ fontSize: '20px', fontWeight: 900, letterSpacing: '-0.04em' }}>RETOUR EN ARRIÈRE</h2>
+              <p style={{ marginTop: '12px', color: 'var(--faded)', fontWeight: 600, fontSize: '12px', lineHeight: 1.5 }}>Voulez-vous vraiment revenir à l&apos;étape précédente : <span style={{ color: '#000' }}>{prevStageName.replace(/_/g, ' ')}</span> ?</p>
+              
+              <div style={{ marginTop: '32px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                 <button onClick={() => { saveField('status', prevStageName); setShowBackModal(false); }} className="btn-main" style={{ background: '#000', color: '#fff' }}>CONFIRMER LE RETOUR</button>
+                 <button onClick={() => setShowBackModal(false)} style={{ background: 'none', border: 'none', marginTop: '8px', fontWeight: 800, color: 'var(--faded)', fontSize: '13px' }}>ANNULER</button>
+              </div>
             </div>
           </motion.div>
         )}
