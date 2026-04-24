@@ -150,12 +150,20 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
         setShowLinkModal(true);
       }
       
-      if (request?.status === 'DRAFT') {
+      if (request?.status === 'DRAFT' || request?.status === 'WAITING_FOR_QUOTE') {
         await update(rtdbRef(rtdb, `requests/${params.id}`), { status: 'WAITING_FOR_QUOTE' });
       }
     } catch (e) {
       toast.error("Erreur génération lien.");
     }
+  };
+
+  const handleUnselectQuote = async () => {
+    await update(rtdbRef(rtdb, `requests/${params.id}`), {
+      acceptedQuoteId: null,
+      status: 'QUOTED'
+    });
+    toast.success("OFFRE DÉ-SÉLECTIONNÉE.");
   };
 
   const [showTrackingInput, setShowTrackingInput] = useState(false);
@@ -612,7 +620,7 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
                 {quotes.map(q => (
                   <motion.div 
                      key={q.id} whileTap={{ scale: 0.98 }}
-                     onClick={() => !request.acceptedQuoteId && handleAcceptQuote(q)}
+                     onClick={() => request.acceptedQuoteId === q.id ? handleUnselectQuote() : handleAcceptQuote(q)}
                      style={{ 
                        padding: '24px', borderRadius: '32px', 
                        background: request.acceptedQuoteId === q.id ? 'var(--accent)' : '#fff',
@@ -819,15 +827,9 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
 
          {/* MAIN ACTIONS (CENTER) */}
          <div style={{ flex: 1, display: 'flex', gap: '4px', overflowX: 'auto', paddingRight: '8px' }} className="hide-scrollbar">
-            {request.status === 'DRAFT' && (
+            {['DRAFT', 'WAITING_FOR_QUOTE', 'QUOTED'].includes(request.status) && (
                <motion.button whileTap={{ scale: 0.95 }} className="vision-action active primary" onClick={generateSupplierLink} style={{ whiteSpace: 'nowrap', padding: '0 24px' }}>
-                  <Plus size={18} /> GENERATE LINK
-               </motion.button>
-            )}
-            
-            {request.status === 'WAITING_FOR_QUOTE' && (
-               <motion.button whileTap={{ scale: 0.95 }} className="vision-action active" onClick={generateSupplierLink} style={{ whiteSpace: 'nowrap', padding: '0 24px' }}>
-                  <Copy size={18} /> COPY SUPPLIER LINK
+                  <Plus size={18} /> NEW SUPPLIER LINK
                </motion.button>
             )}
 
