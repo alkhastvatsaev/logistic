@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { rtdb, rtdbRef, get, set, push, update } from "@/lib/firebase";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { CheckCircle, Truck, PackageCheck, ArrowRight, User, MapPin } from "lucide-react";
 import { TitaneLoader } from "@/components/ui/TitaneLoader";
