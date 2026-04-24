@@ -65,7 +65,7 @@ export default function SupplierPortal({ params }: { params: { token: string } }
   const handleSubmitQuote = async (e: React.FormEvent) => {
     e.preventDefault();
     setTriedToSubmit(true);
-    if (!supplierName || !priceRMB || !totalWeight || !goldWeight || !diamondCount || !totalCarat || !productionTimeDays) {
+    if (!supplierName || !priceRMB || !totalWeight || !goldWeight || !diamondCount || !totalCarat || !productionTimeDays || !shippingCostRMB) {
        toast.error("VEUILLEZ REMPLIR TOUS LES CHAMPS OBLIGATOIRES");
        return;
     }
@@ -201,7 +201,7 @@ export default function SupplierPortal({ params }: { params: { token: string } }
               </button>
            </motion.div>
          ) : (
-           <form onSubmit={handleSubmitQuote} style={{ display: 'flex', flexDirection: 'column', gap: '40px' }}>
+           <form onSubmit={handleSubmitQuote} noValidate style={{ display: 'flex', flexDirection: 'column', gap: '40px' }}>
               
               <div className={triedToSubmit && !supplierName ? 'shake' : ''} style={{ padding: '32px', background: triedToSubmit && !supplierName ? 'rgba(255,59,48,0.05)' : '#F9F9F9', borderRadius: '32px', border: triedToSubmit && !supplierName ? '1px dashed #FF3B30' : '1px solid transparent', transition: 'all 0.3s ease' }}>
                  <p className="cyber-label" style={{ marginBottom: '24px', color: triedToSubmit && !supplierName ? '#FF3B30' : 'inherit' }}>IDENTIFICATION / 标识</p>
@@ -251,9 +251,9 @@ export default function SupplierPortal({ params }: { params: { token: string } }
                  </div>
               </div>
 
-              <div style={{ padding: '24px', background: '#F9F9F9', borderRadius: '28px' }}>
-                 <p className="cyber-label" style={{ fontSize: '7px', marginBottom: '8px', opacity: 0.5 }}>SHIPPING (RMB ¥)</p>
-                 <input type="number" step="0.01" value={shippingCostRMB} onChange={e => setShippingCostRMB(e.target.value)} placeholder="0.00" style={{ width: '100%', background: 'transparent', fontSize: '20px', fontWeight: 900 }} required />
+              <div className={triedToSubmit && !shippingCostRMB ? 'shake' : ''} style={{ padding: '24px', background: triedToSubmit && !shippingCostRMB ? 'rgba(255,59,48,0.05)' : '#F9F9F9', borderRadius: '28px', border: triedToSubmit && !shippingCostRMB ? '1px dashed #FF3B30' : '1px solid transparent' }}>
+                 <p className="cyber-label" style={{ fontSize: '7px', marginBottom: '8px', opacity: 0.5, color: triedToSubmit && !shippingCostRMB ? '#FF3B30' : 'inherit' }}>SHIPPING (RMB ¥)</p>
+                 <input type="number" step="0.01" value={shippingCostRMB} onChange={e => setShippingCostRMB(e.target.value)} placeholder="0.00" style={{ width: '100%', background: 'transparent', fontSize: '20px', fontWeight: 900, color: triedToSubmit && !shippingCostRMB ? '#FF3B30' : 'inherit' }} />
               </div>
 
               <button type="submit" className="btn-main" style={{ background: '#000', color: '#fff' }}>
