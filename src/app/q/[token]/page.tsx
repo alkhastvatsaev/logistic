@@ -66,7 +66,18 @@ export default function SupplierPortal({ params }: { params: { token: string } }
       tracking: "FEDEX TRACKING NUMBER",
       qc: "QUALITY CONTROL MEDIA",
       confirm: "CONFIRM EXPEDITION",
-      refresh: "REFRESH"
+      refresh: "REFRESH",
+      requiredFields: "PLEASE FILL ALL REQUIRED FIELDS",
+      syncError: "SYNC ERROR",
+      successQuote: "QUOTE SENT SUCCESSFULLY",
+      successShipping: "SHIPPING & QC SUBMITTED",
+      selectDate: "SELECT DATE",
+      close: "CLOSE",
+      trackingFedex: "Tracking FedEx",
+      quoteSubmitted: "QUOTE SUBMITTED",
+      propositionSent: "Your proposal has been transmitted.",
+      shipmentSent: "SHIPMENT SENT",
+      locale: 'en-US'
     },
     CN: {
       portal: "供应商门户",
@@ -99,7 +110,18 @@ export default function SupplierPortal({ params }: { params: { token: string } }
       tracking: "快递单号 (FEDEX)",
       qc: "质检照片/视频 (QC)",
       confirm: "确认发货",
-      refresh: "刷新状态"
+      refresh: "刷新状态",
+      requiredFields: "请填写所有必填字段",
+      syncError: "同步错误",
+      successQuote: "报价发送成功",
+      successShipping: "发货与QC已提交",
+      selectDate: "选择日期",
+      close: "关闭",
+      trackingFedex: "联邦快递单号",
+      quoteSubmitted: "已提交报价",
+      propositionSent: "您的建议已送达。",
+      shipmentSent: "已发货",
+      locale: 'zh-CN'
     }
   }[lang];
   const [triedToSubmit, setTriedToSubmit] = useState(false);
@@ -148,7 +170,7 @@ export default function SupplierPortal({ params }: { params: { token: string } }
     e.preventDefault();
     setTriedToSubmit(true);
     if (!supplierName || !priceRMB || !goldWeight || !diamondCount || !totalCarat || !productionTimeDays || !shippingCostRMB || !estimatedDeliveryDate || !goldPricePerGram || !laborCost || !diamondPricePerCarat) {
-       toast.error("VEUILLEZ REMPLIR TOUS LES CHAMPS OBLIGATOIRES / 请填写所有必填字段");
+       toast.error(t.requiredFields);
        return;
     }
     setLoading(true);
@@ -182,9 +204,9 @@ export default function SupplierPortal({ params }: { params: { token: string } }
       
       await update(rtdbRef(rtdb), updates);
       setSubmitted(true);
-      toast.success("DEMANDE ENVOYÉE AVEC SUCCÈS");
+      toast.success(t.successQuote);
     } catch (error) {
-      toast.error("ERREUR DE SYNCHRONISATION");
+      toast.error(t.syncError);
     } finally {
       setLoading(false);
     }
@@ -203,9 +225,9 @@ export default function SupplierPortal({ params }: { params: { token: string } }
       
       await update(rtdbRef(rtdb), updates);
       setShippingSubmitted(true);
-      toast.success("EXPÉDITION ET QC TRANSMIS");
+      toast.success(t.successShipping);
     } catch (error) {
-      toast.error("ERREUR MISE À JOUR TRACKING");
+      toast.error(t.syncError);
     } finally {
       setLoading(false);
     }
@@ -229,11 +251,11 @@ export default function SupplierPortal({ params }: { params: { token: string } }
   );
 
   if (shippingSubmitted) {
-    return <StatusHero icon={PackageCheck} title={t.confirm} sub={`Tracking FedEx : ${request.trackingNumber || trackingNumber}`} />;
+    return <StatusHero icon={PackageCheck} title={t.shipmentSent} sub={`${t.trackingFedex} : ${request.trackingNumber || trackingNumber}`} />;
   }
 
   if (submitted) {
-    return <StatusHero icon={CheckCircle} title={t.submit} sub={t.submit} />;
+    return <StatusHero icon={CheckCircle} title={t.quoteSubmitted} sub={t.propositionSent} />;
   }
 
   return (
@@ -338,7 +360,7 @@ export default function SupplierPortal({ params }: { params: { token: string } }
                     <input 
                       value={supplierName}
                       onChange={e => setSupplierName(e.target.value)}
-                      placeholder="Factory Code..."
+                      placeholder={t.factoryCode}
                       style={{ flex: 1, background: 'transparent', fontSize: '18px', fontWeight: 900 }}
                     />
                  </div>
@@ -350,11 +372,11 @@ export default function SupplierPortal({ params }: { params: { token: string } }
                     <input type="number" step="0.1" value={priceRMB} onChange={e => setPriceRMB(e.target.value)} placeholder="0" style={{ width: '100%', background: 'transparent', fontSize: '20px', fontWeight: 900, color: '#fff' }} />
                  </div>
                  <div style={{ padding: '24px', background: '#F9F9F9', borderRadius: '28px' }}>
-                    <p className="cyber-label" style={{ fontSize: '7px', marginBottom: '8px', opacity: 0.5 }}>TIME (DAYS)</p>
+                     <p className="cyber-label" style={{ fontSize: '7px', marginBottom: '8px', opacity: 0.5 }}>{t.time}</p>
                     <input type="number" value={productionTimeDays} onChange={e => setProductionTimeDays(e.target.value)} placeholder="0" style={{ width: '100%', background: 'transparent', fontSize: '20px', fontWeight: 900 }} />
                  </div>
                  <div style={{ padding: '24px', background: '#F9F9F9', borderRadius: '28px' }}>
-                    <p className="cyber-label" style={{ fontSize: '7px', marginBottom: '8px', opacity: 0.5 }}>SHIP (RMB ¥)</p>
+                     <p className="cyber-label" style={{ fontSize: '7px', marginBottom: '8px', opacity: 0.5 }}>{t.ship}</p>
                     <input type="number" value={shippingCostRMB} onChange={e => setShippingCostRMB(e.target.value)} placeholder="0" style={{ width: '100%', background: 'transparent', fontSize: '20px', fontWeight: 900 }} />
                  </div>
               </div>
@@ -364,34 +386,34 @@ export default function SupplierPortal({ params }: { params: { token: string } }
                  
                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px' }}>
                     <div>
-                       <label className="cyber-label" style={{ fontSize: '7px', opacity: 0.4 }}>GOLD WEIGHT (G)</label>
+                       <label className="cyber-label" style={{ fontSize: '7px', opacity: 0.4 }}>{t.goldWeight}</label>
                        <input type="number" step="0.01" value={goldWeight} onChange={e => setGoldWeight(e.target.value)} placeholder="0.00" style={{ width: '100%', background: 'transparent', fontSize: '18px', fontWeight: 900, marginTop: '8px' }} />
                     </div>
                     <div>
-                       <label className="cyber-label" style={{ fontSize: '7px', opacity: 0.4 }}>GOLD PRICE (RMB/G)</label>
-                       <input type="number" step="0.1" value={goldPricePerGram} onChange={e => setGoldPricePerGram(e.target.value)} placeholder="Live Rate..." style={{ width: '100%', background: 'transparent', fontSize: '18px', fontWeight: 900, marginTop: '8px', color: 'var(--accent)' }} />
+                       <label className="cyber-label" style={{ fontSize: '7px', opacity: 0.4 }}>{t.goldPrice}</label>
+                       <input type="number" step="0.1" value={goldPricePerGram} onChange={e => setGoldPricePerGram(e.target.value)} placeholder="..." style={{ width: '100%', background: 'transparent', fontSize: '18px', fontWeight: 900, marginTop: '8px', color: 'var(--accent)' }} />
                     </div>
                  </div>
 
                  <div style={{ marginTop: '32px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px', paddingTop: '32px', borderTop: '1px dashed rgba(0,0,0,0.05)' }}>
                     <div>
-                       <label className="cyber-label" style={{ fontSize: '7px', opacity: 0.4 }}>DIAMOND COUNT</label>
+                       <label className="cyber-label" style={{ fontSize: '7px', opacity: 0.4 }}>{t.diamondCount}</label>
                        <input type="number" value={diamondCount} onChange={e => setDiamondCount(e.target.value)} placeholder="0" style={{ width: '100%', background: 'transparent', fontSize: '18px', fontWeight: 900, marginTop: '8px' }} />
                     </div>
                     <div>
-                       <label className="cyber-label" style={{ fontSize: '7px', opacity: 0.4 }}>TOTAL CARAT</label>
+                       <label className="cyber-label" style={{ fontSize: '7px', opacity: 0.4 }}>{t.totalCarat}</label>
                        <input type="number" step="0.01" value={totalCarat} onChange={e => setTotalCarat(e.target.value)} placeholder="0.00" style={{ width: '100%', background: 'transparent', fontSize: '18px', fontWeight: 900, marginTop: '8px' }} />
                     </div>
                  </div>
 
                  <div style={{ marginTop: '32px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px', paddingTop: '32px', borderTop: '1px dashed rgba(0,0,0,0.05)' }}>
                     <div>
-                       <label className="cyber-label" style={{ fontSize: '7px', opacity: 0.4 }}>LABOR COST (RMB)</label>
-                       <input type="number" value={laborCost} onChange={e => setLaborCost(e.target.value)} placeholder="Workmanship..." style={{ width: '100%', background: 'transparent', fontSize: '18px', fontWeight: 900, marginTop: '8px' }} />
+                       <label className="cyber-label" style={{ fontSize: '7px', opacity: 0.4 }}>{t.labor}</label>
+                       <input type="number" value={laborCost} onChange={e => setLaborCost(e.target.value)} placeholder="..." style={{ width: '100%', background: 'transparent', fontSize: '18px', fontWeight: 900, marginTop: '8px' }} />
                     </div>
                     <div>
-                       <label className="cyber-label" style={{ fontSize: '7px', opacity: 0.4 }}>STONE PRICE (RMB/CT)</label>
-                       <input type="number" step="0.1" value={diamondPricePerCarat} onChange={e => setDiamondPricePerCarat(e.target.value)} placeholder="Price per ct..." style={{ width: '100%', background: 'transparent', fontSize: '18px', fontWeight: 900, marginTop: '8px', color: 'var(--accent)' }} />
+                       <label className="cyber-label" style={{ fontSize: '7px', opacity: 0.4 }}>{t.stonePrice}</label>
+                       <input type="number" step="0.1" value={diamondPricePerCarat} onChange={e => setDiamondPricePerCarat(e.target.value)} placeholder="..." style={{ width: '100%', background: 'transparent', fontSize: '18px', fontWeight: 900, marginTop: '8px', color: 'var(--accent)' }} />
                     </div>
                  </div>
 
@@ -411,22 +433,21 @@ export default function SupplierPortal({ params }: { params: { token: string } }
                        </div>
                     </div>
                     <div style={{ marginTop: '24px', paddingTop: '24px', borderTop: '1px solid rgba(0,0,0,0.05)' }}>
-                       <label className="cyber-label" style={{ fontSize: '7px', opacity: 0.4 }}>GEM ORIGIN / 宝石来源</label>
+                       <label className="cyber-label" style={{ fontSize: '7px', opacity: 0.4 }}>{t.gemOrigin}</label>
                        <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
-                          {['Lab Grown', 'Natural'].map(t => (
-                             <button key={t} type="button" onClick={() => setDiamondType(t)} style={{ flex: 1, padding: '12px', borderRadius: '16px', background: diamondType === t ? '#000' : '#fff', color: diamondType === t ? '#fff' : '#000', border: '1px solid rgba(0,0,0,0.05)', fontSize: '10px', fontWeight: 900 }}>{t.toUpperCase()}</button>
-                          ))}
+                          <button type="button" onClick={() => setDiamondType("Lab Grown")} style={{ flex: 1, padding: '12px', borderRadius: '16px', background: diamondType === "Lab Grown" ? '#000' : '#fff', color: diamondType === "Lab Grown" ? '#fff' : '#000', border: '1px solid rgba(0,0,0,0.05)', fontSize: '10px', fontWeight: 900 }}>{t.labGrown}</button>
+                          <button type="button" onClick={() => setDiamondType("Natural")} style={{ flex: 1, padding: '12px', borderRadius: '16px', background: diamondType === "Natural" ? '#000' : '#fff', color: diamondType === "Natural" ? '#fff' : '#000', border: '1px solid rgba(0,0,0,0.05)', fontSize: '10px', fontWeight: 900 }}>{t.natural}</button>
                        </div>
                     </div>
                  </div>
                  
                  {(goldWeight && goldPricePerGram && laborCost && totalCarat && diamondPricePerCarat) && (
                     <div style={{ marginTop: '48px', padding: '32px', background: 'var(--accent-glow)', borderRadius: '32px', textAlign: 'center' }}>
-                       <span className="cyber-label" style={{ fontSize: '8px', color: 'var(--accent)' }}>AUTO-VERIFICATION / 自动核对</span>
+                       <span className="cyber-label" style={{ fontSize: '8px', color: 'var(--accent)' }}>{t.autoVerify}</span>
                        <div style={{ fontSize: '24px', fontWeight: 900, color: 'var(--accent)', marginTop: '8px' }}>
                           {(Number(goldWeight) * Number(goldPricePerGram) + Number(laborCost) + Number(totalCarat) * Number(diamondPricePerCarat)).toFixed(0)} ¥
                        </div>
-                       <p style={{ fontSize: '9px', fontWeight: 700, opacity: 0.5, marginTop: '4px' }}>ESTIMATED TOTAL PRODUCTION COST (INC. GEMS)</p>
+                       <p style={{ fontSize: '9px', fontWeight: 700, opacity: 0.5, marginTop: '4px' }}>{t.estCost}</p>
                     </div>
                   )}
               </div>
@@ -436,18 +457,18 @@ export default function SupplierPortal({ params }: { params: { token: string } }
                  <textarea 
                    value={comments}
                    onChange={e => setComments(e.target.value)}
-                   placeholder="Technical notes..."
+                   placeholder="..."
                    style={{ width: '100%', background: 'transparent', border: 'none', resize: 'none', height: '80px', fontSize: '14px', fontWeight: 600, color: '#000' }}
                  />
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                  <div className={triedToSubmit && !shippingCostRMB ? 'shake' : ''} style={{ padding: '24px', background: triedToSubmit && !shippingCostRMB ? 'rgba(255,59,48,0.05)' : '#F9F9F9', borderRadius: '28px', border: triedToSubmit && !shippingCostRMB ? '1px dashed #FF3B30' : '1px solid transparent' }}>
-                    <p className="cyber-label" style={{ fontSize: '7px', marginBottom: '8px', opacity: 0.5, color: triedToSubmit && !shippingCostRMB ? '#FF3B30' : 'inherit' }}>SHIPPING (RMB ¥) / 运费</p>
+                    <p className="cyber-label" style={{ fontSize: '7px', marginBottom: '8px', opacity: 0.5, color: triedToSubmit && !shippingCostRMB ? '#FF3B30' : 'inherit' }}>{t.ship}</p>
                     <input type="number" step="0.01" value={shippingCostRMB} onChange={e => setShippingCostRMB(e.target.value)} placeholder="0.00" style={{ width: '100%', background: 'transparent', fontSize: '20px', fontWeight: 900, color: triedToSubmit && !shippingCostRMB ? '#FF3B30' : 'inherit' }} />
                  </div>
                  <div className={triedToSubmit && !estimatedDeliveryDate ? 'shake' : ''} style={{ padding: '24px', background: triedToSubmit && !estimatedDeliveryDate ? 'rgba(255,59,48,0.05)' : '#F9F9F9', borderRadius: '28px', border: triedToSubmit && !estimatedDeliveryDate ? '1px dashed #FF3B30' : '1px solid transparent' }}>
-                    <p className="cyber-label" style={{ fontSize: '7px', marginBottom: '8px', opacity: 0.5, color: triedToSubmit && !estimatedDeliveryDate ? '#FF3B30' : 'inherit' }}>DELIVERY / 预计送达</p>
+                    <p className="cyber-label" style={{ fontSize: '7px', marginBottom: '8px', opacity: 0.5, color: triedToSubmit && !estimatedDeliveryDate ? '#FF3B30' : 'inherit' }}>{t.delivery}</p>
                     <div 
                       onClick={() => setShowCalendar(true)}
                       style={{ 
@@ -463,13 +484,13 @@ export default function SupplierPortal({ params }: { params: { token: string } }
                         alignItems: 'center'
                       }} 
                     >
-                       {estimatedDeliveryDate ? new Date(estimatedDeliveryDate).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }).toUpperCase() : 'SELECT DATE / 选择日期'}
+                       {estimatedDeliveryDate ? new Date(estimatedDeliveryDate).toLocaleDateString(t.locale, { day: 'numeric', month: 'long', year: 'numeric' }).toUpperCase() : t.selectDate}
                     </div>
                  </div>
               </div>
 
               <button type="submit" className="btn-main" style={{ background: '#000', color: '#fff' }}>
-                 SUBMIT QUOTE / 提交报价 <ArrowRight size={18} />
+                 {t.submit} <ArrowRight size={18} />
               </button>
 
            </form>
@@ -495,7 +516,7 @@ export default function SupplierPortal({ params }: { params: { token: string } }
                    </button>
                    <div style={{ textAlign: 'center' }}>
                       <p style={{ fontSize: '13px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                        {new Date(calendarView.year, calendarView.month).toLocaleString('fr-FR', { month: 'long' })}
+                        {new Date(calendarView.year, calendarView.month).toLocaleString(t.locale, { month: 'long' })}
                       </p>
                       <p style={{ fontSize: '10px', fontWeight: 700, opacity: 0.3 }}>{calendarView.year}</p>
                    </div>
@@ -510,11 +531,11 @@ export default function SupplierPortal({ params }: { params: { token: string } }
                      <ChevronRight size={18} />
                    </button>
                 </div>
-                <button onClick={() => setShowCalendar(false)} style={{ background: '#000', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: '100px', fontSize: '11px', fontWeight: 900 }}>CLOSE</button>
+                <button onClick={() => setShowCalendar(false)} style={{ background: '#000', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: '100px', fontSize: '11px', fontWeight: 900 }}>{t.close}</button>
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '8px' }}>
-                {['L','M','M','J','V','S','D'].map((d, i) => <div key={i} style={{ textAlign: 'center', fontSize: '9px', fontWeight: 900, opacity: 0.3, paddingBottom: '12px' }}>{d}</div>)}
+                 {(lang === "CN" ? ['一','二','三','四','五','六','日'] : ['M','T','W','T','F','S','S']).map((d, i) => <div key={i} style={{ textAlign: 'center', fontSize: '9px', fontWeight: 900, opacity: 0.3, paddingBottom: '12px' }}>{d}</div>)}
                 
                 {(() => {
                   const firstDay = new Date(calendarView.year, calendarView.month, 1).getDay();
