@@ -70,9 +70,23 @@ export async function GET(request: Request) {
     if (url.toLowerCase().includes('vancleef')) brand = "Van Cleef";
     if (url.toLowerCase().includes('bulgari')) brand = "Bulgari";
 
+    // PERSIST IMAGE TO BASE64 (Server-side bypass for CORS)
+    let imageDataUri = "";
+    if (imageUrl) {
+        try {
+            const imgResp = await fetch(imageUrl, { headers: { 'User-Agent': 'Mozilla/5.0' } });
+            if (imgResp.ok) {
+                const buffer = await imgResp.arrayBuffer();
+                const base64 = Buffer.from(buffer).toString('base64');
+                const contentType = imgResp.headers.get('content-type') || 'image/jpeg';
+                imageDataUri = `data:${contentType};base64,${base64}`;
+            }
+        } catch (e) { console.error("Img Persist Error", e); }
+    }
+
     return NextResponse.json({
       title,
-      imageUrl,
+      imageUrl: imageDataUri || imageUrl,
       description,
       goldColor,
       stoneType,

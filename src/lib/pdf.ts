@@ -47,104 +47,88 @@ const getBase64Image = async (url: string): Promise<string | null> => {
 };
 
 export const generateQuotePDF = async (data: PDFData) => {
-  const doc = new jsPDF({ unit: "mm", format: [105, 220] });
-  let y = 18; // Global Y tracker
-
-  // 1. MOBILE HEADER
+  // Bespoke Mobile Format: [Width, Height]
+  const doc = new jsPDF({ unit: "mm", format: [105, 200] });
+  
+  // --- PAGE 1: THE EMOTIONAL CORE (Visual & Price) ---
+  let y = 18;
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(24);
-  doc.setTextColor(0, 0, 0);
+  doc.setFontSize(26);
+  doc.setTextColor(0);
   doc.text("LOGIS.", 12, y, { charSpace: -0.5 });
   
   doc.setFontSize(6);
-  doc.setTextColor(160, 160, 160);
-  doc.text("OFFRE TECHNIQUE DÉTAILLÉE", 12, y + 5, { charSpace: 1 });
+  doc.setTextColor(160);
+  doc.text("PROPOSITION EXCLUSIVE", 12, y + 5, { charSpace: 1 });
 
-  // REF & DATE (Fixed positions in header)
-  doc.setFontSize(5); 
-  doc.setTextColor(200);
-  doc.text(`Réf: ${data.id.substring(0, 8).toUpperCase()}`, 93, 16, { align: "right" });
-  doc.text(`${new Date().toLocaleDateString('fr-FR')}`, 93, 20, { align: "right" });
-
-  y = 30; // Move below header
-
-  // 2. HERO IMAGE
+  y = 30;
   if (data.imageUrl) {
     try {
-      const base64 = await getBase64Image(data.imageUrl);
+      const base64 = data.imageUrl.startsWith('data:') ? data.imageUrl : await getBase64Image(data.imageUrl);
       if (base64) {
         doc.setFillColor(252, 252, 252);
-        doc.roundedRect(10, y, 85, 80, 12, 12, "F"); 
-        
+        doc.roundedRect(10, y, 85, 90, 12, 12, "F"); 
         const imgProps = doc.getImageProperties(base64);
         const maxWidth = 80;
-        const maxHeight = 75;
+        const maxHeight = 85;
         let ratio = Math.min(maxWidth / imgProps.width, maxHeight / imgProps.height);
-        const imgW = imgProps.width * ratio;
-        const imgH = imgProps.height * ratio;
-        
-        const xPos = (105 - imgW) / 2;
-        const yPos = y + (80 - imgH) / 2;
-        doc.addImage(base64, 'JPEG', xPos, yPos, imgW, imgH, undefined, 'FAST');
-        y += 85; 
-      } else {
-        y += 10;
+        doc.addImage(base64, 'JPEG', (105 - (imgProps.width * ratio)) / 2, y + (90 - (imgProps.height * ratio)) / 2, imgProps.width * ratio, imgProps.height * ratio, undefined, 'FAST');
+        y += 95;
       }
-    } catch (e) {
-      y += 10; 
-    }
-  } else {
-    y += 10;
+    } catch (e) { y += 10; }
   }
 
-  // 3. TITLE (With Multi-Line Handling)
-  doc.setFont("helvetica", "bold");
   doc.setFontSize(22);
-  doc.setTextColor(0);
   const titleLines = doc.splitTextToSize(data.title.toUpperCase(), 85);
   doc.text(titleLines, 12, y, { charSpace: -0.5 });
   
-  y += (titleLines.length * 8) + 5; // Increment Y based on text lines
+  // PRICE PILL (Page 1 Focal Point)
+  doc.setFillColor(0);
+  doc.roundedRect(10, 165, 85, 25, 12.5, 12.5, "F");
+  doc.setFontSize(7);
+  doc.setTextColor(255);
+  doc.text("PRIX TOTAL LIVRÉ TTC", 22, 173, { charSpace: 1 });
+  doc.setFontSize(24);
+  const priceStr = Math.round(data.sellingPrice).toLocaleString('fr-FR').replace(/\s/g, '') + "€";
+  doc.text(priceStr, 22, 185);
+
+  // --- PAGE 2: THE TECHNICAL AUDIT ---
+  doc.addPage([105, 200]);
+  y = 18;
+  doc.setFontSize(10);
+  doc.setTextColor(0);
+  doc.text("AUDIT TECHNIQUE", 12, y, { charSpace: 1 });
   
-  doc.setDrawColor(245);
+  y += 10;
+  doc.setDrawColor(240);
   doc.line(12, y, 93, y);
-  y += 10; // Space before specs
-  
-  // 4. DETAILED SPECS GRID
-  const addSpec = (label: string, value: string) => {
-    doc.setFont("helvetica", "bold");
+  y += 15;
+
+  const addTechSpec = (label: string, value: string) => {
     doc.setFontSize(7);
     doc.setTextColor(180);
     doc.text(label, 12, y, { charSpace: 0.5 });
-    
-    y += 4;
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(13);
+    y += 5;
+    doc.setFontSize(12);
     doc.setTextColor(0);
-    const valueLines = doc.splitTextToSize(String(value || "N/A").toUpperCase(), 80);
-    doc.text(valueLines, 12, y);
-    
-    y += (valueLines.length * 6) + 6; // Move Y for next spec
+    const lines = doc.splitTextToSize(String(value || "N/A").toUpperCase(), 80);
+    doc.text(lines, 12, y);
+    y += (lines.length * 6) + 8;
   };
 
-  addSpec("MÉTAUX PRÉCIEUX", `${data.goldPurity || '18K (750)'} ${data.goldColor || 'JAUNE'}`);
-  addSpec("POIDS ESTIMÉ", `${data.goldWeight || data.weight || '?'}G`);
-  addSpec("PIERRES ET DIAMANTS", data.totalCarat ? `${data.totalCarat}CT - ${data.stoneQuality || 'VVS DEF'}` : "SANS PIERRE");
-  addSpec("LIVRAISON ET SERVICE", "ÉCRIN LUXE • CERTIFICAT • 15+ JOURS");
-  
-  // 5. PRICE FOOTER (Stays responsive but calculated)
-  y = Math.max(y, 190); // Ensure footer doesn't overlap previous content
-  doc.setFillColor(0, 0, 0);
-  doc.roundedRect(10, y, 85, 26, 13, 13, "F"); 
-  doc.setFontSize(7);
-  doc.setTextColor(255, 255, 255);
-  doc.text("PRIX TOTAL LIVRÉ TTC", 20, y + 8, { charSpace: 1 });
-  doc.setFontSize(22);
-  const priceStr = Math.round(data.sellingPrice).toLocaleString('fr-FR').replace(/\s/g, '') + "€";
-  doc.text(priceStr, 20, y + 18);
+  addTechSpec("MÉTAUX", `${data.goldPurity || '18K (750)'} ${data.goldColor || 'JAUNE'}`);
+  addTechSpec("POIDS OR", `${data.goldWeight || data.weight || '?'}G`);
+  addTechSpec("PIERRES", data.totalCarat ? `${data.totalCarat}CT ${data.stoneType || 'DIAMANTS'}` : "SANS PIERRE");
+  addTechSpec("QUALITÉ", data.stoneQuality || "VVS DEF");
+  addTechSpec("ID RÉFÉRENCE", data.id.toUpperCase());
+
+  // Page 2 Footer
+  doc.setFontSize(6);
+  doc.setTextColor(200);
+  doc.text("SYSTÈME LOGIS 2030 • AUTHENTICITÉ GARANTIE", 52.5, 190, { align: "center" });
 
   const safeTitle = data.title.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-  doc.save(`DEVIS_LOGIS_${safeTitle}.pdf`);
+  doc.save(`PROFIL_LOGIS_${safeTitle}.pdf`);
 };
 
 /**
