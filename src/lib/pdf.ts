@@ -24,6 +24,28 @@ export interface PDFData {
  * Generates an Ultra-Premium "LOGIS." Proposal.
  * Mirroring the "Titane 2030" app aesthetic.
  */
+/**
+ * Highly Robust Image Pre-processor for jsPDF
+ * Converts external URLs to Base64 to bypass CORS issues on mobile.
+ */
+const getBase64Image = async (url: string): Promise<string | null> => {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.setAttribute('crossOrigin', 'anonymous');
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return resolve(null);
+      ctx.drawImage(img, 0, 0);
+      resolve(canvas.toDataURL("image/jpeg"));
+    };
+    img.onerror = () => resolve(null);
+    img.src = url;
+  });
+};
+
 export const generateQuotePDF = async (data: PDFData) => {
   const doc = new jsPDF({ unit: "mm", format: [105, 220] });
   let y = 18; // Global Y tracker
@@ -49,23 +71,27 @@ export const generateQuotePDF = async (data: PDFData) => {
   // 2. HERO IMAGE
   if (data.imageUrl) {
     try {
-      doc.setFillColor(252, 252, 252);
-      doc.roundedRect(10, y, 85, 80, 12, 12, "F"); 
-      
-      const imgProps = doc.getImageProperties(data.imageUrl);
-      const maxWidth = 80;
-      const maxHeight = 75;
-      let ratio = Math.min(maxWidth / imgProps.width, maxHeight / imgProps.height);
-      const imgW = imgProps.width * ratio;
-      const imgH = imgProps.height * ratio;
-      
-      const xPos = (105 - imgW) / 2;
-      const yPos = y + (80 - imgH) / 2;
-      doc.addImage(data.imageUrl, 'JPEG', xPos, yPos, imgW, imgH, undefined, 'FAST');
-      
-      y += 85; // Bumper after image
+      const base64 = await getBase64Image(data.imageUrl);
+      if (base64) {
+        doc.setFillColor(252, 252, 252);
+        doc.roundedRect(10, y, 85, 80, 12, 12, "F"); 
+        
+        const imgProps = doc.getImageProperties(base64);
+        const maxWidth = 80;
+        const maxHeight = 75;
+        let ratio = Math.min(maxWidth / imgProps.width, maxHeight / imgProps.height);
+        const imgW = imgProps.width * ratio;
+        const imgH = imgProps.height * ratio;
+        
+        const xPos = (105 - imgW) / 2;
+        const yPos = y + (80 - imgH) / 2;
+        doc.addImage(base64, 'JPEG', xPos, yPos, imgW, imgH, undefined, 'FAST');
+        y += 85; 
+      } else {
+        y += 10;
+      }
     } catch (e) {
-      y += 10; // Fallback spacing
+      y += 10; 
     }
   } else {
     y += 10;
