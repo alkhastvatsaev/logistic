@@ -29,6 +29,8 @@ export default function SupplierPortal({ params }: { params: { token: string } }
   const [goldPurity, setGoldPurity] = useState("18K (750)");
   const [comments, setComments] = useState("");
   const [estimatedDeliveryDate, setEstimatedDeliveryDate] = useState("");
+  const [goldPricePerGram, setGoldPricePerGram] = useState("");
+  const [laborCost, setLaborCost] = useState("");
   const [triedToSubmit, setTriedToSubmit] = useState(false);
   const [showCalendar, setShowCalendar] = useState(false);
   const [calendarView, setCalendarView] = useState({ month: new Date().getMonth(), year: new Date().getFullYear() });
@@ -74,7 +76,7 @@ export default function SupplierPortal({ params }: { params: { token: string } }
   const handleSubmitQuote = async (e: React.FormEvent) => {
     e.preventDefault();
     setTriedToSubmit(true);
-    if (!supplierName || !priceRMB || !totalWeight || !goldWeight || !diamondCount || !totalCarat || !productionTimeDays || !shippingCostRMB || !estimatedDeliveryDate) {
+    if (!supplierName || !priceRMB || !goldWeight || !diamondCount || !totalCarat || !productionTimeDays || !shippingCostRMB || !estimatedDeliveryDate || !goldPricePerGram || !laborCost) {
        toast.error("VEUILLEZ REMPLIR TOUS LES CHAMPS OBLIGATOIRES / 请填写所有必填字段");
        return;
     }
@@ -97,6 +99,8 @@ export default function SupplierPortal({ params }: { params: { token: string } }
         goldPurity,
         comments,
         estimatedDeliveryDate,
+        goldPricePerGram: Number(goldPricePerGram),
+        laborCost: Number(laborCost),
         createdAt: Date.now()
       });
 
@@ -262,54 +266,87 @@ export default function SupplierPortal({ params }: { params: { token: string } }
                  </div>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                 <div className={triedToSubmit && !priceRMB ? 'shake' : ''} style={{ padding: '24px', background: triedToSubmit && !priceRMB ? 'rgba(255,59,48,0.05)' : '#F9F9F9', borderRadius: '28px', border: triedToSubmit && !priceRMB ? '1px dashed #FF3B30' : '1px solid transparent' }}>
-                    <p className="cyber-label" style={{ fontSize: '7px', marginBottom: '8px', opacity: 0.5, color: triedToSubmit && !priceRMB ? '#FF3B30' : 'inherit' }}>PRICE (RMB ¥)</p>
-                    <input type="number" step="0.01" value={priceRMB} onChange={e => setPriceRMB(e.target.value)} placeholder="0.00" style={{ width: '100%', background: 'transparent', fontSize: '20px', fontWeight: 900 }} />
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px' }}>
+                 <div className={triedToSubmit && !priceRMB ? 'shake' : ''} style={{ padding: '24px', background: '#000', color: '#fff', borderRadius: '28px', border: triedToSubmit && !priceRMB ? '1px dashed #FF3B30' : '1px solid transparent' }}>
+                    <p className="cyber-label" style={{ fontSize: '7px', marginBottom: '8px', opacity: 0.5, color: '#fff' }}>TOTAL PRICE (RMB ¥)</p>
+                    <input type="number" step="0.1" value={priceRMB} onChange={e => setPriceRMB(e.target.value)} placeholder="0" style={{ width: '100%', background: 'transparent', fontSize: '20px', fontWeight: 900, color: '#fff' }} />
                  </div>
-                 <div className={triedToSubmit && !productionTimeDays ? 'shake' : ''} style={{ padding: '24px', background: triedToSubmit && !productionTimeDays ? 'rgba(255,59,48,0.05)' : '#F9F9F9', borderRadius: '28px', border: triedToSubmit && !productionTimeDays ? '1px dashed #FF3B30' : '1px solid transparent' }}>
-                    <p className="cyber-label" style={{ fontSize: '7px', marginBottom: '8px', opacity: 0.5, color: triedToSubmit && !productionTimeDays ? '#FF3B30' : 'inherit' }}>TIME (DAYS)</p>
+                 <div style={{ padding: '24px', background: '#F9F9F9', borderRadius: '28px' }}>
+                    <p className="cyber-label" style={{ fontSize: '7px', marginBottom: '8px', opacity: 0.5 }}>TIME (DAYS)</p>
                     <input type="number" value={productionTimeDays} onChange={e => setProductionTimeDays(e.target.value)} placeholder="0" style={{ width: '100%', background: 'transparent', fontSize: '20px', fontWeight: 900 }} />
+                 </div>
+                 <div style={{ padding: '24px', background: '#F9F9F9', borderRadius: '28px' }}>
+                    <p className="cyber-label" style={{ fontSize: '7px', marginBottom: '8px', opacity: 0.5 }}>SHIP (RMB ¥)</p>
+                    <input type="number" value={shippingCostRMB} onChange={e => setShippingCostRMB(e.target.value)} placeholder="0" style={{ width: '100%', background: 'transparent', fontSize: '20px', fontWeight: 900 }} />
                  </div>
               </div>
 
-              <div className={triedToSubmit && (!totalWeight || !goldWeight || !diamondCount || !totalCarat) ? 'shake' : ''} style={{ padding: '32px', background: (triedToSubmit && (!totalWeight || !goldWeight || !diamondCount || !totalCarat)) ? 'rgba(255,59,48,0.05)' : '#F9F9F9', borderRadius: '32px', border: (triedToSubmit && (!totalWeight || !goldWeight || !diamondCount || !totalCarat)) ? '1px dashed #FF3B30' : '1px solid transparent' }}>
-                 <p className="cyber-label" style={{ marginBottom: '24px', color: (triedToSubmit && (!totalWeight || !goldWeight || !diamondCount || !totalCarat)) ? '#FF3B30' : 'inherit' }}>MANUFACTURING DATA / 制造数据</p>
+              <div className={triedToSubmit && (!totalWeight || !goldWeight || !diamondCount || !totalCarat) ? 'shake' : ''} style={{ padding: '48px', background: '#F9F9F9', borderRadius: '48px', border: '1px solid rgba(0,0,0,0.02)' }}>
+                 <p className="cyber-label" style={{ marginBottom: '40px' }}>SPECIFICATIONS TECHNIQUES / 技术规格</p>
+                 
                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px' }}>
                     <div>
-                       <label className="cyber-label" style={{ fontSize: '7px', opacity: 0.5 }}>TOTAL WEIGHT (G)</label>
-                       <input type="number" step="0.01" value={totalWeight} onChange={e => setTotalWeight(e.target.value)} placeholder="0.0" style={{ width: '100%', background: 'transparent', fontSize: '16px', fontWeight: 900, marginTop: '8px', color: triedToSubmit && !totalWeight ? '#FF3B30' : 'inherit' }} />
+                       <label className="cyber-label" style={{ fontSize: '7px', opacity: 0.4 }}>GOLD WEIGHT (G)</label>
+                       <input type="number" step="0.01" value={goldWeight} onChange={e => setGoldWeight(e.target.value)} placeholder="0.00" style={{ width: '100%', background: 'transparent', fontSize: '18px', fontWeight: 900, marginTop: '8px' }} />
                     </div>
                     <div>
-                       <label className="cyber-label" style={{ fontSize: '7px', opacity: 0.5 }}>GOLD WEIGHT (G)</label>
-                       <input type="number" step="0.01" value={goldWeight} onChange={e => setGoldWeight(e.target.value)} placeholder="0.0" style={{ width: '100%', background: 'transparent', fontSize: '16px', fontWeight: 900, marginTop: '8px', color: triedToSubmit && !goldWeight ? '#FF3B30' : 'inherit' }} />
-                    </div>
-                    <div>
-                       <label className="cyber-label" style={{ fontSize: '7px', opacity: 0.5 }}>DIAMOND COUNT</label>
-                       <input type="number" value={diamondCount} onChange={e => setDiamondCount(e.target.value)} placeholder="0" style={{ width: '100%', background: 'transparent', fontSize: '16px', fontWeight: 900, marginTop: '8px', color: triedToSubmit && !diamondCount ? '#FF3B30' : 'inherit' }} />
-                    </div>
-                    <div>
-                        <label className="cyber-label" style={{ fontSize: '7px', opacity: 0.5 }}>STONE QUALITY / 净度</label>
-                        <input value={stoneQuality} onChange={e => setStoneQuality(e.target.value)} placeholder="VVS / DEF" style={{ width: '100%', background: 'transparent', fontSize: '16px', fontWeight: 900, marginTop: '8px' }} />
+                       <label className="cyber-label" style={{ fontSize: '7px', opacity: 0.4 }}>GOLD PRICE (RMB/G)</label>
+                       <input type="number" step="0.1" value={goldPricePerGram} onChange={e => setGoldPricePerGram(e.target.value)} placeholder="Live Rate..." style={{ width: '100%', background: 'transparent', fontSize: '18px', fontWeight: 900, marginTop: '8px', color: 'var(--accent)' }} />
                     </div>
                  </div>
 
-                 <div style={{ marginTop: '32px', paddingTop: '32px', borderTop: '1px dotted rgba(0,0,0,0.1)' }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                 <div style={{ marginTop: '32px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px', paddingTop: '32px', borderTop: '1px dashed rgba(0,0,0,0.05)' }}>
+                    <div>
+                       <label className="cyber-label" style={{ fontSize: '7px', opacity: 0.4 }}>DIAMOND COUNT</label>
+                       <input type="number" value={diamondCount} onChange={e => setDiamondCount(e.target.value)} placeholder="0" style={{ width: '100%', background: 'transparent', fontSize: '18px', fontWeight: 900, marginTop: '8px' }} />
+                    </div>
+                    <div>
+                       <label className="cyber-label" style={{ fontSize: '7px', opacity: 0.4 }}>TOTAL CARAT</label>
+                       <input type="number" step="0.01" value={totalCarat} onChange={e => setTotalCarat(e.target.value)} placeholder="0.00" style={{ width: '100%', background: 'transparent', fontSize: '18px', fontWeight: 900, marginTop: '8px' }} />
+                    </div>
+                 </div>
+
+                 <div style={{ marginTop: '32px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px', paddingTop: '32px', borderTop: '1px dashed rgba(0,0,0,0.05)' }}>
+                    <div>
+                       <label className="cyber-label" style={{ fontSize: '7px', opacity: 0.4 }}>LABOR COST (RMB)</label>
+                       <input type="number" value={laborCost} onChange={e => setLaborCost(e.target.value)} placeholder="Workmanship..." style={{ width: '100%', background: 'transparent', fontSize: '18px', fontWeight: 900, marginTop: '8px' }} />
+                    </div>
+                    <div>
+                       <label className="cyber-label" style={{ fontSize: '7px', opacity: 0.4 }}>STONE QUALITY</label>
+                       <input value={stoneQuality} onChange={e => setStoneQuality(e.target.value)} placeholder="DEF / VVS" style={{ width: '100%', background: 'transparent', fontSize: '18px', fontWeight: 900, marginTop: '8px' }} />
+                    </div>
+                 </div>
+
+                 <div style={{ marginTop: '48px', paddingTop: '32px', borderTop: '1px solid rgba(0,0,0,0.05)' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px' }}>
                        <div>
-                          <label className="cyber-label" style={{ fontSize: '7px', opacity: 0.5 }}>GOLD PURITY / 成色</label>
-                          <select value={goldPurity} onChange={e => setGoldPurity(e.target.value)} style={{ width: '100%', background: 'transparent', fontSize: '15px', fontWeight: 900, marginTop: '8px' }}>
+                          <label className="cyber-label" style={{ fontSize: '7px', opacity: 0.4 }}>GEM ORIGIN / 宝石来源</label>
+                          <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
+                             {['Lab Grown', 'Natural'].map(t => (
+                                <button key={t} type="button" onClick={() => setDiamondType(t)} style={{ flex: 1, padding: '12px', borderRadius: '16px', background: diamondType === t ? '#000' : '#fff', color: diamondType === t ? '#fff' : '#000', border: '1px solid rgba(0,0,0,0.05)', fontSize: '10px', fontWeight: 900 }}>{t.toUpperCase()}</button>
+                             ))}
+                          </div>
+                       </div>
+                       <div>
+                          <label className="cyber-label" style={{ fontSize: '7px', opacity: 0.4 }}>PURITY / 成色</label>
+                          <select value={goldPurity} onChange={e => setGoldPurity(e.target.value)} style={{ width: '100%', background: 'transparent', fontSize: '14px', fontWeight: 900, marginTop: '12px', border: 'none' }}>
                              <option value="18K (750)">18K (750)</option>
                              <option value="14K (585)">14K (585)</option>
                              <option value="Platinum (950)">PT950</option>
                           </select>
                        </div>
-                       <div>
-                          <label className="cyber-label" style={{ fontSize: '7px', opacity: 0.5 }}>TOTAL CARAT / 总克拉</label>
-                          <input type="number" step="0.01" value={totalCarat} onChange={e => setTotalCarat(e.target.value)} placeholder="0.0" style={{ width: '100%', background: 'transparent', fontSize: '16px', fontWeight: 900, marginTop: '8px' }} />
-                       </div>
                     </div>
                  </div>
+                 
+                 {(goldWeight && goldPricePerGram && laborCost) && (
+                    <div style={{ marginTop: '48px', padding: '32px', background: 'var(--accent-glow)', borderRadius: '32px', textAlign: 'center' }}>
+                       <span className="cyber-label" style={{ fontSize: '8px', color: 'var(--accent)' }}>AUTO-VERIFICATION / 自动核对</span>
+                       <div style={{ fontSize: '24px', fontWeight: 900, color: 'var(--accent)', marginTop: '8px' }}>
+                          {(Number(goldWeight) * Number(goldPricePerGram) + Number(laborCost)).toFixed(0)} ¥
+                       </div>
+                       <p style={{ fontSize: '9px', fontWeight: 700, opacity: 0.5, marginTop: '4px' }}>ESTIMATED PRODUCTION COST (EXCL. GEMS)</p>
+                    </div>
+                  )}
               </div>
 
               <div style={{ padding: '32px', background: '#F9F9F9', borderRadius: '32px' }}>
