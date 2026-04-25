@@ -123,7 +123,15 @@ export default function NewRequest() {
                       const res = await fetch(`/api/enrich?url=${encodeURIComponent(productUrl)}`);
                       if (!res.ok) throw new Error("API Connection Error");
                       const data = await res.json();
-                      if (data.error) throw new Error(data.error);
+                      
+                      if (data.error) {
+                        toast.error(data.error, {
+                          description: data.details,
+                          duration: 6000
+                        });
+                        setLoading(false);
+                        return;
+                      }
                       
                       if (data.title) setTitle(data.title);
                       if (data.goldColor) setGoldColor(data.goldColor);
