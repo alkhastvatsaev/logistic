@@ -30,6 +30,7 @@ export default function SupplierPortal({ params }: { params: { token: string } }
   const [comments, setComments] = useState("");
   const [estimatedDeliveryDate, setEstimatedDeliveryDate] = useState("");
   const [goldPricePerGram, setGoldPricePerGram] = useState("");
+  const [diamondPricePerCarat, setDiamondPricePerCarat] = useState("");
   const [laborCost, setLaborCost] = useState("");
   const [triedToSubmit, setTriedToSubmit] = useState(false);
   const [showCalendar, setShowCalendar] = useState(false);
@@ -76,7 +77,7 @@ export default function SupplierPortal({ params }: { params: { token: string } }
   const handleSubmitQuote = async (e: React.FormEvent) => {
     e.preventDefault();
     setTriedToSubmit(true);
-    if (!supplierName || !priceRMB || !goldWeight || !diamondCount || !totalCarat || !productionTimeDays || !shippingCostRMB || !estimatedDeliveryDate || !goldPricePerGram || !laborCost) {
+    if (!supplierName || !priceRMB || !goldWeight || !diamondCount || !totalCarat || !productionTimeDays || !shippingCostRMB || !estimatedDeliveryDate || !goldPricePerGram || !laborCost || !diamondPricePerCarat) {
        toast.error("VEUILLEZ REMPLIR TOUS LES CHAMPS OBLIGATOIRES / 请填写所有必填字段");
        return;
     }
@@ -100,6 +101,7 @@ export default function SupplierPortal({ params }: { params: { token: string } }
         comments,
         estimatedDeliveryDate,
         goldPricePerGram: Number(goldPricePerGram),
+        diamondPricePerCarat: Number(diamondPricePerCarat),
         laborCost: Number(laborCost),
         createdAt: Date.now()
       });
@@ -312,20 +314,16 @@ export default function SupplierPortal({ params }: { params: { token: string } }
                        <input type="number" value={laborCost} onChange={e => setLaborCost(e.target.value)} placeholder="Workmanship..." style={{ width: '100%', background: 'transparent', fontSize: '18px', fontWeight: 900, marginTop: '8px' }} />
                     </div>
                     <div>
-                       <label className="cyber-label" style={{ fontSize: '7px', opacity: 0.4 }}>STONE QUALITY</label>
-                       <input value={stoneQuality} onChange={e => setStoneQuality(e.target.value)} placeholder="DEF / VVS" style={{ width: '100%', background: 'transparent', fontSize: '18px', fontWeight: 900, marginTop: '8px' }} />
+                       <label className="cyber-label" style={{ fontSize: '7px', opacity: 0.4 }}>STONE PRICE (RMB/CT)</label>
+                       <input type="number" step="0.1" value={diamondPricePerCarat} onChange={e => setDiamondPricePerCarat(e.target.value)} placeholder="Price per ct..." style={{ width: '100%', background: 'transparent', fontSize: '18px', fontWeight: 900, marginTop: '8px', color: 'var(--accent)' }} />
                     </div>
                  </div>
 
                  <div style={{ marginTop: '48px', paddingTop: '32px', borderTop: '1px solid rgba(0,0,0,0.05)' }}>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px' }}>
                        <div>
-                          <label className="cyber-label" style={{ fontSize: '7px', opacity: 0.4 }}>GEM ORIGIN / 宝石来源</label>
-                          <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
-                             {['Lab Grown', 'Natural'].map(t => (
-                                <button key={t} type="button" onClick={() => setDiamondType(t)} style={{ flex: 1, padding: '12px', borderRadius: '16px', background: diamondType === t ? '#000' : '#fff', color: diamondType === t ? '#fff' : '#000', border: '1px solid rgba(0,0,0,0.05)', fontSize: '10px', fontWeight: 900 }}>{t.toUpperCase()}</button>
-                             ))}
-                          </div>
+                          <label className="cyber-label" style={{ fontSize: '7px', opacity: 0.4 }}>STONE QUALITY</label>
+                          <input value={stoneQuality} onChange={e => setStoneQuality(e.target.value)} placeholder="VVS / DEF" style={{ width: '100%', background: 'transparent', fontSize: '14px', fontWeight: 900, marginTop: '12px', border: 'none' }} />
                        </div>
                        <div>
                           <label className="cyber-label" style={{ fontSize: '7px', opacity: 0.4 }}>PURITY / 成色</label>
@@ -336,15 +334,23 @@ export default function SupplierPortal({ params }: { params: { token: string } }
                           </select>
                        </div>
                     </div>
+                    <div style={{ marginTop: '24px', paddingTop: '24px', borderTop: '1px solid rgba(0,0,0,0.05)' }}>
+                       <label className="cyber-label" style={{ fontSize: '7px', opacity: 0.4 }}>GEM ORIGIN / 宝石来源</label>
+                       <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
+                          {['Lab Grown', 'Natural'].map(t => (
+                             <button key={t} type="button" onClick={() => setDiamondType(t)} style={{ flex: 1, padding: '12px', borderRadius: '16px', background: diamondType === t ? '#000' : '#fff', color: diamondType === t ? '#fff' : '#000', border: '1px solid rgba(0,0,0,0.05)', fontSize: '10px', fontWeight: 900 }}>{t.toUpperCase()}</button>
+                          ))}
+                       </div>
+                    </div>
                  </div>
                  
-                 {(goldWeight && goldPricePerGram && laborCost) && (
+                 {(goldWeight && goldPricePerGram && laborCost && totalCarat && diamondPricePerCarat) && (
                     <div style={{ marginTop: '48px', padding: '32px', background: 'var(--accent-glow)', borderRadius: '32px', textAlign: 'center' }}>
                        <span className="cyber-label" style={{ fontSize: '8px', color: 'var(--accent)' }}>AUTO-VERIFICATION / 自动核对</span>
                        <div style={{ fontSize: '24px', fontWeight: 900, color: 'var(--accent)', marginTop: '8px' }}>
-                          {(Number(goldWeight) * Number(goldPricePerGram) + Number(laborCost)).toFixed(0)} ¥
+                          {(Number(goldWeight) * Number(goldPricePerGram) + Number(laborCost) + Number(totalCarat) * Number(diamondPricePerCarat)).toFixed(0)} ¥
                        </div>
-                       <p style={{ fontSize: '9px', fontWeight: 700, opacity: 0.5, marginTop: '4px' }}>ESTIMATED PRODUCTION COST (EXCL. GEMS)</p>
+                       <p style={{ fontSize: '9px', fontWeight: 700, opacity: 0.5, marginTop: '4px' }}>ESTIMATED TOTAL PRODUCTION COST (INC. GEMS)</p>
                     </div>
                   )}
               </div>
