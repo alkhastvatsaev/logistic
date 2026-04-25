@@ -26,86 +26,96 @@ export interface PDFData {
  */
 export const generateQuotePDF = async (data: PDFData) => {
   const doc = new jsPDF({ unit: "mm", format: [105, 220] });
-  const blueAccent = [0, 68, 255]; 
-  const fadedGray = [160, 160, 160];
-  
+  let y = 18; // Global Y tracker
+
   // 1. MOBILE HEADER
   doc.setFont("helvetica", "bold");
   doc.setFontSize(24);
   doc.setTextColor(0, 0, 0);
-  doc.text("LOGIS.", 12, 18, { charSpace: -0.5 });
+  doc.text("LOGIS.", 12, y, { charSpace: -0.5 });
   
   doc.setFontSize(6);
-  doc.setTextColor(fadedGray[0], fadedGray[1], fadedGray[2]);
-  doc.text("OFFRE TECHNIQUE DÉTAILLÉE", 12, 23, { charSpace: 1 });
+  doc.setTextColor(160, 160, 160);
+  doc.text("OFFRE TECHNIQUE DÉTAILLÉE", 12, y + 5, { charSpace: 1 });
 
-  // 2. REF & DATE (VERY SMALL BUT PRESENT)
+  // REF & DATE (Fixed positions in header)
   doc.setFontSize(5); 
   doc.setTextColor(200);
   doc.text(`Réf: ${data.id.substring(0, 8).toUpperCase()}`, 93, 16, { align: "right" });
   doc.text(`${new Date().toLocaleDateString('fr-FR')}`, 93, 20, { align: "right" });
 
-  // 3. HERO IMAGE
+  y = 30; // Move below header
+
+  // 2. HERO IMAGE
   if (data.imageUrl) {
     try {
+      doc.setFillColor(252, 252, 252);
+      doc.roundedRect(10, y, 85, 80, 12, 12, "F"); 
+      
       const imgProps = doc.getImageProperties(data.imageUrl);
-      const maxWidth = 85;
-      const maxHeight = 80;
+      const maxWidth = 80;
+      const maxHeight = 75;
       let ratio = Math.min(maxWidth / imgProps.width, maxHeight / imgProps.height);
       const imgW = imgProps.width * ratio;
       const imgH = imgProps.height * ratio;
       
-      doc.setFillColor(252, 252, 252);
-      doc.roundedRect(10, 30, 85, 80, 12, 12, "F"); 
-      
       const xPos = (105 - imgW) / 2;
-      const yPos = 30 + (80 - imgH) / 2;
+      const yPos = y + (80 - imgH) / 2;
       doc.addImage(data.imageUrl, 'JPEG', xPos, yPos, imgW, imgH, undefined, 'FAST');
-    } catch (e) {}
+      
+      y += 85; // Bumper after image
+    } catch (e) {
+      y += 10; // Fallback spacing
+    }
+  } else {
+    y += 10;
   }
 
-  // 4. TITLE
-  let y = 125;
+  // 3. TITLE (With Multi-Line Handling)
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(20);
+  doc.setFontSize(22);
   doc.setTextColor(0);
-  doc.text(data.title.toUpperCase(), 12, y, { maxWidth: 85, charSpace: -0.5 });
+  const titleLines = doc.splitTextToSize(data.title.toUpperCase(), 85);
+  doc.text(titleLines, 12, y, { charSpace: -0.5 });
   
-  y += 18;
+  y += (titleLines.length * 8) + 5; // Increment Y based on text lines
+  
   doc.setDrawColor(245);
-  doc.line(12, y - 5, 93, y - 5);
+  doc.line(12, y, 93, y);
+  y += 10; // Space before specs
   
-  // 5. DETAILED SPECS
-  const drawMobileRow = (label: string, value: string, currentY: number) => {
+  // 4. DETAILED SPECS GRID
+  const addSpec = (label: string, value: string) => {
     doc.setFont("helvetica", "bold");
     doc.setFontSize(7);
     doc.setTextColor(180);
-    doc.text(label, 12, currentY, { charSpace: 0.5 });
+    doc.text(label, 12, y, { charSpace: 0.5 });
+    
+    y += 4;
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(12);
+    doc.setFontSize(13);
     doc.setTextColor(0);
-    doc.text(String(value || "N/A").toUpperCase(), 12, currentY + 7);
+    const valueLines = doc.splitTextToSize(String(value || "N/A").toUpperCase(), 80);
+    doc.text(valueLines, 12, y);
+    
+    y += (valueLines.length * 6) + 6; // Move Y for next spec
   };
 
-  drawMobileRow("MÉTAUX PRÉCIEUX", `${data.goldPurity || '18K (750)'} ${data.goldColor || 'JAUNE'}`, y);
-  y += 20;
-  drawMobileRow("POIDS ESTIMÉ", `${data.goldWeight || data.weight || '?'}G`, y);
-  y += 20;
-  drawMobileRow("PIERRES ET DIAMANTS", data.totalCarat ? `${data.totalCarat}CT - ${data.stoneQuality || 'VVS DEF'}` : "SANS PIERRE", y);
-  y += 20;
-  drawMobileRow("LIVRAISON ET SERVICE", "ÉCRIN LUXE • CERTIFICAT • 15 JOURS", y);
+  addSpec("MÉTAUX PRÉCIEUX", `${data.goldPurity || '18K (750)'} ${data.goldColor || 'JAUNE'}`);
+  addSpec("POIDS ESTIMÉ", `${data.goldWeight || data.weight || '?'}G`);
+  addSpec("PIERRES ET DIAMANTS", data.totalCarat ? `${data.totalCarat}CT - ${data.stoneQuality || 'VVS DEF'}` : "SANS PIERRE");
+  addSpec("LIVRAISON ET SERVICE", "ÉCRIN LUXE • CERTIFICAT • 15+ JOURS");
   
-  // 6. PRICE (NO SPACE TO AVOID SLASH CONFUSION)
-  y = 205;
+  // 5. PRICE FOOTER (Stays responsive but calculated)
+  y = Math.max(y, 190); // Ensure footer doesn't overlap previous content
   doc.setFillColor(0, 0, 0);
-  doc.roundedRect(10, y - 15, 85, 26, 13, 13, "F"); 
+  doc.roundedRect(10, y, 85, 26, 13, 13, "F"); 
   doc.setFontSize(7);
   doc.setTextColor(255, 255, 255);
-  doc.text("PRIX TOTAL LIVRÉ TTC", 20, y - 5, { charSpace: 1 });
+  doc.text("PRIX TOTAL LIVRÉ TTC", 20, y + 8, { charSpace: 1 });
   doc.setFontSize(22);
-  // We use replace to remove the non-breaking space that might look like a slash on some devices
   const priceStr = Math.round(data.sellingPrice).toLocaleString('fr-FR').replace(/\s/g, '') + "€";
-  doc.text(priceStr, 20, y + 6);
+  doc.text(priceStr, 20, y + 18);
 
   const safeTitle = data.title.replace(/[^a-z0-9]/gi, '_').toLowerCase();
   doc.save(`DEVIS_LOGIS_${safeTitle}.pdf`);
