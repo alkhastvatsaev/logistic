@@ -23,6 +23,7 @@ export default function NewRequest() {
   const [engraving, setEngraving] = useState("");
   const [loading, setLoading] = useState(false);
   const [productUrl, setProductUrl] = useState("");
+  const [previewImageUrl, setPreviewImageUrl] = useState("");
 
   const stones = [
     { id: "Sans Pierre", label: "SANS", color: "#F9F9F9" },
@@ -44,7 +45,7 @@ export default function NewRequest() {
     if (!title) return;
     setLoading(true);
     try {
-      let imageUrl = "";
+      let imageUrl = previewImageUrl || "";
       if (file) {
         const bitmap = await createImageBitmap(file);
         const canvas = document.createElement('canvas');
@@ -104,13 +105,42 @@ export default function NewRequest() {
              />
              <div style={{ height: '4px', background: 'var(--accent)', width: title ? '100%' : '60px', transition: 'width 0.6s cubic-bezier(0.16, 1, 0.3, 1)', marginTop: '16px' }} />
              
-             <div style={{ marginTop: '24px', padding: '24px', borderRadius: '24px', background: '#F9F9F9', display: 'flex', alignItems: 'center', gap: '16px' }}>
-                <LinkIcon size={18} opacity={0.3} />
-                <input 
-                  type="url" placeholder="Lien boutique officielle (ex: Cartier)..." value={productUrl}
-                  onChange={(e) => setProductUrl(e.target.value)}
-                  style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', fontSize: '13px', fontWeight: 600 }}
-                />
+             <div style={{ marginTop: '24px', display: 'flex', gap: '12px' }}>
+                <div style={{ flex: 1, padding: '24px', borderRadius: '24px', background: '#F9F9F9', display: 'flex', alignItems: 'center', gap: '16px' }}>
+                    <LinkIcon size={18} opacity={0.3} />
+                    <input 
+                      type="url" placeholder="Lien boutique officielle..." value={productUrl}
+                      onChange={(e) => setProductUrl(e.target.value)}
+                      style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', fontSize: '13px', fontWeight: 600 }}
+                    />
+                </div>
+                <button 
+                  type="button"
+                  disabled={!productUrl || loading}
+                  onClick={async () => {
+                    setLoading(true);
+                    try {
+                      const res = await fetch(`/api/enrich?url=${encodeURIComponent(productUrl)}`);
+                      if (!res.ok) throw new Error("API Connection Error");
+                      const data = await res.json();
+                      if (data.error) throw new Error(data.error);
+                      
+                      if (data.title) setTitle(data.title);
+                      if (data.goldColor) setGoldColor(data.goldColor);
+                      if (data.stoneType) setStoneType(data.stoneType);
+                      if (data.brand) setBrand(data.brand);
+                      if (data.imageUrl) setPreviewImageUrl(data.imageUrl);
+                      toast.success("DONNÉES EXTRAITES");
+                    } catch (e) {
+                      toast.error("ERREUR D'EXTRACTION");
+                    } finally {
+                      setLoading(false);
+                    }
+                  }}
+                  style={{ padding: '0 24px', borderRadius: '24px', background: 'var(--accent-glow)', border: 'none', color: 'var(--accent)', fontWeight: 900, fontSize: '10px', cursor: 'pointer' }}
+                >
+                   AUTO-FILL
+                </button>
              </div>
              
              <div style={{ marginTop: '48px' }}>
@@ -223,8 +253,8 @@ export default function NewRequest() {
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
              <p className="cyber-label" style={{ marginBottom: '24px' }}>RÉFÉRENCE VISUELLE / 参考图片</p>
              <label style={{ display: 'block', width: '100%', minHeight: '400px', borderRadius: '48px', background: '#F9F9F9', overflow: 'hidden', position: 'relative', cursor: 'pointer' }}>
-                {file ? (
-                  <SmartImage src={URL.createObjectURL(file)} style={{ width: '100%', height: '400px' }} />
+                {file || previewImageUrl ? (
+                  <SmartImage src={file ? URL.createObjectURL(file) : previewImageUrl} style={{ width: '100%', height: '400px' }} />
                 ) : (
                   <div style={{ height: '400px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'rgba(0,0,0,0.1)', gap: '20px' }}>
                     <div style={{ width: '80px', height: '80px', borderRadius: '40px', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 10px 30px rgba(0,0,0,0.03)' }}>
