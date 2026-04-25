@@ -393,6 +393,7 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
                       if (data.goldColor) saveField('goldColor', data.goldColor);
                       if (data.stoneType) saveField('stoneType', data.stoneType);
                       if (data.brand) { setBrand(data.brand); saveField('brand', data.brand); }
+                      if (data.imageUrl) saveField('imageUrl', data.imageUrl);
                       toast.success("DONNÉES MISES À JOUR");
                     } catch (e) { toast.error("ERREUR D'ENRICHISSEMENT"); }
                   }}
@@ -523,6 +524,40 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
                     <span className="cyber-label" style={{ color: 'var(--accent)', opacity: 0.8 }}>MIRZA PART (50%)</span>
                     <div style={{ fontSize: '28px', fontWeight: 900 }}>{totals.mirzaPart.toFixed(0)}€</div>
                   </div>
+
+                  {acceptedQuote && acceptedQuote.goldPrice && (
+                    <div style={{ marginTop: '24px', padding: '24px', borderRadius: '32px', background: '#F9F9F9', border: '1px solid rgba(0,0,0,0.03)' }}>
+                      <span className="cyber-label" style={{ fontSize: '8px', opacity: 0.5, marginBottom: '16px', display: 'block' }}>ANTI-FRAUD AUDIT (FACTORY COST)</span>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', fontWeight: 700 }}>
+                          <span>OR ({acceptedQuote.goldWeight}g x {acceptedQuote.goldPrice}¥)</span>
+                          <span>{(Number(acceptedQuote.goldWeight) * Number(acceptedQuote.goldPrice)).toFixed(0)} ¥</span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', fontWeight: 700 }}>
+                          <span>MAIN D'OEUVRE</span>
+                          <span>{acceptedQuote.labor || 0} ¥</span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', fontWeight: 700 }}>
+                          <span>PIERRES / DIAMANTS</span>
+                          <span>{acceptedQuote.stonePrice || 0} ¥</span>
+                        </div>
+                        <div style={{ height: '1px', background: 'rgba(0,0,0,0.05)', margin: '4px 0' }} />
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', fontWeight: 900, color: 'var(--accent)' }}>
+                          <span>TOTAL CALCULÉ</span>
+                          <span>{(Number(acceptedQuote.goldWeight || 0) * Number(acceptedQuote.goldPrice || 0) + Number(acceptedQuote.labor || 0) + Number(acceptedQuote.stonePrice || 0)).toFixed(0)} ¥</span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', fontWeight: 900, opacity: 0.3 }}>
+                          <span>TOTAL FACTURÉ</span>
+                          <span>{acceptedQuote.priceRMB} ¥</span>
+                        </div>
+                        {(Number(acceptedQuote.priceRMB) - (Number(acceptedQuote.goldWeight || 0) * Number(acceptedQuote.goldPrice || 0) + Number(acceptedQuote.labor || 0) + Number(acceptedQuote.stonePrice || 0))) > 500 && (
+                          <div style={{ marginTop: '8px', padding: '8px 12px', background: 'rgba(255,59,48,0.1)', color: '#FF3B30', borderRadius: '10px', fontSize: '10px', fontWeight: 900, textAlign: 'center' }}>
+                            ATTENTION : SURCOÛT INEXPLIQUÉ (+{(Number(acceptedQuote.priceRMB) - (Number(acceptedQuote.goldWeight || 0) * Number(acceptedQuote.goldPrice || 0) + Number(acceptedQuote.labor || 0) + Number(acceptedQuote.stonePrice || 0))).toFixed(0)}¥)
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
                </div>
              ) : (
                <p style={{ fontSize: '11px', fontWeight: 800, opacity: 0.3 }}>En attente de devis validé...</p>
