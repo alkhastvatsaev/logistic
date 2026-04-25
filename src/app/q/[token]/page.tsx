@@ -32,6 +32,76 @@ export default function SupplierPortal({ params }: { params: { token: string } }
   const [goldPricePerGram, setGoldPricePerGram] = useState("");
   const [diamondPricePerCarat, setDiamondPricePerCarat] = useState("");
   const [laborCost, setLaborCost] = useState("");
+  const [lang, setLang] = useState<"EN" | "CN">("CN");
+
+  const t = {
+    EN: {
+      portal: "SUPPLIER PORTAL",
+      techOrder: "TECHNICAL ORDER",
+      size: "SIZE",
+      engraving: "ENGRAVING",
+      id: "IDENTIFICATION",
+      factoryCode: "Factory Code...",
+      totalPrice: "TOTAL PRICE (RMB ¥)",
+      time: "TIME (DAYS)",
+      ship: "SHIP (RMB ¥)",
+      techSpecs: "TECHNICAL SPECIFICATIONS",
+      goldWeight: "GOLD WEIGHT (G)",
+      goldPrice: "GOLD PRICE (RMB/G)",
+      diamondCount: "DIAMOND COUNT",
+      totalCarat: "TOTAL CARAT",
+      labor: "LABOR COST (RMB)",
+      stonePrice: "STONE PRICE (RMB/CT)",
+      stoneQuality: "STONE QUALITY",
+      gemOrigin: "GEM ORIGIN",
+      labGrown: "LAB GROWN",
+      natural: "NATURAL",
+      purity: "PURITY",
+      notes: "NOTES",
+      delivery: "DELIVERY",
+      submit: "SUBMIT QUOTE",
+      autoVerify: "AUTO-VERIFICATION",
+      estCost: "ESTIMATED TOTAL PRODUCTION COST (INC. GEMS)",
+      destination: "DESTINATION: FRANCE",
+      tracking: "FEDEX TRACKING NUMBER",
+      qc: "QUALITY CONTROL MEDIA",
+      confirm: "CONFIRM EXPEDITION",
+      refresh: "REFRESH"
+    },
+    CN: {
+      portal: "供应商门户",
+      techOrder: "技术订单",
+      size: "尺寸",
+      engraving: "刻字",
+      id: "身份识别",
+      factoryCode: "供应商代码...",
+      totalPrice: "总价 (RMB ¥)",
+      time: "周期 (天)",
+      ship: "运费 (RMB ¥)",
+      techSpecs: "技术规格",
+      goldWeight: "金重 (G)",
+      goldPrice: "金价 (RMB/G)",
+      diamondCount: "钻石数量",
+      totalCarat: "总克拉",
+      labor: "工费 (RMB)",
+      stonePrice: "宝石单价 (RMB/CT)",
+      stoneQuality: "宝石品质",
+      gemOrigin: "宝石来源",
+      labGrown: "培育钻",
+      natural: "天然钻",
+      purity: "成色",
+      notes: "备注",
+      delivery: "预计交货日",
+      submit: "提交报价",
+      autoVerify: "自动核对",
+      estCost: "预计总成本 (含宝石)",
+      destination: "目的地: 法国",
+      tracking: "快递单号 (FEDEX)",
+      qc: "质检照片/视频 (QC)",
+      confirm: "确认发货",
+      refresh: "刷新状态"
+    }
+  }[lang];
   const [triedToSubmit, setTriedToSubmit] = useState(false);
   const [showCalendar, setShowCalendar] = useState(false);
   const [calendarView, setCalendarView] = useState({ month: new Date().getMonth(), year: new Date().getFullYear() });
@@ -153,17 +223,17 @@ export default function SupplierPortal({ params }: { params: { token: string } }
         </div>
         <h1 style={{ fontSize: '28px', fontWeight: 900, letterSpacing: '-0.05em', marginBottom: '12px' }}>{title.toUpperCase()}</h1>
         <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--faded)', lineHeight: 1.6 }}>{sub}</p>
-        <button onClick={() => window.location.reload()} style={{ marginTop: '40px', background: 'transparent', border: 'none', color: 'var(--accent)', fontWeight: 900, fontSize: '12px' }}>REFRESH / 刷新状态</button>
+        <button onClick={() => window.location.reload()} style={{ marginTop: '40px', background: 'transparent', border: 'none', color: 'var(--accent)', fontWeight: 900, fontSize: '12px' }}>{t.refresh}</button>
       </motion.div>
     </div>
   );
 
   if (shippingSubmitted) {
-    return <StatusHero icon={PackageCheck} title="Shipment Sent / 已发货" sub={`Tracking FedEx : ${request.trackingNumber || trackingNumber}`} />;
+    return <StatusHero icon={PackageCheck} title={t.confirm} sub={`Tracking FedEx : ${request.trackingNumber || trackingNumber}`} />;
   }
 
   if (submitted) {
-    return <StatusHero icon={CheckCircle} title="Quote Submitted / 已提交" sub="Votre proposition a été transmise / 您的报价已提交。" />;
+    return <StatusHero icon={CheckCircle} title={t.submit} sub={t.submit} />;
   }
 
   return (
@@ -172,20 +242,26 @@ export default function SupplierPortal({ params }: { params: { token: string } }
       {/* BRAND HEADER */}
       <header style={{ padding: '48px 32px 32px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <h2 style={{ fontSize: '16px', fontWeight: 900, letterSpacing: '-0.05em' }}>LOGIS.</h2>
-        <span className="cyber-label" style={{ letterSpacing: '0.1em', fontSize: '8px' }}>SUPPLIER PORTAL</span>
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+           <div style={{ display: 'flex', background: '#F9F9F9', borderRadius: '12px', padding: '4px' }}>
+              <button onClick={() => setLang("CN")} style={{ padding: '6px 12px', borderRadius: '8px', border: 'none', background: lang === "CN" ? '#000' : 'transparent', color: lang === "CN" ? '#fff' : '#000', fontSize: '10px', fontWeight: 900 }}>CN</button>
+              <button onClick={() => setLang("EN")} style={{ padding: '6px 12px', borderRadius: '8px', border: 'none', background: lang === "EN" ? '#000' : 'transparent', color: lang === "EN" ? '#fff' : '#000', fontSize: '10px', fontWeight: 900 }}>EN</button>
+           </div>
+           <span className="cyber-label" style={{ letterSpacing: '0.1em', fontSize: '8px', marginLeft: '12px' }}>{t.portal}</span>
+        </div>
       </header>
 
       {/* REQUEST OVERVIEW */}
       <div style={{ padding: '0 32px' }}>
-         <motion.div initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} style={{ marginBottom: '80px', marginTop: '32px' }}>
-            <span className="cyber-label" style={{ marginBottom: '12px', display: 'block', opacity: 0.4 }}>COMMANDE TECHNIQUE</span>
+          <motion.div initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} style={{ marginBottom: '80px', marginTop: '32px' }}>
+            <span className="cyber-label" style={{ marginBottom: '12px', display: 'block', opacity: 0.4 }}>{t.techOrder}</span>
             <h1 style={{ fontSize: '36px', fontWeight: 900, letterSpacing: '-0.06em', margin: 0, textTransform: 'uppercase' }}>{request.title}</h1>
             <div style={{ display: 'flex', gap: '8px', marginTop: '24px' }}>
-               <div style={{ padding: '10px 20px', background: '#F9F9F9', borderRadius: '16px', fontSize: '11px', fontWeight: 900 }}>TAILLE: {request.size || 'STD'}</div>
+               <div style={{ padding: '10px 20px', background: '#F9F9F9', borderRadius: '16px', fontSize: '11px', fontWeight: 900 }}>{t.size}: {request.size || 'STD'}</div>
                <div style={{ padding: '10px 20px', background: 'var(--accent-glow)', borderRadius: '16px', fontSize: '11px', fontWeight: 900, color: 'var(--accent)' }}>{request.goldColor?.toUpperCase()}</div>
-               {request.engraving && <div style={{ padding: '10px 20px', background: '#000', borderRadius: '16px', fontSize: '11px', fontWeight: 900, color: '#fff' }}>ENGRAVING / {request.engraving}</div>}
+               {request.engraving && <div style={{ padding: '10px 20px', background: '#000', borderRadius: '16px', fontSize: '11px', fontWeight: 900, color: '#fff' }}>{t.engraving} / {request.engraving}</div>}
             </div>
-         </motion.div>
+          </motion.div>
 
          {request.imageUrl && (
             <div style={{ position: 'relative', width: '100%', borderRadius: '56px', overflow: 'hidden', background: '#F9F9F9', marginBottom: '80px', border: '1px solid rgba(0,0,0,0.02)', boxShadow: '0 30px 60px rgba(0,0,0,0.02)' }}>
@@ -197,19 +273,19 @@ export default function SupplierPortal({ params }: { params: { token: string } }
          {request.status === "IN_PRODUCTION" && request.acceptedTokenId === params.token ? (
            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
               <div style={{ padding: '48px 40px', background: '#F9F9F9', borderRadius: '56px', marginBottom: '48px' }}>
-                 <p className="cyber-label" style={{ marginBottom: '32px' }}>LOGISTICS PIPELINE</p>
+                 <p className="cyber-label" style={{ marginBottom: '32px' }}>{t.portal}</p>
                  <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '48px', padding: '24px', background: '#fff', borderRadius: '32px' }}>
                     <div style={{ width: '56px', height: '56px', borderRadius: '28px', background: 'var(--accent-glow)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent)' }}>
                        <Truck size={24} strokeWidth={2.5} />
                     </div>
                     <div>
-                       <p style={{ fontSize: '11px', fontWeight: 900, color: '#000', letterSpacing: '0.05em' }}>DESTINATION: FRANCE</p>
+                       <p style={{ fontSize: '11px', fontWeight: 900, color: '#000', letterSpacing: '0.05em' }}>{t.destination}</p>
                        <p style={{ fontSize: '10px', fontWeight: 700, opacity: 0.4, marginTop: '4px' }}>S. BENSADOUN, GEISPOLSHEIM</p>
                     </div>
                  </div>
                  
                  <div style={{ marginBottom: '48px' }}>
-                    <label className="cyber-label" style={{ fontSize: '8px', opacity: 0.4 }}>FEDEX TRACKING NUMBER</label>
+                    <label className="cyber-label" style={{ fontSize: '8px', opacity: 0.4 }}>{t.tracking}</label>
                     <input 
                       required value={trackingNumber} onChange={e => setTrackingNumber(e.target.value)}
                       placeholder="Enter ID..."
@@ -218,7 +294,7 @@ export default function SupplierPortal({ params }: { params: { token: string } }
                  </div>
 
                  <div>
-                    <p className="cyber-label" style={{ marginBottom: '20px' }}>QUALITY CONTROL MEDIA</p>
+                    <p className="cyber-label" style={{ marginBottom: '20px' }}>{t.qc}</p>
                     <label style={{ display: 'block', width: '100%', padding: '40px', background: '#fff', borderRadius: '32px', border: '2px dashed rgba(0,0,0,0.05)', textAlign: 'center', cursor: 'pointer' }}>
                        {uploadProgress > 0 ? (
                           <span style={{ fontSize: '12px', fontWeight: 900, color: 'var(--accent)' }}>PROGRESS: {uploadProgress.toFixed(0)}%</span>
@@ -247,14 +323,14 @@ export default function SupplierPortal({ params }: { params: { token: string } }
                  </div>
               </div>
               <button onClick={handleShippingSubmit} className="btn-main" style={{ background: '#000', color: '#fff', padding: '24px', borderRadius: '32px', fontWeight: 900, fontSize: '14px', width: '100%' }}>
-                 CONFIRM EXPEDITION <ArrowRight size={20} strokeWidth={3} />
+                 {t.confirm} <ArrowRight size={20} strokeWidth={3} />
               </button>
            </motion.div>
          ) : (
            <form onSubmit={handleSubmitQuote} noValidate style={{ display: 'flex', flexDirection: 'column', gap: '40px' }}>
               
               <div className={triedToSubmit && !supplierName ? 'shake' : ''} style={{ padding: '32px', background: triedToSubmit && !supplierName ? 'rgba(255,59,48,0.05)' : '#F9F9F9', borderRadius: '32px', border: triedToSubmit && !supplierName ? '1px dashed #FF3B30' : '1px solid transparent', transition: 'all 0.3s ease' }}>
-                 <p className="cyber-label" style={{ marginBottom: '24px', color: triedToSubmit && !supplierName ? '#FF3B30' : 'inherit' }}>IDENTIFICATION / 标识</p>
+                 <p className="cyber-label" style={{ marginBottom: '24px', color: triedToSubmit && !supplierName ? '#FF3B30' : 'inherit' }}>{t.id}</p>
                  <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                     <div style={{ width: '40px', height: '40px', borderRadius: '20px', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 5px 15px rgba(0,0,0,0.02)' }}>
                        <User size={18} color={triedToSubmit && !supplierName ? '#FF3B30' : 'inherit'} />
@@ -270,7 +346,7 @@ export default function SupplierPortal({ params }: { params: { token: string } }
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px' }}>
                  <div className={triedToSubmit && !priceRMB ? 'shake' : ''} style={{ padding: '24px', background: '#000', color: '#fff', borderRadius: '28px', border: triedToSubmit && !priceRMB ? '1px dashed #FF3B30' : '1px solid transparent' }}>
-                    <p className="cyber-label" style={{ fontSize: '7px', marginBottom: '8px', opacity: 0.5, color: '#fff' }}>TOTAL PRICE (RMB ¥)</p>
+                    <p className="cyber-label" style={{ fontSize: '7px', marginBottom: '8px', opacity: 0.5, color: '#fff' }}>{t.totalPrice}</p>
                     <input type="number" step="0.1" value={priceRMB} onChange={e => setPriceRMB(e.target.value)} placeholder="0" style={{ width: '100%', background: 'transparent', fontSize: '20px', fontWeight: 900, color: '#fff' }} />
                  </div>
                  <div style={{ padding: '24px', background: '#F9F9F9', borderRadius: '28px' }}>
@@ -284,7 +360,7 @@ export default function SupplierPortal({ params }: { params: { token: string } }
               </div>
 
               <div className={triedToSubmit && (!totalWeight || !goldWeight || !diamondCount || !totalCarat) ? 'shake' : ''} style={{ padding: '48px', background: '#F9F9F9', borderRadius: '48px', border: '1px solid rgba(0,0,0,0.02)' }}>
-                 <p className="cyber-label" style={{ marginBottom: '40px' }}>SPECIFICATIONS TECHNIQUES / 技术规格</p>
+                 <p className="cyber-label" style={{ marginBottom: '40px' }}>{t.techSpecs}</p>
                  
                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px' }}>
                     <div>
@@ -322,11 +398,11 @@ export default function SupplierPortal({ params }: { params: { token: string } }
                  <div style={{ marginTop: '48px', paddingTop: '32px', borderTop: '1px solid rgba(0,0,0,0.05)' }}>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px' }}>
                        <div>
-                          <label className="cyber-label" style={{ fontSize: '7px', opacity: 0.4 }}>STONE QUALITY</label>
+                          <label className="cyber-label" style={{ fontSize: '7px', opacity: 0.4 }}>{t.stoneQuality}</label>
                           <input value={stoneQuality} onChange={e => setStoneQuality(e.target.value)} placeholder="VVS / DEF" style={{ width: '100%', background: 'transparent', fontSize: '14px', fontWeight: 900, marginTop: '12px', border: 'none' }} />
                        </div>
                        <div>
-                          <label className="cyber-label" style={{ fontSize: '7px', opacity: 0.4 }}>PURITY / 成色</label>
+                          <label className="cyber-label" style={{ fontSize: '7px', opacity: 0.4 }}>{t.purity}</label>
                           <select value={goldPurity} onChange={e => setGoldPurity(e.target.value)} style={{ width: '100%', background: 'transparent', fontSize: '14px', fontWeight: 900, marginTop: '12px', border: 'none' }}>
                              <option value="18K (750)">18K (750)</option>
                              <option value="14K (585)">14K (585)</option>
@@ -356,7 +432,7 @@ export default function SupplierPortal({ params }: { params: { token: string } }
               </div>
 
               <div style={{ padding: '32px', background: '#F9F9F9', borderRadius: '32px' }}>
-                 <p className="cyber-label" style={{ marginBottom: '20px' }}>NOTES / 备注</p>
+                 <p className="cyber-label" style={{ marginBottom: '20px' }}>{t.notes}</p>
                  <textarea 
                    value={comments}
                    onChange={e => setComments(e.target.value)}
