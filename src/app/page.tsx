@@ -71,8 +71,8 @@ export default function Dashboard() {
               >
                 <Link href={`/requests/${r.id}`} style={{ textDecoration: 'none' }}>
                   <div style={{ 
-                    padding: '32px', borderRadius: '48px', background: '#fff', border: '1px solid rgba(0,0,0,0.06)', 
-                    boxShadow: '0 15px 40px rgba(0,0,0,0.02)', transition: 'all 0.4s ease'
+                    padding: '40px', borderRadius: '48px', background: '#fff', border: '1px solid rgba(0,0,0,0.06)', 
+                    boxShadow: '0 20px 60px rgba(0,0,0,0.02)', transition: 'all 0.4s ease'
                   }}>
                      <div style={{ display: 'flex', gap: '24px', alignItems: 'center' }}>
                         <div style={{ width: '80px', height: '80px', borderRadius: '28px', overflow: 'hidden', flexShrink: 0, background: '#F9F9F9' }}>
@@ -88,12 +88,12 @@ export default function Dashboard() {
                         <ChevronRight size={18} color="rgba(0,0,0,0.1)" />
                      </div>
 
-                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '24px', paddingTop: '24px', borderTop: '1px solid rgba(0,0,0,0.03)' }}>
-                        <span style={{ fontSize: '9px', fontWeight: 900, color: 'var(--accent)', background: 'var(--accent-glow)', padding: '6px 14px', borderRadius: '100px', letterSpacing: '0.05em' }}>{r.status.replace(/_/g, ' ')}</span>
+                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '32px', paddingTop: '32px', borderTop: '1px solid rgba(0,0,0,0.03)' }}>
+                        <span style={{ fontSize: '10px', fontWeight: 900, color: 'var(--accent)', background: 'var(--accent-glow)', padding: '8px 18px', borderRadius: '100px', letterSpacing: '0.05em' }}>{r.status.replace(/_/g, ' ')}</span>
                         {bestPrice && (
                            <div style={{ textAlign: 'right' }}>
-                              <div style={{ fontSize: '14px', fontWeight: 900 }}>{bestPrice} ¥</div>
-                              <div style={{ fontSize: '11px', fontWeight: 900, color: 'var(--accent)', marginTop: '2px' }}>~{(bestPrice * liveRate).toFixed(0)}€</div>
+                              <div style={{ fontSize: '16px', fontWeight: 900 }}>{bestPrice} ¥</div>
+                              <div style={{ fontSize: '12px', fontWeight: 900, color: 'var(--accent)', marginTop: '4px' }}>~{(bestPrice * liveRate).toFixed(0)}€</div>
                            </div>
                         )}
                      </div>

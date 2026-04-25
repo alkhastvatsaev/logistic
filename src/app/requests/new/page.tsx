@@ -173,11 +173,11 @@ export default function NewRequest() {
           </motion.div>
 
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
-             <p className="cyber-label" style={{ marginBottom: '24px' }}>CONFIGURATION MATÉRIAUX</p>
-             <div style={{ display: 'flex', flexDirection: 'column', gap: '48px' }}>
+             <p className="cyber-label" style={{ marginBottom: '32px' }}>CONFIGURATION MATÉRIAUX</p>
+             <div style={{ display: 'flex', flexDirection: 'column', gap: '64px' }}>
                 <div>
                    <span className="cyber-label" style={{ fontSize: '8px', opacity: 0.4 }}>MÉTAL PRÉCIEUX</span>
-                   <div style={{ display: 'flex', gap: '10px', marginTop: '16px' }}>
+                   <div style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
                       {[
                         { id: "Or Jaune", label: "JAUNE", color: "#F5D061" },
                         { id: "Or Blanc", label: "BLANC", color: "#E5E5E5" },

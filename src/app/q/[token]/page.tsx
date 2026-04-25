@@ -278,25 +278,24 @@ export default function SupplierPortal({ params }: { params: { token: string } }
       {/* REQUEST OVERVIEW */}
       <div style={{ padding: '0 32px' }}>
           <motion.div initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} style={{ marginBottom: '80px', marginTop: '32px' }}>
-            <span className="cyber-label" style={{ marginBottom: '12px', display: 'block', opacity: 0.4 }}>{t.techOrder}</span>
-            <h1 style={{ fontSize: '36px', fontWeight: 900, letterSpacing: '-0.06em', margin: 0, textTransform: 'uppercase' }}>{request.title}</h1>
-            <div style={{ display: 'flex', gap: '8px', marginTop: '24px' }}>
-               <div style={{ padding: '10px 20px', background: '#F9F9F9', borderRadius: '16px', fontSize: '11px', fontWeight: 900 }}>{t.size}: {request.size || 'STD'}</div>
-               <div style={{ padding: '10px 20px', background: 'var(--accent-glow)', borderRadius: '16px', fontSize: '11px', fontWeight: 900, color: 'var(--accent)' }}>{request.goldColor?.toUpperCase()}</div>
-               {request.engraving && <div style={{ padding: '10px 20px', background: '#000', borderRadius: '16px', fontSize: '11px', fontWeight: 900, color: '#fff' }}>{t.engraving} / {request.engraving}</div>}
+            <h1 style={{ fontSize: '38px', fontWeight: 900, letterSpacing: '-0.06em', margin: 0, textTransform: 'uppercase', lineHeight: 0.9 }}>{request.title}</h1>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginTop: '32px' }}>
+               <div style={{ padding: '12px 24px', background: '#F9F9F9', borderRadius: '18px', fontSize: '11px', fontWeight: 900 }}>{t.size}: {request.size || 'STD'}</div>
+               <div style={{ padding: '12px 24px', background: 'var(--accent-glow)', borderRadius: '18px', fontSize: '11px', fontWeight: 900, color: 'var(--accent)' }}>{request.goldColor?.toUpperCase()}</div>
+               {request.engraving && <div style={{ padding: '12px 24px', background: '#000', borderRadius: '18px', fontSize: '11px', fontWeight: 900, color: '#fff' }}>{t.engraving} / {request.engraving}</div>}
                {request.productUrl && (
-                  <a href={request.productUrl} target="_blank" rel="noopener noreferrer" style={{ padding: '10px 20px', background: 'var(--accent)', borderRadius: '16px', fontSize: '11px', fontWeight: 900, color: '#fff', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <a href={request.productUrl} target="_blank" rel="noopener noreferrer" style={{ padding: '12px 24px', background: 'var(--accent)', borderRadius: '18px', fontSize: '11px', fontWeight: 900, color: '#fff', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <FileText size={14} /> {t.refLink}
                   </a>
                )}
             </div>
           </motion.div>
 
-         {request.imageUrl && (
-            <div style={{ position: 'relative', width: '100%', borderRadius: '56px', overflow: 'hidden', background: '#F9F9F9', marginBottom: '80px', border: '1px solid rgba(0,0,0,0.02)', boxShadow: '0 30px 60px rgba(0,0,0,0.02)' }}>
+          {request.imageUrl && (
+            <div style={{ position: 'relative', width: '100%', borderRadius: '56px', overflow: 'hidden', background: '#F9F9F9', marginBottom: '100px', border: '1px solid rgba(0,0,0,0.02)', boxShadow: '0 40px 80px rgba(0,0,0,0.03)' }}>
                <img src={request.imageUrl} style={{ width: '100%', height: 'auto', display: 'block' }} alt="Reference" />
             </div>
-         )}
+          )}
 
          {/* FORM INTERFACE */}
          {request.status === "IN_PRODUCTION" && request.acceptedTokenId === params.token ? (

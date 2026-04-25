@@ -6,7 +6,7 @@ import { useRequestDetail } from "@/hooks/useFirebase";
 import { motion, AnimatePresence } from "framer-motion";
 import { calculateFinancialTotals, calculateDeliveryDates } from "@/lib/logic";
 export const dynamic = "force-dynamic";
-import { ArrowLeft, Trash2, ChevronRight, FileText, Copy, Check, Pencil, Save, Plus, Calculator, Truck, Package, Plane, Loader2, UploadCloud, RotateCcw, LayoutGrid } from "lucide-react";
+import { ArrowLeft, Trash2, ChevronRight, FileText, Copy, Check, Pencil, Save, Plus, Calculator, Truck, Package, Plane, Loader2, UploadCloud, RotateCcw, LayoutGrid, Link as LinkIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { generateQuotePDF, generateInternalInvoicePDF } from "@/lib/pdf";
 import { toast } from "sonner";
@@ -371,14 +371,35 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
          <div style={{ marginBottom: '32px', marginTop: '32px' }}>
             <h1 style={{ fontSize: '36px', fontWeight: 900, letterSpacing: '-0.06em', margin: 0 }}>{request.title?.toUpperCase()}</h1>
             {isEditing && (
-              <div style={{ marginTop: '16px', display: 'flex', alignItems: 'center', gap: '12px', padding: '16px 24px', background: '#F9F9F9', borderRadius: '20px' }}>
-                <Plus size={16} opacity={0.3} />
-                <input 
-                  placeholder="Lien produit officiel..." 
-                  value={request.productUrl || ""} 
-                  onChange={(e) => saveField('productUrl', e.target.value)}
-                  style={{ flex: 1, background: 'transparent', border: 'none', fontSize: '11px', fontWeight: 700, outline: 'none' }}
-                />
+              <div style={{ marginTop: '24px', display: 'flex', gap: '10px' }}>
+                <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '12px', padding: '18px 24px', background: '#F9F9F9', borderRadius: '24px' }}>
+                  <LinkIcon size={16} opacity={0.3} />
+                  <input 
+                    placeholder="Lien produit officiel..." 
+                    value={request.productUrl || ""} 
+                    onChange={(e) => saveField('productUrl', e.target.value)}
+                    style={{ flex: 1, background: 'transparent', border: 'none', fontSize: '11px', fontWeight: 700, outline: 'none' }}
+                  />
+                </div>
+                <button 
+                  onClick={async () => {
+                    if (!request.productUrl) return;
+                    toast.info("ENRICHISSEMENT EN COURS...");
+                    try {
+                      const res = await fetch(`/api/enrich?url=${encodeURIComponent(request.productUrl)}`);
+                      const data = await res.json();
+                      if (data.error) throw new Error(data.error);
+                      if (data.title) setTitle(data.title); await saveField('title', data.title);
+                      if (data.goldColor) saveField('goldColor', data.goldColor);
+                      if (data.stoneType) saveField('stoneType', data.stoneType);
+                      if (data.brand) { setBrand(data.brand); saveField('brand', data.brand); }
+                      toast.success("DONNÉES MISES À JOUR");
+                    } catch (e) { toast.error("ERREUR D'ENRICHISSEMENT"); }
+                  }}
+                  style={{ padding: '0 20px', borderRadius: '24px', background: 'var(--accent-glow)', border: 'none', color: 'var(--accent)', fontWeight: 900, fontSize: '9px' }}
+                >
+                  AUTO-FILL
+                </button>
               </div>
             )}
          </div>
