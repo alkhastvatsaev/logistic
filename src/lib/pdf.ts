@@ -25,101 +25,79 @@ export interface PDFData {
  * Mirroring the "Titane 2030" app aesthetic.
  */
 export const generateQuotePDF = async (data: PDFData) => {
-  const doc = new jsPDF({ unit: "mm", format: "a4" });
+  // Bespoke Mobile Format: 105mm width (readable without zoom) x 220mm height
+  const doc = new jsPDF({ unit: "mm", format: [105, 220] });
   const blueAccent = [0, 68, 255]; 
   const fadedGray = [160, 160, 160];
   
-  // 1. TITANE HEADER
+  // 1. MOBILE HEADER
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(28);
+  doc.setFontSize(24);
   doc.setTextColor(0, 0, 0);
-  doc.text("LOGIS.", 25, 25, { charSpace: -0.8 });
+  doc.text("LOGIS.", 12, 18, { charSpace: -0.5 });
   
-  doc.setFontSize(6.5);
+  doc.setFontSize(6);
   doc.setTextColor(fadedGray[0], fadedGray[1], fadedGray[2]);
-  doc.text("L O G I S T I Q U E   &   S O U R C I N G", 25, 31, { charSpace: 0.8 });
+  doc.text("TECHNICAL PROPOSAL", 12, 23, { charSpace: 1 });
 
-  doc.setFontSize(8);
-  doc.text(`${data.id.toUpperCase().substring(0, 8)}`, 185, 25, { align: "right" });
-  doc.text(`${new Date().toLocaleDateString('fr-FR')}`, 185, 30, { align: "right" });
-
-  // 2. IMMERSIVE PRODUCT HERO
+  // 2. DOMINANT HERO IMAGE
   if (data.imageUrl) {
     try {
       const imgProps = doc.getImageProperties(data.imageUrl);
-      const maxWidth = 140;
-      const maxHeight = 80;
+      const maxWidth = 85;
+      const maxHeight = 85;
       let ratio = Math.min(maxWidth / imgProps.width, maxHeight / imgProps.height);
       const imgW = imgProps.width * ratio;
       const imgH = imgProps.height * ratio;
       
-      doc.setFillColor(254, 254, 254);
-      doc.roundedRect(25, 45, 160, 90, 8, 8, "F"); 
+      doc.setFillColor(252, 252, 252);
+      doc.roundedRect(10, 32, 85, 85, 12, 12, "F"); 
       
-      const xPos = (210 - imgW) / 2;
-      const yPos = 45 + (90 - imgH) / 2;
+      const xPos = (105 - imgW) / 2;
+      const yPos = 32 + (85 - imgH) / 2;
       doc.addImage(data.imageUrl, 'JPEG', xPos, yPos, imgW, imgH, undefined, 'FAST');
     } catch (e) {}
   }
 
-  // 3. TECHNICAL ARCHITECTURE
-  let y = 150;
+  // 3. BOLD TITLE
+  let y = 132;
   doc.setFont("helvetica", "bold");
   doc.setFontSize(22);
   doc.setTextColor(0);
-  doc.text(data.title.toUpperCase(), 25, y, { charSpace: -0.5 });
+  doc.text(data.title.toUpperCase(), 12, y, { maxWidth: 85, charSpace: -0.5 });
   
-  y += 10;
-  doc.setFontSize(7.5);
-  doc.setTextColor(blueAccent[0], blueAccent[1], blueAccent[2]);
-  doc.text("SPÉCIFICATIONS TECHNIQUES", 25, y, { charSpace: 1.5 });
+  y += 20;
+  doc.setDrawColor(245);
+  doc.line(12, y - 5, 93, y - 5);
   
-  y += 4;
-  doc.setDrawColor(240);
-  doc.line(25, y, 185, y);
-  
-  y += 12;
-  const drawRow = (label: string, value: string, xPos: number, currentY: number) => {
+  // 4. LARGE SPECS (MOBILE GRID)
+  const drawMobileRow = (label: string, value: string, currentY: number) => {
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(6.5);
-    doc.setTextColor(160);
-    doc.text(label, xPos, currentY, { charSpace: 0.5 });
+    doc.setFontSize(7);
+    doc.setTextColor(180);
+    doc.text(label, 12, currentY, { charSpace: 0.5 });
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(10.5);
+    doc.setFontSize(14);
     doc.setTextColor(0);
-    doc.text(String(value || "N/A").toUpperCase(), xPos, currentY + 7);
+    doc.text(String(value || "N/A").toUpperCase(), 12, currentY + 8);
   };
 
-  drawRow("MÉTAL & PURETÉ", `${data.goldPurity || 'OR 18K'} - ${data.goldColor || 'JAUNE'}`, 25, y);
-  drawRow("QUALITÉ PIERRES", data.stoneQuality || (data.stoneType === "Sans Pierre" ? "AUCUNE" : "VVS / DEF"), 110, y);
-  
-  y += 18;
-  drawRow("POIDS MÉTAL (G)", data.goldWeight ? `${data.goldWeight}g` : (data.weight || "N/A"), 25, y);
-  drawRow("TOTAL CARATS", data.totalCarat ? `${data.totalCarat}ct (${data.diamondCount || 0} pces)` : "SUR DEVIS", 110, y);
-
-  // 4. INCLUSIONS
+  drawMobileRow("MÉTAL & PURETÉ", `${data.goldPurity || '18K'} ${data.goldColor || 'JAUNE'}`, y);
   y += 24;
-  doc.setFillColor(250, 250, 250);
-  doc.roundedRect(25, y, 160, 15, 7.5, 7.5, "F");
-  doc.setFontSize(7);
-  doc.setTextColor(180);
-  doc.text(`LIVRÉ AVEC : ÉCRIN LUXE ET CERTIFICAT LOGIS. • GRAVURE : ${data.engraving || 'AUCUNE'}`, 105, y + 8.5, { align: "center", charSpace: 0.1 });
-
-  // 5. TOTAL
-  y += 25;
+  drawMobileRow("POIDS ESTIMÉ", `${data.goldWeight || data.weight || '?'}G`, y);
+  y += 24;
+  drawMobileRow("PIERRES / DIAMANTS", data.stoneQuality || (data.stoneType === "Sans Pierre" ? "AUCUNE" : "VVS / DEF"), y);
+  
+  // 5. PRICE FOOTER (UI PILL)
+  y = 205;
   doc.setFillColor(0, 0, 0);
-  doc.roundedRect(25, y, 160, 36, 12, 12, "F"); 
+  doc.roundedRect(10, y - 15, 85, 30, 15, 15, "F"); 
   doc.setFontSize(8);
   doc.setTextColor(255, 255, 255);
-  doc.text("PRIX TOTAL TTC LIVRÉ", 45, y + 12, { charSpace: 1 });
-  doc.setFontSize(28);
+  doc.text("PRIX TOTAL LIVRÉ", 20, y - 4, { charSpace: 1 });
+  doc.setFontSize(24);
   const priceStr = Math.round(data.sellingPrice).toLocaleString('fr-FR') + " €";
-  doc.text(priceStr, 45, y + 26);
-
-  // 6. MINIMAL FOOTER
-  doc.setFontSize(7);
-  doc.setTextColor(200);
-  doc.text("PRODUCTION: 15-20D • INSURED WORLDWIDE SHIPPING • CC 2030 LOGIS.", 105, 288, { align: "center", charSpace: 0.5 });
+  doc.text(priceStr, 20, y + 8);
 
   const safeTitle = data.title.replace(/[^a-z0-9]/gi, '_').toLowerCase();
   doc.save(`DEVIS_LOGIS_${safeTitle}.pdf`);
