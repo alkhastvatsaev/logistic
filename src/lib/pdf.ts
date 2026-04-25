@@ -135,99 +135,92 @@ export const generateQuotePDF = async (data: PDFData) => {
  * Generates an Internal Performance Recap (The "Director's View").
  */
 export const generateInternalInvoicePDF = async (data: PDFData) => {
-  const doc = new jsPDF({ unit: "mm", format: "a4" });
+  const doc = new jsPDF({ unit: "mm", format: [105, 200] });
   const blueAccent = [0, 68, 255];
 
-  // 1. INTERNAL HEADER
+  // --- PAGE 1: AUDIT SUMMARY ---
+  let y = 18;
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(24);
+  doc.setFontSize(20);
   doc.setTextColor(0);
-  doc.text("AUDIT FINANCIER", 25, 30, { charSpace: -0.8 });
+  doc.text("AUDIT FINANCIER", 12, y, { charSpace: -0.5 });
   
-  doc.setFontSize(7);
+  doc.setFontSize(6);
   doc.setTextColor(150);
-  doc.text(`PIÈCE UNIQUE : ${data.id.toUpperCase()}`, 25, 37, { charSpace: 0.5 });
-  doc.text(`SYSTÈME LOGIS 2030 • GÉNÉRÉ LE ${new Date().toLocaleDateString('fr-FR')}`, 185, 30, { align: "right" });
+  doc.text(`SYSTÈME LOGIS • ${data.id.toUpperCase()}`, 12, y + 5, { charSpace: 0.5 });
 
-  // 2. ASSET CORE
-  doc.setFillColor(248, 248, 248);
-  doc.roundedRect(25, 45, 160, 45, 8, 8, "F");
-  
+  y = 30;
   if (data.imageUrl) {
     try {
-      const imgProps = doc.getImageProperties(data.imageUrl);
-      const targetH = 35;
-      const targetW = (imgProps.width * targetH) / imgProps.height;
-      const finalW = Math.min(targetW, 45); // Max 45mm width
-      doc.addImage(data.imageUrl, 'JPEG', 32, 50, finalW, targetH, undefined, 'FAST');
-    } catch (e) {
-      console.error("PDF Image Error", e);
-    }
+      const base64 = data.imageUrl.startsWith('data:') ? data.imageUrl : await getBase64Image(data.imageUrl);
+      if (base64) {
+        doc.setFillColor(248, 248, 248);
+        doc.roundedRect(10, y, 85, 50, 10, 10, "F");
+        const imgProps = doc.getImageProperties(base64);
+        const ratio = Math.min(45 / imgProps.width, 35 / imgProps.height);
+        doc.addImage(base64, 'JPEG', (105 - (imgProps.width * ratio)) / 2, y + (50 - (imgProps.height * ratio)) / 2, imgProps.width * ratio, imgProps.height * ratio, undefined, 'FAST');
+        y += 60;
+      }
+    } catch (e) { y += 10; }
   }
 
-  doc.setFont("helvetica", "bold");
   doc.setFontSize(14);
   doc.setTextColor(0);
-  doc.text(data.title.toUpperCase(), 85, 60, { charSpace: -0.5 });
+  const titleLines = doc.splitTextToSize(data.title.toUpperCase(), 85);
+  doc.text(titleLines, 12, y, { charSpace: -0.5 });
   
-  doc.setFontSize(8);
-  doc.setTextColor(100, 100, 100);
-  const techSpecs = `OR: ${data.goldWeight || '?'}G (${data.goldPurity || '18K'}) • PIERRES: ${data.totalCarat || '?'}CT (${data.diamondCount || '0'} PCS) • ${data.stoneQuality || 'VVS'}`;
-  doc.text(techSpecs, 85, 68, { charSpace: 0.1 });
-  doc.setFontSize(7);
-  doc.text(`GRAVURE : ${data.engraving || 'AUCUNE'}`, 85, 73, { charSpace: 0.2 });
+  y += (titleLines.length * 6) + 10;
 
-  // 3. PERFORMANCE DATA
-  let y = 110;
+  // KEY PROFIT PILL
+  doc.setFillColor(242, 248, 255);
+  doc.roundedRect(10, y, 85, 25, 12.5, 12.5, "F");
+  doc.setTextColor(blueAccent[0], blueAccent[1], blueAccent[2]);
+  doc.setFontSize(8);
+  doc.text("RENTABILITÉ NETTE", 22, y + 8, { charSpace: 0.5 });
+  doc.setFontSize(22);
+  doc.text(Math.round(data.totals.profit).toLocaleString('fr-FR') + " €", 22, y + 18);
+
+  // --- PAGE 2: MARGIN STRUCTURE & SPLIT ---
+  doc.addPage([105, 200]);
+  y = 18;
   doc.setFontSize(10);
   doc.setTextColor(0);
-  doc.setFont("helvetica", "bold");
-  doc.text("STRUCTURE DE MARGE", 25, y, { charSpace: 1 });
+  doc.text("STRUCTURE DE MARGE", 12, y, { charSpace: 1 });
   
-  y += 5;
-  doc.setDrawColor(240, 240, 240);
-  doc.line(25, y, 185, y);
-  y += 12;
+  y += 10;
+  doc.setDrawColor(240);
+  doc.line(12, y, 93, y);
+  y += 15;
 
-  const addDataRow = (label: string, value: string, isBold = false, color = [0, 0, 0]) => {
+  const addAuditRow = (label: string, value: string, isBold = false, color = [0, 0, 0]) => {
     doc.setFont("helvetica", isBold ? "bold" : "normal");
-    doc.setFontSize(10);
+    doc.setFontSize(8);
     doc.setTextColor(color[0], color[1], color[2]);
-    doc.text(label.toUpperCase(), 25, y);
-    doc.text(value, 185, y, { align: "right" });
+    doc.text(label.toUpperCase(), 12, y);
+    doc.text(value, 93, y, { align: "right" });
     y += 12;
   };
 
   const formatPrice = (n: number) => Math.round(n).toLocaleString('fr-FR') + " €";
 
-  addDataRow("Prix de Vente Client", formatPrice(data.sellingPrice), true);
-  addDataRow("Coût Acquisition Usine", `-${formatPrice(data.totals.itemCostEUR)}`, false, [120, 120, 120]);
-  addDataRow("Logistique & Transit", `-${formatPrice(data.totals.shippingEUR)}`, false, [120, 120, 120]);
-
-  y += 4;
-  doc.setFillColor(242, 248, 255);
-  doc.roundedRect(25, y, 160, 16, 8, 8, "F");
-  doc.setTextColor(blueAccent[0], blueAccent[1], blueAccent[2]);
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(11);
-  doc.text("RENTABILITÉ NETTE", 35, y + 10, { charSpace: 0.5 });
-  doc.text(formatPrice(data.totals.profit), 175, y + 10, { align: "right" });
-
-  // 4. THE SPLIT (50/50 PARTNERS)
-  y += 32;
-  doc.setFontSize(10);
-  doc.setTextColor(0);
-  doc.setFont("helvetica", "bold");
-  doc.text("RÉPARTITION DES BÉNÉFICES", 25, y, { charSpace: 1 });
-  y += 12;
+  addAuditRow("Prix de Vente Client", formatPrice(data.sellingPrice), true);
+  addAuditRow("Coût Acquisition Usine", `-${formatPrice(data.totals.itemCostEUR)}`, false, [150, 150, 150]);
+  addAuditRow("Logistique & Transit", `-${formatPrice(data.totals.shippingEUR)}`, false, [150, 150, 150]);
   
-  addDataRow("ADAM (Gestion Ops)", formatPrice(data.totals.adamPart), true, blueAccent);
-  addDataRow("MIRZA (Marketing)", formatPrice(data.totals.mirzaPart), true, blueAccent);
+  y += 15;
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(8);
+  doc.setTextColor(0);
+  doc.text("RÉPARTITION PARTENAIRES", 12, y, { charSpace: 1 });
+  y += 10;
 
-  // 5. INTERNAL FOOTER
-  doc.setFontSize(6.5);
+  addAuditRow("ADAM (Gestion Ops)", formatPrice(data.totals.adamPart), true, blueAccent);
+  addAuditRow("MIRZA (Marketing)", formatPrice(data.totals.mirzaPart), true, blueAccent);
+
+  // Footer Audit
+  doc.setFontSize(5);
   doc.setTextColor(200);
-  doc.text("LOGIS INTERNAL PROTOCOL • PRIVATE RECORD • DO NOT SHARE", 105, 288, { align: "center", charSpace: 0.2 });
+  doc.text("LOGIS INTERNAL PROTOCOL • PRIVATE RECORD • NO SHARE", 52.5, 190, { align: "center" });
 
   const safeTitle = data.title.replace(/[^a-z0-9]/gi, '_').toLowerCase();
   doc.save(`AUDIT_LOGIS_${safeTitle}.pdf`);
