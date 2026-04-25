@@ -370,16 +370,32 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
       <div style={{ padding: '0 32px' }}>
          <div style={{ marginBottom: '32px', marginTop: '32px' }}>
             <h1 style={{ fontSize: '36px', fontWeight: 900, letterSpacing: '-0.06em', margin: 0 }}>{request.title?.toUpperCase()}</h1>
+            {isEditing && (
+              <div style={{ marginTop: '16px', display: 'flex', alignItems: 'center', gap: '12px', padding: '16px 24px', background: '#F9F9F9', borderRadius: '20px' }}>
+                <Plus size={16} opacity={0.3} />
+                <input 
+                  placeholder="Lien produit officiel..." 
+                  value={request.productUrl || ""} 
+                  onChange={(e) => saveField('productUrl', e.target.value)}
+                  style={{ flex: 1, background: 'transparent', border: 'none', fontSize: '11px', fontWeight: 700, outline: 'none' }}
+                />
+              </div>
+            )}
          </div>
             
          {/* TECH SPECS: ROW 1 (Core) */}
          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px', margin: '48px 0 16px 0' }}>
-            <div style={{ padding: '20px 8px', borderRadius: '24px', background: '#F9F9F9', border: '1px solid rgba(0,0,0,0.02)', textAlign: 'center' }}>
+            <div style={{ padding: '20px 8px', borderRadius: '24px', background: '#F9F9F9', border: '1px solid rgba(0,0,0,0.02)', textAlign: 'center', position: 'relative' }}>
                <span className="cyber-label" style={{ fontSize: '7px', opacity: 0.5 }}>HOUSE</span>
                {isEditing ? (
                  <input value={brand} onChange={(e) => { setBrand(e.target.value); saveField('brand', e.target.value); }} style={{ width: '100%', background: 'transparent', border: 'none', textAlign: 'center', fontSize: '11px', fontWeight: 900, outline: 'none', color: 'var(--accent)' }} />
                ) : (
                  <p style={{ fontWeight: 900, fontSize: '11px', marginTop: '8px', letterSpacing: '0.05em' }}>{request.brand?.toUpperCase() || '...'}</p>
+               )}
+               {request.productUrl && (
+                  <a href={request.productUrl} target="_blank" rel="noopener noreferrer" style={{ position: 'absolute', top: '-10px', right: '-10px', width: '24px', height: '24px', borderRadius: '12px', background: 'var(--accent)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 5px 15px rgba(0,0,0,0.1)', zIndex: 5 }}>
+                     <FileText size={12} />
+                  </a>
                )}
             </div>
             <div style={{ padding: '20px 8px', borderRadius: '24px', background: '#FDF7F9', border: '1px solid rgba(224,17,95,0.05)', textAlign: 'center' }}>

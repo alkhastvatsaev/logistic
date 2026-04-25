@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, UploadCloud, ChevronRight } from "lucide-react";
+import { ArrowLeft, UploadCloud, ChevronRight, Link as LinkIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { rtdb, rtdbRef, push, set } from "@/lib/firebase";
 import { SmartImage } from "@/components/ui/SmartImage";
@@ -22,6 +22,7 @@ export default function NewRequest() {
   const [mainStoneCarat, setMainStoneCarat] = useState("");
   const [engraving, setEngraving] = useState("");
   const [loading, setLoading] = useState(false);
+  const [productUrl, setProductUrl] = useState("");
 
   const stones = [
     { id: "Sans Pierre", label: "SANS", color: "#F9F9F9" },
@@ -66,6 +67,7 @@ export default function NewRequest() {
         mainStoneCarat: stoneType !== "Sans Pierre" ? mainStoneCarat : null,
         category: category === 'Ring' ? 'Bague' : (category === 'Bracelet' ? 'Bracelet' : 'Collier'),
         engraving: engraving || null,
+        productUrl: productUrl || null,
         imageUrl, 
         status: "WAITING_FOR_QUOTE", 
         createdAt: Date.now(), 
@@ -101,6 +103,15 @@ export default function NewRequest() {
                style={{ width: '100%', fontSize: '36px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '-0.06em', background: 'transparent', outline: 'none' }}
              />
              <div style={{ height: '4px', background: 'var(--accent)', width: title ? '100%' : '60px', transition: 'width 0.6s cubic-bezier(0.16, 1, 0.3, 1)', marginTop: '16px' }} />
+             
+             <div style={{ marginTop: '24px', padding: '24px', borderRadius: '24px', background: '#F9F9F9', display: 'flex', alignItems: 'center', gap: '16px' }}>
+                <LinkIcon size={18} opacity={0.3} />
+                <input 
+                  type="url" placeholder="Lien boutique officielle (ex: Cartier)..." value={productUrl}
+                  onChange={(e) => setProductUrl(e.target.value)}
+                  style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', fontSize: '13px', fontWeight: 600 }}
+                />
+             </div>
              
              <div style={{ marginTop: '48px' }}>
                 <span className="cyber-label" style={{ fontSize: '8px', opacity: 0.4 }}>MAISON RÉFÉRENTE</span>

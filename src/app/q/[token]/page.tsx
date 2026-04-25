@@ -77,6 +77,7 @@ export default function SupplierPortal({ params }: { params: { token: string } }
       quoteSubmitted: "QUOTE SUBMITTED",
       propositionSent: "Your proposal has been transmitted.",
       shipmentSent: "SHIPMENT SENT",
+      refLink: "OFFICIAL LINK",
       locale: 'en-US'
     },
     CN: {
@@ -121,6 +122,7 @@ export default function SupplierPortal({ params }: { params: { token: string } }
       quoteSubmitted: "已提交报价",
       propositionSent: "您的建议已送达。",
       shipmentSent: "已发货",
+      refLink: "官方链接",
       locale: 'zh-CN'
     }
   }[lang];
@@ -282,6 +284,11 @@ export default function SupplierPortal({ params }: { params: { token: string } }
                <div style={{ padding: '10px 20px', background: '#F9F9F9', borderRadius: '16px', fontSize: '11px', fontWeight: 900 }}>{t.size}: {request.size || 'STD'}</div>
                <div style={{ padding: '10px 20px', background: 'var(--accent-glow)', borderRadius: '16px', fontSize: '11px', fontWeight: 900, color: 'var(--accent)' }}>{request.goldColor?.toUpperCase()}</div>
                {request.engraving && <div style={{ padding: '10px 20px', background: '#000', borderRadius: '16px', fontSize: '11px', fontWeight: 900, color: '#fff' }}>{t.engraving} / {request.engraving}</div>}
+               {request.productUrl && (
+                  <a href={request.productUrl} target="_blank" rel="noopener noreferrer" style={{ padding: '10px 20px', background: 'var(--accent)', borderRadius: '16px', fontSize: '11px', fontWeight: 900, color: '#fff', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <FileText size={14} /> {t.refLink}
+                  </a>
+               )}
             </div>
           </motion.div>
 
