@@ -110,7 +110,6 @@ export const generateQuotePDF = async (data: PDFData) => {
   const safeTitle = data.title.replace(/[^a-z0-9]/gi, '_').toLowerCase();
   doc.save(`DEVIS_LOGIS_${safeTitle}.pdf`);
 };
-};
 
 /**
  * Generates an Internal Performance Recap (The "Director's View").
