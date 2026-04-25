@@ -20,40 +20,55 @@ export async function GET(request: Request) {
       next: { revalidate: 0 }
     });
 
-    if (!response.ok) {
-      return NextResponse.json({ 
-        error: `Erreur ${response.status} (Protection site officiel)`,
-        details: "Le site bloque l'accès automatique. Veuillez remplir les champs manuellement."
-      }, { status: 200 });
+    let title = "";
+    let imageUrl = "";
+    let description = "";
+
+    if (response.ok) {
+      const html = await response.text();
+      const titleMatch = html.match(/<title>(.*?)<\/title>/i);
+      const ogImageMatch = html.match(/<meta property="og:image" content="(.*?)"/i);
+      const ogDescMatch = html.match(/<meta property="og:description" content="(.*?)"/i);
+
+      title = titleMatch ? titleMatch[1].split(' - ')[0].replace('Cartier® FR', '').trim() : '';
+      imageUrl = ogImageMatch ? ogImageMatch[1] : '';
+      description = ogDescMatch ? ogDescMatch[1].replace(/<br>/g, '\n').replace(/&bull;/g, '•') : '';
     }
 
-    const html = await response.text();
-
-    // Basic meta tag extraction
-    const titleMatch = html.match(/<title>(.*?)<\/title>/i);
-    const ogImageMatch = html.match(/<meta property="og:image" content="(.*?)"/i);
-    const ogDescMatch = html.match(/<meta property="og:description" content="(.*?)"/i);
-
-    const title = titleMatch ? titleMatch[1].split(' - ')[0].replace('Cartier® FR', '').trim() : '';
-    const imageUrl = ogImageMatch ? ogImageMatch[1] : '';
-    const description = ogDescMatch ? ogDescMatch[1].replace(/<br>/g, '\n').replace(/&bull;/g, '•') : '';
+    // Hybrid Fallback from URL Slug
+    if (!title) {
+        const parts = url.split('/');
+        const lastPart = parts.pop() || parts.pop(); // Handle trailing slash
+        if (lastPart) {
+           title = lastPart
+             .split('?')[0]
+             .replace('.html', '')
+             .replace(/[A-Z0-9]{6,}/g, '') // Remove reference codes like VCARA41800
+             .replace(/---/g, ' ')
+             .replace(/-/g, ' ')
+             .trim()
+             .toUpperCase();
+        }
+    }
 
     // Logic to detect Gold Color
     let goldColor = "Or Jaune";
-    if (description.toLowerCase().includes('rose') || title.toLowerCase().includes('rose')) goldColor = "Or Rose";
-    if (description.toLowerCase().includes('blanc') || title.toLowerCase().includes('blanc') || description.toLowerCase().includes('platine')) goldColor = "Or Blanc";
+    const combinedText = (title + ' ' + description + ' ' + url).toLowerCase();
+    if (combinedText.includes('rose')) goldColor = "Or Rose";
+    if (combinedText.includes('blanc') || combinedText.includes('platine') || combinedText.includes('white')) goldColor = "Or Blanc";
 
     // Logic to detect Stone Type
     let stoneType = "Sans Pierre";
-    if (description.toLowerCase().includes('diamant')) stoneType = "Diamants";
-    if (description.toLowerCase().includes('saphir')) stoneType = "Saphir";
-    if (description.toLowerCase().includes('émeraude') || description.toLowerCase().includes('emeraude')) stoneType = "Émeraude";
-    if (description.toLowerCase().includes('rubis')) stoneType = "Rubis";
+    if (combinedText.includes('diamant') || combinedText.includes('diamond')) stoneType = "Diamants";
+    if (combinedText.includes('saphir') || combinedText.includes('sapphire')) stoneType = "Saphir";
+    if (combinedText.includes('rubis') || combinedText.includes('ruby')) stoneType = "Rubis";
+    if (combinedText.includes('onyx')) stoneType = "Onyx";
+    if (combinedText.includes('nacre') || combinedText.includes('mother of pearl')) stoneType = "Perles";
 
     // Logic to detect Brand
     let brand = "Cartier";
-    if (url.includes('vancleefarpels.com')) brand = "Van Cleef";
-    if (url.includes('bulgari.com')) brand = "Bulgari";
+    if (url.toLowerCase().includes('vancleef')) brand = "Van Cleef";
+    if (url.toLowerCase().includes('bulgari')) brand = "Bulgari";
 
     return NextResponse.json({
       title,
@@ -61,7 +76,8 @@ export async function GET(request: Request) {
       description,
       goldColor,
       stoneType,
-      brand
+      brand,
+      isFallback: !response.ok
     });
   } catch (error) {
     console.error('Error enriching from URL:', error);
