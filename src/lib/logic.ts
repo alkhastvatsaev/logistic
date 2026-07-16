@@ -12,13 +12,17 @@ export const SHIPPING_DAYS_TO_FRANCE = 7;
  */
 export async function fetchLiveRate(): Promise<number> {
   try {
-    const res = await fetch('https://api.frankfurter.app/latest?from=CNY&to=EUR');
-    const data = await res.json();
-    const marketRate = data.rates.EUR;
-    // Add 3.5% buffer for Wise/Bank fees and volatility
-    return parseFloat((marketRate * 1.035).toFixed(4));
-  } catch (e) {
-    console.error("FX API Error, using safety default", e);
+    const response = await fetch("/api/fx");
+    if (!response.ok) return EUR_RMB_RATE_DEFAULT;
+
+    const data: unknown = await response.json();
+    const rate =
+      typeof data === "object" && data !== null && "rate" in data
+        ? Number(data.rate)
+        : Number.NaN;
+
+    return Number.isFinite(rate) && rate > 0 ? rate : EUR_RMB_RATE_DEFAULT;
+  } catch {
     return EUR_RMB_RATE_DEFAULT;
   }
 }
