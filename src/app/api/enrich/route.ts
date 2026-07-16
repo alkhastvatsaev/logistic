@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { fetchRemoteResource } from '@/lib/safeFetch';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -9,23 +10,20 @@ export async function GET(request: Request) {
   }
 
   try {
-    const response = await fetch(url, {
-      headers: {
+    const page = await fetchRemoteResource(url, 2 * 1024 * 1024, {
         'User-Agent': 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)',
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
         'Accept-Language': 'fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7',
         'Cache-Control': 'no-cache',
         'Referer': 'https://www.google.com/'
-      },
-      next: { revalidate: 0 }
     });
 
     let title = "";
     let imageUrl = "";
     let description = "";
 
-    if (response.ok) {
-      const html = await response.text();
+    if (page.response.ok && page.contentType.includes('text/html')) {
+      const html = page.body.toString('utf8');
       const titleMatch = html.match(/<title>(.*?)<\/title>/i);
       const ogImageMatch = html.match(/<meta property="og:image" content="(.*?)"/i);
       const ogDescMatch = html.match(/<meta property="og:description" content="(.*?)"/i);
@@ -74,12 +72,9 @@ export async function GET(request: Request) {
     let imageDataUri = "";
     if (imageUrl) {
         try {
-            const imgResp = await fetch(imageUrl, { headers: { 'User-Agent': 'Mozilla/5.0' } });
-            if (imgResp.ok) {
-                const buffer = await imgResp.arrayBuffer();
-                const base64 = Buffer.from(buffer).toString('base64');
-                const contentType = imgResp.headers.get('content-type') || 'image/jpeg';
-                imageDataUri = `data:${contentType};base64,${base64}`;
+            const image = await fetchRemoteResource(imageUrl, 5 * 1024 * 1024, { 'User-Agent': 'Mozilla/5.0' });
+            if (image.response.ok && image.contentType.startsWith('image/')) {
+                imageDataUri = `data:${image.contentType};base64,${image.body.toString('base64')}`;
             }
         } catch (e) { console.error("Img Persist Error", e); }
     }
@@ -91,10 +86,10 @@ export async function GET(request: Request) {
       goldColor,
       stoneType,
       brand,
-      isFallback: !response.ok
+      isFallback: !page.response.ok
     });
   } catch (error) {
     console.error('Error enriching from URL:', error);
-    return NextResponse.json({ error: 'Failed to fetch page metadata' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to fetch public page metadata' }, { status: 400 });
   }
 }

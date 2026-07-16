@@ -1,0 +1,45 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "requests": {
+      ".read": "auth != null",
+      "$requestId": {
+        ".write": "auth != null",
+        ".validate": "!newData.exists() || (newData.hasChildren(['title', 'status']) && newData.child('title').isString() && newData.child('title').val().length <= 200 && newData.child('status').isString())"
+      }
+    },
+    "quotes": {
+      ".read": "auth != null",
+      "$requestId": {
+        "$quoteId": {
+          ".write": "auth != null",
+          ".validate": "!newData.exists() || (newData.hasChildren(['shareTokenId', 'supplierName', 'priceRMB', 'createdAt']) && newData.child('shareTokenId').isString() && newData.child('supplierName').isString() && newData.child('supplierName').val().length <= 120 && newData.child('priceRMB').isNumber() && newData.child('priceRMB').val() >= 0 && newData.child('createdAt').isNumber())"
+        }
+      }
+    },
+    "payments": {
+      ".read": "auth != null",
+      "$requestId": {
+        "$paymentId": {
+          ".write": "auth != null",
+          ".validate": "!newData.exists() || (newData.hasChildren(['amount', 'createdAt']) && newData.child('amount').isNumber() && newData.child('amount').val() >= 0 && newData.child('createdAt').isNumber())"
+        }
+      }
+    },
+    "shareTokens": {
+      "$token": {
+        ".read": "auth != null",
+        ".write": "auth != null",
+        ".validate": "!newData.exists() || (newData.hasChild('requestId') && newData.child('requestId').isString())"
+      }
+    },
+    "logs": {
+      ".read": "auth != null",
+      "$logId": {
+        ".write": "auth != null",
+        ".validate": "!newData.exists() || (newData.hasChildren(['timestamp', 'type', 'action']) && newData.child('timestamp').isNumber() && newData.child('type').isString() && newData.child('action').isString())"
+      }
+    }
+  }
+}

@@ -14,6 +14,7 @@ import { SmartImage } from "@/components/ui/SmartImage";
 import { VisionPill } from "@/components/ui/VisionPill";
 import { TitaneLoader } from "@/components/ui/TitaneLoader";
 import { logEvent } from "@/lib/logger";
+import { QRCodeSVG } from "qrcode.react";
 
 export default function RequestDetail({ params }: { params: { id: string } }) {
   const router = useRouter();
@@ -534,7 +535,7 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
                           <span>{(Number(acceptedQuote.goldWeight) * Number(acceptedQuote.goldPrice)).toFixed(0)} ¥</span>
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', fontWeight: 700 }}>
-                          <span>MAIN D'OEUVRE</span>
+                          <span>MAIN D’OEUVRE</span>
                           <span>{acceptedQuote.labor || 0} ¥</span>
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', fontWeight: 700 }}>
@@ -704,8 +705,12 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
               </div>
               
               <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--faded)', marginBottom: '24px', lineHeight: 1.5 }}>
-                Envoyez ce lien aux fournisseurs pour qu'ils puissent soumettre leurs devis techniques.
+                Envoyez ce lien aux fournisseurs pour qu’ils puissent soumettre leurs devis techniques.
               </p>
+
+              <div style={{ display: 'flex', justifyContent: 'center', padding: '20px', marginBottom: '20px', borderRadius: '24px', background: '#fff', border: '1px solid rgba(0,0,0,0.06)' }}>
+                <QRCodeSVG value={generatedLink} size={168} level="M" title="Supplier portal QR code" />
+              </div>
 
               <div style={{ padding: '20px', background: '#F9F9F9', borderRadius: '20px', wordBreak: 'break-all', fontSize: '11px', fontWeight: 800, color: 'var(--accent)', marginBottom: '32px', border: '1px solid rgba(0,0,0,0.02)' }}>
                 {generatedLink}
@@ -737,7 +742,7 @@ export default function RequestDetail({ params }: { params: { id: string } }) {
                 </div>
                 <h2 style={{ fontSize: '20px', fontWeight: 900 }}>RETOUR EN ARRIÈRE ?</h2>
                 <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--faded)', marginTop: '12px', lineHeight: 1.5 }}>
-                   Voulez-vous vraiment revenir à l'étape précédente : <br/>
+                   Voulez-vous vraiment revenir à l’étape précédente : <br/>
                    <span style={{ color: 'var(--accent)', fontWeight: 900 }}>{prevStageName}</span> ?
                 </p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '32px' }}>

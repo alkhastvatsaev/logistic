@@ -75,7 +75,7 @@ const WheelDrum = ({ options, value, onChange, height = 168 }: { options: string
 
   useEffect(() => {
     if (containerRef.current) {
-      const index = options.indexOf(value);
+      const index = options.findIndex((option) => option === value);
       if (index !== -1) {
         containerRef.current.scrollTop = index * rowHeight;
       }

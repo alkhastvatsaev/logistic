@@ -62,7 +62,7 @@ export default function DeliveryRadar() {
     );
   };
 
-  const selectedOrders = useMemo(() => ordersForDate(selectedDate), [requests, selectedDate]);
+  const selectedOrders = ordersForDate(selectedDate);
 
   const resetToToday = () => {
     const now = new Date();
@@ -85,7 +85,7 @@ export default function DeliveryRadar() {
               <p style={{ fontSize: '10px', fontWeight: 900, letterSpacing: '0.2em', textTransform: 'uppercase' }}>
                 {currentMonth.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}
               </p>
-              <p style={{ fontSize: '7px', fontWeight: 900, color: 'var(--accent)', marginTop: '2px', letterSpacing: '0.1em' }}>AUJOURD'HUI</p>
+              <p style={{ fontSize: '7px', fontWeight: 900, color: 'var(--accent)', marginTop: '2px', letterSpacing: '0.1em' }}>AUJOURD’HUI</p>
            </div>
            <button onClick={() => changeMonth(1)} style={{ width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#F9F9F9', border: 'none', borderRadius: '12px' }}><ChevronRight size={16}/></button>
         </div>

@@ -12,7 +12,12 @@ export const update = vi.fn(() => Promise.resolve());
 export const remove = vi.fn(() => Promise.resolve());
 
 export const uploadBytesResumable = vi.fn(() => ({
-  on: (event, progress, error, complete) => {
+  on: (
+    _event: string,
+    _progress: (snapshot: unknown) => void,
+    _error: (error: unknown) => void,
+    complete: () => void,
+  ) => {
     // Simulate immediate completion
     setTimeout(complete, 100);
   },

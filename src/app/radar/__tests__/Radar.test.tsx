@@ -17,6 +17,7 @@ vi.mock('next/navigation', () => ({
 vi.mock('framer-motion', () => ({
   motion: {
     div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
+    p: ({ children, ...props }: any) => <p {...props}>{children}</p>,
   },
   AnimatePresence: ({ children }: any) => <>{children}</>,
 }));
@@ -37,7 +38,7 @@ describe('DeliveryRadar', () => {
     render(<DeliveryRadar />);
     
     expect(screen.getByText(/CALENDAR/i)).toBeDefined();
-    expect(screen.getByText(/AUCUNE ÉCHÉANCE/i)).toBeDefined();
+    expect(screen.getByText(/CALME PLAT/i)).toBeDefined();
   });
 
   it('displays an event dot for a date with a delivery estimation', () => {
@@ -62,7 +63,7 @@ describe('DeliveryRadar', () => {
     
     // Verify the order appears in the detail panel
     expect(screen.getByText('ROLEX OYSTER')).toBeDefined();
-    expect(screen.getByText(/LIVRAISON STRASBOURG/i)).toBeDefined();
+    expect(screen.getByText(/LIVRAISON CLIENT/i)).toBeDefined();
   });
 
   it('navigates between months correctly', () => {

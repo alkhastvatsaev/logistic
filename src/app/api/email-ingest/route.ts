@@ -3,10 +3,21 @@ import { rtdb, rtdbRef, update, get } from '@/lib/firebase';
 
 export async function POST(req: Request) {
   try {
+    const ingestSecret = process.env.EMAIL_INGEST_SECRET;
+    if (!ingestSecret) {
+      return NextResponse.json({ error: "Email ingest is not configured" }, { status: 503 });
+    }
+
+    if (req.headers.get("authorization") !== `Bearer ${ingestSecret}`) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const data = await req.json();
     const body = data.plain || data.html || "";
-    
-    console.log("Email received for ingest:", body.substring(0, 200));
+
+    if (typeof body !== "string" || body.length > 250_000) {
+      return NextResponse.json({ error: "Invalid email body" }, { status: 400 });
+    }
 
     // 1. Extract Tracking Number (FedEx format)
     // Matches 12 or 15 digit numbers common for FedEx

@@ -83,7 +83,7 @@ export const generateQuotePDF = async (data: PDFData) => {
   doc.text(titleLines, 12, y, { charSpace: -0.5 });
   
   // PRICE PILL (Page 1 Focal Point)
-  doc.setFillColor(0);
+  doc.setFillColor(0, 0, 0);
   doc.roundedRect(10, 165, 85, 25, 12.5, 12.5, "F");
   doc.setFontSize(7);
   doc.setTextColor(255);

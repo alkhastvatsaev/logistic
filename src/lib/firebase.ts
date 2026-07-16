@@ -11,10 +11,14 @@ const firebaseConfig = {
   storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
   messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
-  databaseURL: `https://${process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID}-default-rtdb.firebaseio.com` 
+  databaseURL:
+    process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL ||
+    (process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID
+      ? `https://${process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID}-default-rtdb.firebaseio.com`
+      : undefined),
 };
 
-const isConfigValid = !!process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
+const isConfigValid = Object.values(firebaseConfig).every(Boolean);
 
 const app = !getApps().length && isConfigValid ? initializeApp(firebaseConfig) : (getApps().length ? getApp() : null);
 const db = app ? getFirestore(app) : (null as any);
@@ -29,6 +33,11 @@ if (typeof window !== "undefined" && auth) {
 
 export const waitForAuth = () => {
   return new Promise((resolve) => {
+    if (!auth) {
+      resolve(null);
+      return;
+    }
+
     const unsubscribe = auth.onAuthStateChanged((user: any) => {
       if (user) {
         resolve(user);
