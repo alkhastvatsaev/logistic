@@ -1,13 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import { rtdb, rtdbRef, get, update } from "@/lib/firebase";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { CheckCircle, XCircle, ChevronRight } from "lucide-react";
 import { SmartImage } from "@/components/ui/SmartImage";
 
-export default function MirzaReview({ params }: { params: { id: string } }) {
+export default function MirzaReview({ params: paramsPromise }: { params: Promise<{ id: string }> }) {
+  const params = use(paramsPromise);
   const [request, setRequest] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [decision, setDecision] = useState<"APPROVED" | "REJECTED" | null>(null);

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import { rtdb, rtdbRef, set, push, update, remove, storage, storageRef, uploadBytesResumable, getDownloadURL } from "@/lib/firebase";
 import { useRequestDetail } from "@/hooks/useFirebase";
 import { motion, AnimatePresence } from "framer-motion";
@@ -16,7 +16,8 @@ import { TitaneLoader } from "@/components/ui/TitaneLoader";
 import { logEvent } from "@/lib/logger";
 import { QRCodeSVG } from "qrcode.react";
 
-export default function RequestDetail({ params }: { params: { id: string } }) {
+export default function RequestDetail({ params: paramsPromise }: { params: Promise<{ id: string }> }) {
+  const params = use(paramsPromise);
   const router = useRouter();
   const { request, quotes, payments, loading } = useRequestDetail(params.id);
   const [sellingPrice, setSellingPrice] = useState("");

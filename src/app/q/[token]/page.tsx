@@ -1,14 +1,15 @@
 "use client";
 // Build Trigger: 2026-04-24 22:07
 
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import { rtdb, rtdbRef, get, set, push, update, storage, storageRef, uploadBytesResumable, getDownloadURL } from "@/lib/firebase";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { CheckCircle, Truck, PackageCheck, ArrowRight, User, MapPin, ChevronLeft, ChevronRight, Camera, FileText } from "lucide-react";
 import { TitaneLoader } from "@/components/ui/TitaneLoader";
 
-export default function SupplierPortal({ params }: { params: { token: string } }) {
+export default function SupplierPortal({ params: paramsPromise }: { params: Promise<{ token: string }> }) {
+  const params = use(paramsPromise);
   const [loading, setLoading] = useState(true);
   const [request, setRequest] = useState<any>(null);
   const [tokenData, setTokenData] = useState<any>(null);

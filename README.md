@@ -4,6 +4,15 @@ A mobile-first logistics workflow for coordinating custom-product sourcing, supp
 
 [Live demo](https://reach-logistics.vercel.app) · [Repository](https://github.com/alkhastvatsaev/logistic)
 
+![Reach Logistics operations list on desktop](docs/screenshots/operations-desktop.png)
+
+<details>
+<summary>Mobile view</summary>
+
+![Reach Logistics operations list on mobile](docs/screenshots/operations-mobile.png)
+
+</details>
+
 ## Case study
 
 Small sourcing teams often coordinate product specifications, supplier prices, payment milestones, and shipping updates across chats and spreadsheets. Reach Logistics brings that lifecycle into one focused web application:
@@ -32,7 +41,7 @@ The interface is intentionally optimized for a narrow mobile viewport while rema
 
 ## Architecture
 
-- **Next.js App Router + TypeScript** — UI, route handlers, and server-side integrations
+- **Next.js 16, React 19 + TypeScript** — UI, route handlers, and server-side integrations
 - **Firebase Realtime Database** — requests, quotes, payments, share tokens, and logs
 - **Firebase Authentication** — anonymous sessions required by the provided database and storage rules
 - **Firebase Storage** — QC media under request-scoped paths
@@ -96,6 +105,9 @@ The standard CI workflow runs lint, type checking, unit tests, and a production 
 - The email-ingest endpoint requires `Authorization: Bearer <EMAIL_INGEST_SECRET>`.
 - Metadata enrichment rejects credentials, non-HTTP protocols, private/reserved network addresses, unsafe redirects, oversized pages, and oversized images.
 - Firebase rules are versioned here but are not deployed automatically by GitHub Actions.
+- The current Firebase project has no Storage bucket initialized, so QC media
+  uploads remain unavailable until Storage is provisioned and the included
+  rules are deployed.
 - FedEx lookup uses an unofficial public endpoint and may return fallback states. It is not an SLA-backed carrier integration.
 - Product metadata extraction uses lightweight HTML matching and may fail on client-rendered or bot-protected pages.
 - Financial results are operational estimates, not accounting or tax advice.

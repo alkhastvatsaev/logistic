@@ -1,13 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import { rtdb, rtdbRef, get, update, push, set } from "@/lib/firebase";
 import { motion } from "framer-motion";
 import { CheckCircle, Truck, Package, ChevronRight, Calculator } from "lucide-react";
 import { SmartImage } from "@/components/ui/SmartImage";
 import { toast } from "sonner";
 
-export default function SupplierQuotePortal({ params }: { params: { id: string } }) {
+export default function SupplierQuotePortal({ params: paramsPromise }: { params: Promise<{ id: string }> }) {
+  const params = use(paramsPromise);
   const [request, setRequest] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [submitted, setSubmitted] = useState(false);
