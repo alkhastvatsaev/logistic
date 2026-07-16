@@ -22,7 +22,7 @@
     "lucide-react": "^1.8.0",
     "next": "14.2.35",
     "qrcode.react": "^4.2.0",
-    "react": "^18",
+    "react": "^19",
     "react-dom": "^18",
     "sonner": "^2.0.7"
   },
@@ -32,7 +32,7 @@
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@types/node": "^20",
-    "@types/react": "^18",
+    "@types/react": "^19",
     "@types/react-dom": "^18",
     "@vitejs/plugin-react": "^6.0.1",
     "eslint": "^8",
