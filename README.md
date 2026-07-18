@@ -123,4 +123,4 @@ The standard CI workflow runs lint, type checking, unit tests, and a production 
 
 ## Author
 
-Built by [alkhastvatsaev](https://github.com/alkhastvatsaev) as a full-stack JavaScript/TypeScript portfolio case study.
+Built by [Alkhast Vatsaev](https://alkhastvatsaev.dev) as a full-stack JavaScript/TypeScript portfolio case study — [portfolio](https://alkhastvatsaev.dev) · [Full Stack FR](https://alkhastvatsaev.dev/fr/developpeur-full-stack).
